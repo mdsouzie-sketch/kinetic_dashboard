@@ -1991,7 +1991,8 @@ function renderTestsTab() {
   const group = TEST_GROUPS.find(g => g.key === testActiveGroup);
   if (!testAthlete || !pool.find(a => a.name === testAthlete)) testAthlete = pool[0].name;
   const athlete = pool.find(a => a.name === testAthlete);
-  if (!testNorm || !norms[testNorm]) testNorm = group.defaultNorm(testSex);
+  const sexWord = testSex === 'M' ? 'Male' : 'Female';
+  if (!testNorm || !norms[testNorm] || !testNorm.includes(sexWord)) testNorm = group.defaultNorm(testSex);
 
   // Athlete select — same sex only
   const asel = document.getElementById('test-athlete-select');
@@ -1999,11 +2000,12 @@ function renderTestsTab() {
     `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name}</option>`
   ).join('');
 
-  // Norm select — all norms
+  // Norm select — sex-filtered
   const nsel = document.getElementById('test-norm-select');
-  nsel.innerHTML = Object.keys(INITIAL_NORMS).map(k =>
-    `<option value="${k}"${k===testNorm?' selected':''}>${k}</option>`
-  ).join('');
+  nsel.innerHTML = Object.keys(INITIAL_NORMS)
+    .filter(k => k.includes(sexWord))
+    .map(k => `<option value="${k}"${k===testNorm?' selected':''}>${k}</option>`)
+    .join('');
   nsel.value = testNorm;
 
   // Compare select — same sex only, excluding current athlete and already-added

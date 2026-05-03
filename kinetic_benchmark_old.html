@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kinetic Benchmark — Athletic Performance Profiler</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,8 +16,8 @@
       --border:    rgba(240,192,64,0.30);
       --border2:   rgba(240,192,64,0.50);
       --text:      #f0f4ff;
-      --text2:     #b8c8e8;
-      --text3:     #7a90b8;
+      --text2:     #d8e8ff;
+      --text3:     #a0b8d8;
       --gold:      #f0c040;
       --gold-dim:  rgba(240,192,64,0.12);
       --teal:      #2dd4bf;
@@ -38,7 +39,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.5;
     }
 
@@ -77,13 +78,13 @@
       letter-spacing: 0.5px; text-transform: uppercase; line-height: 1;
     }
     .header-title span { color: var(--text3); font-style: normal; font-weight: 600; }
-    .header-sub { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.09em; font-family: 'DM Mono', monospace; }
+    .header-sub { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.09em; font-family: 'DM Mono', monospace; }
 
     /* ── Tabs ── */
     .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: var(--radius-lg); border: 1px solid var(--border); }
     .tab-btn {
       padding: 6px 18px; border-radius: var(--radius-md); border: none;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
       cursor: pointer; background: transparent; color: var(--text3); transition: all 0.15s;
       font-family: 'DM Sans', sans-serif;
     }
@@ -96,18 +97,16 @@
       border-radius: var(--radius-lg); padding: 14px 16px;
     }
     .card-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.09em; color: var(--text3); margin-bottom: 10px;
       display: flex; align-items: center; gap: 6px;
       font-family: 'DM Mono', monospace;
+      padding-left: 9px; border-left: 2px solid var(--gold);
     }
-    .card-label::before {
-      content:''; width:5px; height:5px; border-radius:2px;
-      background: var(--gold); opacity:0.7; flex-shrink:0;
-    }
+    .card-label::before { display: none; }
     .card-chevron {
       background: none; border: none; cursor: pointer; color: var(--text3);
-      font-size: 13px; padding: 2px 5px; border-radius: 4px; line-height: 1;
+      font-size: 14px; padding: 2px 5px; border-radius: 4px; line-height: 1;
       transition: transform 0.2s, color 0.15s; user-select: none; flex-shrink: 0;
     }
     .card-chevron:hover { color: var(--text2); }
@@ -120,20 +119,20 @@
     .select-wrap { position: relative; flex: 1; min-width: 200px; }
     .select-wrap::after {
       content: '▾'; position: absolute; right: 10px; top: 50%;
-      transform: translateY(-50%); font-size: 10px; color: var(--text3); pointer-events: none;
+      transform: translateY(-50%); font-size: 11px; color: var(--text3); pointer-events: none;
     }
     select {
       width: 100%; appearance: none; -webkit-appearance: none;
       background: var(--bg2); border: 1px solid var(--border2);
       border-radius: var(--radius-md); padding: 7px 28px 7px 10px;
-      font-size: 12px; color: var(--text); cursor: pointer; outline: none;
+      font-size: 13px; color: var(--text); cursor: pointer; outline: none;
       transition: border-color 0.15s; font-family: 'DM Sans', sans-serif;
     }
     select:focus { border-color: var(--gold); }
 
     .sex-badge {
       padding: 7px 14px; border-radius: var(--radius-md);
-      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
       border: 1px solid var(--border2); background: var(--bg2);
       color: var(--text2); font-family: 'DM Mono', monospace;
       white-space: nowrap; min-width: 66px; text-align: center;
@@ -146,7 +145,7 @@
     .btn {
       display: flex; align-items: center; gap: 5px; padding: 7px 12px;
       border-radius: var(--radius-md); border: 1px solid var(--border2);
-      background: var(--bg2); color: var(--text2); font-size: 11px;
+      background: var(--bg2); color: var(--text2); font-size: 12px;
       cursor: pointer; transition: all 0.15s; white-space: nowrap;
       font-family: 'DM Sans', sans-serif; font-weight: 600;
     }
@@ -154,27 +153,32 @@
     .btn:active { transform: scale(0.97); }
 
     /* ── Summary stats ── */
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; }
     .stat-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 12px 14px;
+      background: #111b2b; border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 20px;
       position: relative; overflow: hidden;
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; text-align: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
+    .stat-card:hover { border-color: var(--border2); box-shadow: 0 6px 26px rgba(0,0,0,0.45); }
     .stat-card::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: var(--accent-color, var(--gold));
+      content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+      background: var(--accent-color, var(--gold)); opacity: 0.6;
     }
     .stat-card .slabel {
-      font-size: 9px; color: var(--text3); text-transform: uppercase;
-      letter-spacing: 0.09em; margin-bottom: 4px; font-family: 'DM Mono', monospace; font-weight: 700;
+      font-size: 11px; color: var(--text3); font-weight: 500;
+      margin-bottom: 8px; font-family: 'DM Sans', sans-serif;
     }
-    .stat-card .sval { font-size: 26px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
-    .stat-card .sdesc { font-size: 10px; color: var(--text2); margin-top: 3px; }
+    .stat-card .sval { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
+    .stat-card .spct { font-size: 32px; font-weight: 900; font-family: 'Barlow Condensed', sans-serif; font-style: italic; line-height: 1; }
+    .stat-card .sname { font-size: 15px; font-weight: 600; margin-top: 4px; }
+    .stat-card .sdesc { font-size: 11px; color: var(--text3); margin-top: 5px; }
 
     .tier-badge {
-      display: inline-block; font-size: 9px; font-weight: 800;
+      display: inline-block; font-size: 10px; font-weight: 800;
       text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px;
       border-radius: 20px; font-family: 'DM Mono', monospace; white-space: nowrap;
     }
@@ -184,14 +188,14 @@
     @media (max-width: 1100px) { .metric-grid { grid-template-columns: repeat(4, 1fr); } }
     @media (max-width: 700px)  { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
     .metric-field label {
-      display: block; font-size: 9px; font-weight: 700; text-transform: uppercase;
+      display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.06em; color: var(--text3); margin-bottom: 3px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       font-family: 'DM Mono', monospace;
     }
     .metric-field input {
       width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 7px 6px; font-size: 13px; font-weight: 700;
+      border-radius: var(--radius-md); padding: 7px 6px; font-size: 14px; font-weight: 700;
       color: var(--text); text-align: center; font-family: 'DM Mono', monospace;
       outline: none; transition: border-color 0.15s; -moz-appearance: textfield;
     }
@@ -203,7 +207,7 @@
 
     /* ── Measured / estimated toggle in edit panel ── */
     .meas-toggle {
-      width: 100%; margin-top: 4px; padding: 3px 6px; font-size: 9px; font-weight: 700;
+      width: 100%; margin-top: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700;
       font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
       border-radius: var(--radius-md); border: 1px solid; cursor: pointer;
       background: transparent; transition: all 0.15s;
@@ -217,15 +221,15 @@
     /* ── Bar chart ── */
     .bar-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
     .bar-row:last-child { border-bottom: none; }
-    .bar-name { width: 115px; flex-shrink: 0; font-size: 9px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+    .bar-name { width: 115px; flex-shrink: 0; font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
     .bar-track { flex: 1; height: 9px; background: var(--bg3); border-radius: 5px; position: relative; overflow: visible; }
     .bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
     .bar-target { position: absolute; top: -4px; width: 2px; height: 17px; border-radius: 1px; opacity: 0.75; }
-    .bar-pct { width: 34px; text-align: right; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0; }
+    .bar-pct { width: 34px; text-align: right; font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0; }
     .bar-badge { width: 80px; flex-shrink: 0; text-align: center; }
 
     .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
     .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
     /* ── Matrix ── */
@@ -233,20 +237,20 @@
       margin-top: 10px; border-radius: var(--radius-lg); padding: 10px 12px;
       border: 1px solid var(--border); transition: all 0.3s;
     }
-    .matrix-active-zone .maz-title { font-weight: 700; margin-bottom: 3px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; letter-spacing: 0.3px; font-size: 15px; }
-    .matrix-active-zone .maz-desc  { font-size: 11px; color: var(--text2); line-height: 1.55; }
-    .matrix-active-zone .maz-rx    { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 7px; font-family: 'DM Mono', monospace; }
+    .matrix-active-zone .maz-title { font-weight: 700; margin-bottom: 3px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; letter-spacing: 0.3px; font-size: 16px; }
+    .matrix-active-zone .maz-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; }
+    .matrix-active-zone .maz-rx    { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 7px; font-family: 'DM Mono', monospace; }
 
     /* ── Coaching ── */
     .coaching-cards { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .coaching-card { flex: 1; min-width: 200px; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 13px; }
-    .coaching-card .ctype { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctitle { font-size: 15px; font-weight: 700; margin-bottom: 5px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
-    .coaching-card .ctext { font-size: 11px; color: var(--text2); line-height: 1.6; }
+    .coaching-card .ctype { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+    .coaching-card .ctitle { font-size: 16px; font-weight: 700; margin-bottom: 5px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
+    .coaching-card .ctext { font-size: 12px; color: var(--text2); line-height: 1.6; }
     .coaching-card .cmethods { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .coaching-card .cmethod-tag { font-size: 9px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctarget { font-size: 10px; color: var(--text3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; font-family: 'DM Mono', monospace; }
-    .coaching-below { font-size: 11px; color: var(--text3); margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+    .coaching-card .cmethod-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-family: 'DM Mono', monospace; }
+    .coaching-card .ctarget { font-size: 11px; color: var(--text3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; font-family: 'DM Mono', monospace; }
+    .coaching-below { font-size: 12px; color: var(--text3); margin-bottom: 5px; font-family: 'DM Mono', monospace; }
 
     /* ── Comparison panel ── */
     .compare-strip {
@@ -254,34 +258,34 @@
       border-radius: var(--radius-lg); padding: 11px 14px; margin-bottom: 10px;
     }
     .compare-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
-    .compare-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
+    .compare-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
     .compare-title::before { content:''; width:5px; height:5px; border-radius:2px; background:var(--teal); opacity:0.6; flex-shrink:0; }
     .compare-scroll { display: flex; gap: 6px; flex-wrap: wrap; }
     .athlete-chip {
-      display: flex; align-items: center; gap: 5px; padding: 4px 9px;
+      display: flex; align-items: center; gap: 6px; padding: 7px 13px;
       border-radius: 20px; border: 1px solid var(--border2); background: var(--bg3);
-      font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-size: 12px; cursor: pointer; transition: all 0.18s; white-space: nowrap;
       font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text2);
     }
-    .athlete-chip:hover { border-color: var(--teal); color: var(--teal); }
-    .athlete-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.08); font-weight: 700; }
-    .athlete-chip .chip-sex { font-size: 9px; font-family: 'DM Mono', monospace; opacity: 0.7; }
+    .athlete-chip:hover { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.06); }
+    .athlete-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.10); font-weight: 700; box-shadow: 0 0 10px rgba(45,212,191,0.2), inset 0 0 8px rgba(45,212,191,0.05); }
+    .athlete-chip .chip-sex { font-size: 10px; font-family: 'DM Mono', monospace; opacity: 0.7; }
 
     /* ── Norms table ── */
     .norms-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 0; border-bottom: 1px solid var(--border); }
     .norms-row:last-child { border-bottom: none; }
-    .norms-name { flex: 1; min-width: 120px; font-size: 12px; }
+    .norms-name { flex: 1; min-width: 120px; font-size: 13px; }
     .norms-field { display: flex; align-items: center; gap: 5px; }
-    .norms-field span { font-size: 9px; text-transform: uppercase; color: var(--text3); font-weight: 700; font-family: 'DM Mono', monospace; }
-    .norms-field input { width: 72px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 7px; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text); text-align: center; outline: none; }
+    .norms-field span { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 700; font-family: 'DM Mono', monospace; }
+    .norms-field input { width: 72px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 7px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--text); text-align: center; outline: none; }
     .norms-field input:focus { border-color: var(--gold); }
-    .norms-unit { font-size: 10px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
+    .norms-unit { font-size: 11px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
 
     /* ── Estimated data notice ── */
     .est-notice {
       display: flex; align-items: center; gap: 7px; padding: 7px 11px;
       background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.2);
-      border-radius: var(--radius-md); font-size: 10px; color: var(--orange);
+      border-radius: var(--radius-md); font-size: 11px; color: var(--orange);
       margin-bottom: 10px; font-family: 'DM Mono', monospace;
     }
 
@@ -300,16 +304,16 @@
     }
     .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 16px; }
     .report-name { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; font-style: italic; text-transform: uppercase; line-height: 1.1; }
-    .report-meta { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+    .report-meta { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
     .report-composite { text-align: center; flex-shrink: 0; }
     .report-composite .rc-score { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 800; line-height: 1; }
-    .report-composite .rc-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-top: 4px; }
-    .report-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 16px 0 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .report-composite .rc-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-top: 4px; }
+    .report-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 16px 0 8px; border-top: 1px solid var(--border); padding-top: 12px; }
     .report-metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
     .report-metric-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg3); border-radius: var(--radius-md); }
-    .report-metric-name { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'DM Mono', monospace; color: var(--text3); flex: 1; }
-    .report-metric-val { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; }
-    .report-metric-pct { font-size: 11px; font-family: 'DM Mono', monospace; min-width: 30px; text-align: right; }
+    .report-metric-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'DM Mono', monospace; color: var(--text3); flex: 1; }
+    .report-metric-val { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .report-metric-pct { font-size: 12px; font-family: 'DM Mono', monospace; min-width: 30px; text-align: right; }
     .report-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
 
     /* ── Export PDF modal ── */
@@ -325,25 +329,68 @@
       padding: 22px; margin: 0 auto;
     }
     .export-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 5px; }
-    .export-check-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; background: var(--bg3); border-radius: 6px; cursor: pointer; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); user-select: none; transition: background 0.1s; }
+    .export-check-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; background: var(--bg3); border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text2); user-select: none; transition: background 0.1s; }
     .export-check-item:hover { background: rgba(255,255,255,0.05); }
     .export-check-item input[type=checkbox] { cursor: pointer; accent-color: var(--gold); }
-    .export-sec-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 12px 0 6px; grid-column: 1/-1; }
+    .export-sec-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 12px 0 6px; grid-column: 1/-1; }
     #export-print-area { display: none; }
     .print-mode-seg { display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border2); }
-    .print-mode-btn { padding: 5px 14px; font-size: 10px; font-family: 'DM Mono', monospace; cursor: pointer; background: var(--bg3); color: var(--text3); border: none; transition: all 0.15s; white-space: nowrap; }
+    .print-mode-btn { padding: 5px 14px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; background: var(--bg3); color: var(--text3); border: none; transition: all 0.15s; white-space: nowrap; }
     .print-mode-btn.active { background: rgba(255,255,255,0.1); color: var(--text); }
     .print-mode-btn:hover:not(.active) { color: var(--text2); }
 
     /* ── Flags tab ── */
-    .flag-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin: 0 0 10px; }
+    .flag-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin: 0 0 10px; }
     .flag-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 5px; flex-wrap: wrap; }
     .flag-row:hover { border-color: var(--border2); }
-    .flag-name { font-size: 13px; font-weight: 600; min-width: 150px; }
+    .flag-name { font-size: 14px; font-weight: 600; min-width: 150px; }
     .flag-chips { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-    .flag-chip { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-    .flag-load-btn { font-size: 10px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; white-space: nowrap; }
+    .flag-chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+    .flag-load-btn { font-size: 11px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; white-space: nowrap; }
     .flag-load-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── Tab fade-in animation ── */
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tab-fade-in { animation: tabFadeIn 0.14s ease; }
+
+    /* ── Card collapse body transition ── */
+    .card-collapse-body {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      will-change: opacity, transform;
+    }
+    .card-collapse-body.collapsing {
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+    }
+
+    /* ── Roster / Leaderboard sticky header ── */
+    .sticky-table-wrap { overflow: auto; max-height: 72vh; }
+    .sticky-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+    .sticky-table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .sticky-table-wrap::-webkit-scrollbar-thumb { background: rgba(240,192,64,0.18); border-radius: 10px; }
+    .sticky-table-wrap::-webkit-scrollbar-thumb:hover { background: rgba(240,192,64,0.35); }
+    .sticky-table-wrap { scrollbar-width: thin; scrollbar-color: rgba(240,192,64,0.18) transparent; }
+    .sticky-table thead th {
+      position: sticky; top: 0; background: var(--bg2); z-index: 3;
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    /* ── Bar click detail card ── */
+    #bar-tooltip {
+      position: fixed; z-index: 9000; pointer-events: auto;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 16px; font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--text); min-width: 220px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+      pointer-events: none;
+    }
+    #bar-tooltip.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .bar-row.has-tip { cursor: pointer; }
+    .bar-row.has-tip:hover { background: rgba(255,255,255,0.03); border-radius: 4px; }
 
     @media print {
       body > * { display: none !important; }
@@ -406,6 +453,7 @@
   <div id="pane-analytics">
 
     <div class="athlete-bar">
+      <div id="athlete-avatar" style="width:34px;height:34px;border-radius:50%;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.04em;flex-shrink:0;transition:all 0.2s;color:var(--text3);">—</div>
       <div class="select-wrap">
         <select id="athlete-select" onchange="onAthleteChange()"></select>
       </div>
@@ -457,27 +505,34 @@
     </div>
 
     <div class="summary-grid">
+      <!-- Composite score -->
       <div class="stat-card" style="--accent-color:var(--gold);">
-        <div class="slabel">Composite index</div>
-        <div style="display:flex;align-items:baseline;gap:10px;justify-content:center;">
-          <span class="sval" id="composite-score">--</span>
-          <span id="composite-tier" class="tier-badge">--</span>
+        <div class="slabel">Composite score</div>
+        <div style="display:flex;align-items:center;gap:14px;justify-content:center;margin:4px 0 6px;">
+          <span class="sval" id="composite-score" style="font-size:52px;">--</span>
+          <div style="text-align:left;">
+            <span id="composite-tier" class="tier-badge" style="font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;">--</span>
+            <div style="font-size:10px;color:var(--text3);margin-top:5px;font-family:'DM Sans',sans-serif;">avg percentile</div>
+          </div>
         </div>
       </div>
+      <!-- Top metric -->
       <div class="stat-card" style="--accent-color:var(--green);">
-        <div class="slabel">Top metric</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="top-metric">--</div>
-        <div class="sdesc" id="top-percentile"></div>
+        <div class="slabel">Strongest metric</div>
+        <div class="spct" id="top-percentile" style="color:var(--green);">--</div>
+        <div class="sname" id="top-metric">--</div>
       </div>
+      <!-- Priority gap -->
       <div class="stat-card" style="--accent-color:var(--red);">
         <div class="slabel">Priority gap</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="low-metric">--</div>
-        <div class="sdesc" id="low-percentile"></div>
+        <div class="spct" id="low-percentile" style="color:var(--red);">--</div>
+        <div class="sname" id="low-metric">--</div>
       </div>
+      <!-- Readiness zone -->
       <div class="stat-card" style="--accent-color:var(--purple);">
         <div class="slabel">Readiness zone</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="fv-profile-label">--</div>
-        <div class="sdesc" id="fv-profile-desc"></div>
+        <div class="sname" style="font-size:17px;margin-bottom:8px;" id="fv-profile-label">--</div>
+        <div id="fv-profile-desc" style="width:100%;"></div>
       </div>
     </div>
 
@@ -583,6 +638,10 @@
               <button id="new-ath-f" onclick="setNewAthSex('F')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;">Female</button>
             </div>
           </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">CMJ source</div>
+            <button id="new-ath-cmjfd" onclick="toggleNewAthCmjFD()" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.13);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;">~ Standard sensor</button>
+          </div>
           <button class="btn" onclick="submitNewAthlete()" style="align-self:flex-end;">Add athlete</button>
           <button class="btn" onclick="document.getElementById('new-athlete-panel').style.display='none'" style="align-self:flex-end;">Cancel</button>
         </div>
@@ -591,8 +650,8 @@
         Click any row to load athlete into analytics view. ★ = estimated metric. <span style="color:var(--green);font-weight:600;">Green name</span> = core metrics measured (power, CMJ, RSI, broad jump, 0-10, Fly10, 5-10-5). <span style="color:var(--gold);font-weight:600;">†</span> on CMJ = sensor-measured but not Force Deck (amber).
       </div>
       <div id="roster-col-toggles" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
-      <div style="overflow-x:auto;">
-        <table id="roster-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+      <div class="sticky-table-wrap">
+        <table id="roster-table" class="sticky-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;"></table>
       </div>
     </div>
   </div>
@@ -619,7 +678,9 @@
           </div>
         </div>
       </div>
-      <div id="leaderboard-content"></div>
+      <div class="sticky-table-wrap" id="leaderboard-scroll">
+        <div id="leaderboard-content"></div>
+      </div>
     </div>
   </div>
 
@@ -685,7 +746,7 @@ const SUPABASE_URL = 'https://pournuabsdndozpouuke.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw';
 const SUPABASE_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
 let ATHLETE_DB = [];
-const ATHLETE_DB_FALLBACK = [{"name":"Aaron Wortel","sex":"M","cmj":13.7,"power":54.1,"rfd":21.7,"rsi":1.62,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.04,"broad":100.08,"shuttle":4.48,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":4130,"isosqt_pvfbm":45.01,"isosqt_ttpf":7.258,"isosqt_rfd200":4955,"isosqt_rfd100":3530,"isosqt_rfd200bw":53.9996,"isosqt_rfd100bw":38.4699,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abby Lisak","sex":"F","cmj":8.4,"power":36.6,"rfd":8.0,"rsi":0.94,"rsiMeasured":false,"sprint10":1.85,"sprintFly":1.24,"broad":64.75,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abigail Burris","sex":"F","cmj":12.2,"power":44.0,"rfd":57.1,"rsi":2.06,"rsiMeasured":true,"sprint10":1.701,"sprintFly":1.27,"broad":84.0,"shuttle":5.04,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.3,"cmjFD":true,"rsiFD":true},{"name":"Acey Edlund","sex":"M","cmj":14.40321266,"power":0,"rfd":0,"rsi":1.5562301116666666,"rsiMeasured":true,"sprint10":1.68,"sprintFly":0,"sprint1020":1.22,"broad":92.0,"shuttle":5.04,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Addison Erro","sex":"F","cmj":10.7,"power":43.6,"rfd":37.0,"rsi":1.25,"rsiMeasured":true,"sprint10":1.94,"sprintFly":1.36,"broad":73.95,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1186,"isosqt_pvfbm":26.73,"isosqt_ttpf":6.693,"isosqt_rfd200":1710,"isosqt_rfd100":1787,"isosqt_rfd200bw":38.5482,"isosqt_rfd100bw":40.284,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Raphael","sex":"F","cmj":12.1,"power":46.7,"rfd":2.9,"rsi":2.0,"rsiMeasured":true,"sprint10":1.75,"sprintFly":1.29,"broad":74.63,"shuttle":4.65,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1769,"isosqt_pvfbm":30.96,"isosqt_ttpf":1.475,"isosqt_rfd200":2972,"isosqt_rfd100":2807,"isosqt_rfd200bw":52.0035,"isosqt_rfd100bw":49.1164,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Taufa","sex":"F","cmj":13.1,"power":48.7,"rfd":36.6,"rsi":1.25,"rsiMeasured":false,"sprint10":1.9,"sprintFly":1.24,"broad":75.79,"shuttle":4.53,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Addy Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.027322785,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Ahnie  Murilo","sex":"M","cmj":6.6498662,"power":0,"rfd":0,"rsi":0.7177781433333333,"rsiMeasured":true,"sprint10":2.3,"sprintFly":0,"sprint1020":1.76,"broad":48.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aiden Abelardo","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":1.26,"sprint1020":1.3,"broad":108.0,"shuttle":4.5,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aj Gonzales","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.11084248,"rsiMeasured":true,"sprint10":1.82,"sprintFly":1.3,"sprint1020":1.33,"broad":90.0,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Alexia Rosas","sex":"F","cmj":9.7,"power":39.3,"rfd":21.2,"rsi":1.48,"rsiMeasured":true,"sprint10":1.92,"sprintFly":1.39,"broad":93.14,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2550,"isosqt_pvfbm":39.41,"isosqt_ttpf":5.084,"isosqt_rfd200":1920,"isosqt_rfd100":2157,"isosqt_rfd200bw":29.6708,"isosqt_rfd100bw":33.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Alexis Hastert","sex":"F","cmj":8.8,"power":43.8,"rfd":111.9,"rsi":0.9824612199999999,"rsiMeasured":true,"sprint10":1.4,"sprintFly":1.38,"broad":76.0,"shuttle":5.17,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Allison Keusch","sex":"F","cmj":10.2,"power":42.3,"rfd":23.6,"rsi":1.33,"rsiMeasured":true,"sprint10":1.79,"sprintFly":1.28,"broad":77.0,"shuttle":5.09,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2407,"isosqt_pvfbm":31.03,"isosqt_ttpf":1.592,"isosqt_rfd200":3160,"isosqt_rfd100":4540,"isosqt_rfd200bw":40.7479,"isosqt_rfd100bw":58.5429,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Anthony Tatar","sex":"M","cmj":7.6,"power":33.4,"rfd":11.8,"rsi":1.19,"rsiMeasured":false,"sprint10":1.51,"sprintFly":0.98,"broad":95.13,"shuttle":4.32,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ariannah Turrubiartes","sex":"F","cmj":7.0,"power":41.3,"rfd":193.5,"rsi":1.75,"rsiMeasured":true,"sprint10":2.197,"sprintFly":1.23,"broad":76.0,"shuttle":4.94,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Audrey Pearl","sex":"F","cmj":9.4,"power":39.5,"rfd":12.4,"rsi":1.19,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.29,"broad":69.01,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Brayden Dent","sex":"M","cmj":17.5,"power":64.0,"rfd":49.9,"rsi":3.03,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.04,"broad":103.0,"shuttle":4.2,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.17,"cmjFD":true,"rsiFD":true},{"name":"Buck Buckner","sex":"M","cmj":13.7,"power":53.9,"rfd":37.4,"rsi":1.71,"rsiMeasured":false,"sprint10":1.58,"sprintFly":0.96,"broad":97.54,"shuttle":4.37,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Caden dearth","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3036522483333333,"rsiMeasured":true,"sprint10":0,"sprintFly":1.14,"sprint1020":1.23,"broad":107.0,"shuttle":4.6,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caden Morente","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.24,"broad":113.0,"shuttle":4.48,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caleb Peters","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.2,"broad":111.0,"shuttle":4.64,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Callie Angulo","sex":"F","cmj":12.7,"power":50.7,"rfd":46.1,"rsi":1.4466108683333332,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.3,"broad":95.0,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Carter Garcia","sex":"M","cmj":13.3,"power":55.4,"rfd":55.4,"rsi":1.91,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.06,"broad":96.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3071,"isosqt_pvfbm":44.67,"isosqt_ttpf":5.314,"isosqt_rfd200":3529,"isosqt_rfd100":2730,"isosqt_rfd200bw":51.3309,"isosqt_rfd100bw":39.7091,"sprint1020":1.25,"cmjFD":true,"rsiFD":true},{"name":"Carter Schmidt","sex":"M","cmj":12.0,"power":44.1,"rfd":1.0,"rsi":1.107489358,"rsiMeasured":true,"sprint10":1.71,"sprintFly":1.38,"broad":98.0,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Catherine Coleman","sex":"M","cmj":14.64679209,"power":0,"rfd":0,"rsi":1.6966706366666664,"rsiMeasured":true,"sprint10":1.88,"sprintFly":0,"sprint1020":1.38,"broad":88.5,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Charlottes Shelton","sex":"F","cmj":11.0,"power":48.7,"rfd":77.9,"rsi":1.15,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.29,"broad":60.35,"shuttle":4.54,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Chloe Jensen","sex":"F","cmj":10.6,"power":45.3,"rfd":32.9,"rsi":1.14,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.24,"broad":78.04,"shuttle":4.47,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ciera Walters","sex":"F","cmj":9.9,"power":44.8,"rfd":45.7,"rsi":0.9327213200000001,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.3,"broad":74.0,"shuttle":4.91,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Cohen Mugford","sex":"M","cmj":14.7,"power":55.7,"rfd":35.0,"rsi":2.39,"rsiMeasured":true,"sprint10":1.63,"sprintFly":1.06,"broad":108.61,"shuttle":4.49,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Connor Bishop","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.1854744416666667,"rsiMeasured":true,"sprint10":0,"sprintFly":1.17,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Eddie Lucero","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.556025785,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.22,"sprint1020":1.29,"broad":90.0,"shuttle":4.44,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Edward Patolo","sex":"M","cmj":12.3,"power":46.1,"rfd":22.3,"rsi":1.83,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.27,"broad":93.86,"shuttle":4.22,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":3242,"isosqt_pvfbm":39.59,"isosqt_ttpf":5.674,"isosqt_rfd200":4127,"isosqt_rfd100":3643,"isosqt_rfd200bw":50.3969,"isosqt_rfd100bw":44.4865,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Elizabeth Burnett","sex":"F","cmj":10.3,"power":41.8,"rfd":20.4,"rsi":1.17,"rsiMeasured":false,"sprint10":1.78,"sprintFly":1.18,"broad":84.35,"shuttle":5.05,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ella Chadwick","sex":"F","cmj":13.1,"power":49.7,"rfd":109.2,"rsi":1.6,"rsiMeasured":true,"sprint10":1.28,"sprintFly":1.21,"broad":88.0,"shuttle":4.552,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Ellie Yoder","sex":"M","cmj":8.8,"power":39.9,"rfd":48.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.62,"sprintFly":1.03,"broad":82.57,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emily Lew","sex":"F","cmj":12.4,"power":48.3,"rfd":11.0,"rsi":1.2,"rsiMeasured":false,"sprint10":1.6,"sprintFly":1.28,"broad":82.72,"shuttle":4.99,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emma Royko Emma Royko","sex":"F","cmj":12.5,"power":51.1,"rfd":1.5,"rsi":1.25,"rsiMeasured":false,"sprint10":1.84,"sprintFly":1.27,"broad":86.89,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Gabby Nevarez","sex":"M","cmj":15.17253277,"power":0,"rfd":0,"rsi":1.3482094433333334,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.23,"sprint1020":1.254,"broad":79.0,"shuttle":4.92,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Gabriela Nevarez","sex":"F","cmj":14.7,"power":54.4,"rfd":27.1,"rsi":1.81,"rsiMeasured":true,"sprint10":1.85,"sprintFly":1.35,"broad":60.03,"shuttle":4.55,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Hank Brown","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0338272716666665,"rsiMeasured":true,"sprint10":0,"sprintFly":1.3,"sprint1020":1.24,"broad":94.0,"shuttle":0.473,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Isabella Esparza","sex":"F","cmj":10.4,"power":46.9,"rfd":64.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.33,"broad":82.35,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Isabella Velasco","sex":"F","cmj":7.9,"power":34.9,"rfd":19.7,"rsi":1.27,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.24,"broad":89.71,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jack Dellinger","sex":"M","cmj":15.7,"power":62.2,"rfd":168.6,"rsi":2.27,"rsiMeasured":true,"sprint10":1.51,"sprintFly":1.09,"broad":108.35,"shuttle":4.4,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Jack Johnson","sex":"M","cmj":13.6,"power":58.3,"rfd":47.5,"rsi":1.6252911333333333,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.21,"broad":86.26,"shuttle":4.93,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jasmine Lee","sex":"M","cmj":11.88736293,"power":0,"rfd":0,"rsi":1.1703213566666666,"rsiMeasured":true,"sprint10":0,"sprintFly":1.31,"sprint1020":1.36,"broad":77.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Jordyn Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.8610560466666667,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Justian Richardson","sex":"M","cmj":25.4,"power":89.4,"rfd":45.7,"rsi":2.86,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.03,"broad":123.0,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3046,"isosqt_pvfbm":39.97,"isosqt_ttpf":6.808,"isosqt_rfd200":2995,"isosqt_rfd100":1980,"isosqt_rfd200bw":39.3045,"isosqt_rfd100bw":25.9843,"sprint1020":1.116,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennel","sex":"M","cmj":11.1,"power":45.2,"rfd":55.8,"rsi":1.36,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.06,"broad":80.0,"shuttle":5.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennell","sex":"M","cmj":14.20353537,"power":0,"rfd":0,"rsi":1.1530390716666667,"rsiMeasured":true,"sprint10":1.781,"sprintFly":0,"sprint1020":1.333,"broad":80.0,"shuttle":5.265,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kaimana Coleman","sex":"F","cmj":14.3,"power":55.0,"rfd":36.8,"rsi":2.84,"rsiMeasured":true,"sprint10":2.0,"sprintFly":1.33,"broad":77.57,"shuttle":4.63,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2134,"isosqt_pvfbm":32.09,"isosqt_ttpf":4.978,"isosqt_rfd200":1715,"isosqt_rfd100":1520,"isosqt_rfd200bw":25.7895,"isosqt_rfd100bw":22.8571,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Kam Labauve","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.31741451,"rsiMeasured":true,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.71,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kassidy King","sex":"F","cmj":15.4,"power":58.7,"rfd":62.3,"rsi":1.97,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.17,"broad":77.76,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2382,"isosqt_pvfbm":35.03,"isosqt_ttpf":8.11,"isosqt_rfd200":1645,"isosqt_rfd100":1420,"isosqt_rfd200bw":24.1912,"isosqt_rfd100bw":20.8824,"sprint1020":1.21,"cmjFD":true,"rsiFD":true},{"name":"Katie Hemerick","sex":"F","cmj":8.5,"power":39.8,"rfd":74.2,"rsi":1.1261566266666667,"rsiMeasured":true,"sprint10":1.76,"sprintFly":1.32,"broad":78.5,"shuttle":4.86,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.41,"cmjFD":true,"rsiFD":false},{"name":"KJ Mendiola","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.45064522,"rsiMeasured":true,"sprint10":0,"sprintFly":1.34,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Landon Simantel","sex":"M","cmj":14.0,"power":58.8,"rfd":47.1,"rsi":1.91,"rsiMeasured":true,"sprint10":1.603,"sprintFly":1.06,"broad":91.63,"shuttle":4.42,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Lillian Ford","sex":"M","cmj":14.345268,"power":0,"rfd":0,"rsi":1.4334087916666667,"rsiMeasured":true,"sprint10":1.83,"sprintFly":0,"sprint1020":0,"broad":88.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Lily Barstad","sex":"F","cmj":10.7,"power":41.5,"rfd":32.6,"rsi":1.65,"rsiMeasured":true,"sprint10":0.84,"sprintFly":1.3,"broad":81.0,"shuttle":5.11,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.35,"cmjFD":true,"rsiFD":true},{"name":"Lola Carson","sex":"F","cmj":14.4,"power":52.2,"rfd":39.0,"rsi":2.24,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.2,"broad":67.75,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2218,"isosqt_pvfbm":41.07,"isosqt_ttpf":7.926,"isosqt_rfd200":2610,"isosqt_rfd100":2070,"isosqt_rfd200bw":48.3333,"isosqt_rfd100bw":38.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Lola Coker","sex":"F","cmj":9.0,"power":42.9,"rfd":61.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.83,"sprintFly":1.3,"broad":58.1,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.37,"cmjFD":true,"rsiFD":false},{"name":"Lucas Black","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3789838966666668,"rsiMeasured":true,"sprint10":1.72,"sprintFly":1.23,"sprint1020":0,"broad":88.0,"shuttle":4.84,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Maddie Waldron","sex":"F","cmj":12.2,"power":47.8,"rfd":11.8,"rsi":1.83,"rsiMeasured":true,"sprint10":1.774,"sprintFly":1.37,"broad":85.5,"shuttle":4.83,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2196,"isosqt_pvfbm":37.2,"isosqt_ttpf":5.878,"isosqt_rfd200":2645,"isosqt_rfd100":2900,"isosqt_rfd200bw":44.8077,"isosqt_rfd100bw":49.1276,"sprint1020":1.33,"cmjFD":true,"rsiFD":true},{"name":"Maizie Smith","sex":"M","cmj":9.93423732,"power":0,"rfd":0,"rsi":1.1464099916666666,"rsiMeasured":true,"sprint10":1.9,"sprintFly":1.36,"sprint1020":0,"broad":73.0,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Malia Jones","sex":"F","cmj":14.1,"power":52.5,"rfd":38.3,"rsi":1.79,"rsiMeasured":true,"sprint10":1.48,"sprintFly":1.14,"broad":85.0,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Malia Lyons","sex":"F","cmj":10.7,"power":46.4,"rfd":35.7,"rsi":1.23,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.33,"broad":82.0,"shuttle":4.81,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.32,"cmjFD":true,"rsiFD":true},{"name":"Marissa Chapman","sex":"F","cmj":6.1,"power":30.5,"rfd":13.9,"rsi":1.1,"rsiMeasured":true,"sprint10":2.12,"sprintFly":1.7,"broad":70.7,"shuttle":4.66,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1746,"isosqt_pvfbm":25.57,"isosqt_ttpf":11.31,"isosqt_rfd200":1512,"isosqt_rfd100":1922,"isosqt_rfd200bw":22.1441,"isosqt_rfd100bw":28.1488,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Maximus Marchi","sex":"M","cmj":11.45543357,"power":0,"rfd":0,"rsi":1.3713687733333335,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.26,"sprint1020":1.29,"broad":78.0,"shuttle":4.97,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mckayla Zuber","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.782006585,"rsiMeasured":true,"sprint10":1.77,"sprintFly":2.741,"sprint1020":1.33,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mia Reynoso","sex":"F","cmj":9.4,"power":48.9,"rfd":152.9,"rsi":2.01,"rsiMeasured":true,"sprint10":1.77,"sprintFly":1.26,"broad":71.48,"shuttle":4.76,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Miles Stroika","sex":"M","cmj":17.17763894,"power":0,"rfd":0,"rsi":1.165359695,"rsiMeasured":true,"sprint10":1.72,"sprintFly":0,"sprint1020":1.28,"broad":91.5,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mimi Botticelli","sex":"F","cmj":6.6,"power":32.4,"rfd":45.6,"rsi":1.25,"rsiMeasured":true,"sprint10":1.83,"sprintFly":1.44,"broad":72.69,"shuttle":4.87,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2086,"isosqt_pvfbm":28.77,"isosqt_ttpf":4.015,"isosqt_rfd200":1083,"isosqt_rfd100":800,"isosqt_rfd200bw":14.9379,"isosqt_rfd100bw":11.0345,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Mya Gonzalez","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.6162357433333332,"rsiMeasured":true,"sprint10":1.78,"sprintFly":0,"sprint1020":1.3,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Nicolas Countreman","sex":"M","cmj":10.7,"power":47.5,"rfd":30.4,"rsi":1.33,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.21,"broad":96.0,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.36,"cmjFD":true,"rsiFD":true},{"name":"Peter Graves","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.73,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Peyton Cantu","sex":"M","cmj":14.30319979,"power":0,"rfd":0,"rsi":1.2227774516666667,"rsiMeasured":true,"sprint10":1.61,"sprintFly":1.3,"sprint1020":1.36,"broad":81.0,"shuttle":4.74,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Riley McGee","sex":"F","cmj":11.6,"power":46.0,"rfd":22.4,"rsi":2.0,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.23,"broad":77.81,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2728,"isosqt_pvfbm":43.58,"isosqt_ttpf":7.71,"isosqt_rfd200":2300,"isosqt_rfd100":2250,"isosqt_rfd200bw":36.7471,"isosqt_rfd100bw":35.9482,"sprint1020":1.31,"cmjFD":true,"rsiFD":true},{"name":"Robert Ghazaryan","sex":"M","cmj":14.07814152,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Rowan Nishimoto","sex":"M","cmj":15.5,"power":68.1,"rfd":129.4,"rsi":1.979208146666667,"rsiMeasured":true,"sprint10":1.564,"sprintFly":1.1,"broad":101.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Ryan Chenoweth","sex":"M","cmj":15.22127983,"power":0,"rfd":0,"rsi":1.1876013933333334,"rsiMeasured":true,"sprint10":1.56,"sprintFly":1.14,"sprint1020":1.16,"broad":92.0,"shuttle":4.62,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sam McCoy","sex":"M","cmj":16.8,"power":60.1,"rfd":36.5,"rsi":2.06,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.019,"broad":102.0,"shuttle":3.7,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.16,"cmjFD":true,"rsiFD":true},{"name":"Sam Shelton","sex":"M","cmj":11.2,"power":51.1,"rfd":41.2,"rsi":1.3,"rsiMeasured":false,"sprint10":1.51,"sprintFly":1.06,"broad":110.45,"shuttle":3.92,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Serenity Humphrey","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.992,"sprintFly":0,"sprint1020":0,"broad":67.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Skylar Gosselin","sex":"M","cmj":10.14997734,"power":0,"rfd":0,"rsi":1.2727755966666667,"rsiMeasured":true,"sprint10":1.86,"sprintFly":0,"sprint1020":1.51,"broad":78.0,"shuttle":5.448,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sofia Andrade The Andrades","sex":"F","cmj":10.9,"power":43.2,"rfd":29.5,"rsi":1.2,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.28,"broad":78.91,"shuttle":5.01,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Sophia Covarrubias","sex":"M","cmj":13.4646096,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.86,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":4.8,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Reilly","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0107670033333334,"rsiMeasured":true,"sprint10":1.91,"sprintFly":1.37,"sprint1020":1.37,"broad":87.0,"shuttle":5.07,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Sophia","sex":"F","cmj":11.5,"power":43.2,"rfd":9.9,"rsi":1.05,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.28,"broad":64.71,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Travis Perry","sex":"M","cmj":18.2,"power":62.0,"rfd":1.8,"rsi":1.66,"rsiMeasured":true,"sprint10":1.59,"sprintFly":1.07,"broad":112.5,"shuttle":4.23,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.14,"cmjFD":true,"rsiFD":true},{"name":"Tristan Richey","sex":"M","cmj":7.3,"power":36.2,"rfd":48.3,"rsi":1.34,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.43,"broad":116.44,"shuttle":4.24,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Vai Escamilla","sex":"F","cmj":8.6,"power":38.2,"rfd":18.8,"rsi":1.07,"rsiMeasured":false,"sprint10":1.73,"sprintFly":1.29,"broad":96.51,"shuttle":4.82,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Violet Todd","sex":"F","cmj":8.9,"power":40.0,"rfd":29.8,"rsi":1.27,"rsiMeasured":true,"sprint10":1.84,"sprintFly":1.43,"broad":68.04,"shuttle":5.0,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Wesley Richey","sex":"F","cmj":15.0,"power":56.7,"rfd":17.2,"rsi":1.35,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.28,"broad":69.43,"shuttle":4.97,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false}];
+const ATHLETE_DB_FALLBACK = [{"name":"Aaron Wortel","sex":"M","cmj":13.7,"power":54.1,"rfd":21.7,"rsi":1.62,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.04,"broad":100.08,"shuttle":4.48,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":4130,"isosqt_pvfbm":45.01,"isosqt_ttpf":7.258,"isosqt_rfd200":4955,"isosqt_rfd100":3530,"isosqt_rfd200bw":53.9996,"isosqt_rfd100bw":38.4699,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abby Lisak","sex":"F","cmj":8.4,"power":36.6,"rfd":8.0,"rsi":0.94,"rsiMeasured":false,"sprint10":1.85,"sprintFly":1.24,"broad":64.75,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abigail Burris","sex":"F","cmj":12.2,"power":44.0,"rfd":57.1,"rsi":2.06,"rsiMeasured":true,"sprint10":1.701,"sprintFly":1.27,"broad":84.0,"shuttle":5.04,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.3,"cmjFD":true,"rsiFD":true},{"name":"Acey Edlund","sex":"M","cmj":14.40321266,"power":0,"rfd":0,"rsi":1.5562301116666666,"rsiMeasured":true,"sprint10":1.68,"sprintFly":0,"sprint1020":1.22,"broad":92.0,"shuttle":5.04,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Addison Erro","sex":"F","cmj":10.7,"power":43.6,"rfd":37.0,"rsi":1.25,"rsiMeasured":true,"sprint10":1.94,"sprintFly":1.36,"broad":73.95,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1186,"isosqt_pvfbm":26.73,"isosqt_ttpf":6.693,"isosqt_rfd200":1710,"isosqt_rfd100":1787,"isosqt_rfd200bw":38.5482,"isosqt_rfd100bw":40.284,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Raphael","sex":"F","cmj":12.1,"power":46.7,"rfd":2.9,"rsi":2.0,"rsiMeasured":true,"sprint10":1.75,"sprintFly":1.29,"broad":74.63,"shuttle":4.65,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1769,"isosqt_pvfbm":30.96,"isosqt_ttpf":1.475,"isosqt_rfd200":2972,"isosqt_rfd100":2807,"isosqt_rfd200bw":52.0035,"isosqt_rfd100bw":49.1164,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Taufa","sex":"F","cmj":13.1,"power":48.7,"rfd":36.6,"rsi":1.25,"rsiMeasured":false,"sprint10":1.9,"sprintFly":1.24,"broad":75.79,"shuttle":4.53,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Addy Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.027322785,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Ahnie  Murilo","sex":"M","cmj":6.6498662,"power":0,"rfd":0,"rsi":0.7177781433333333,"rsiMeasured":true,"sprint10":2.3,"sprintFly":0,"sprint1020":1.76,"broad":48.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aiden Abelardo","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":1.26,"sprint1020":1.3,"broad":108.0,"shuttle":4.5,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aj Gonzales","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.11084248,"rsiMeasured":true,"sprint10":1.82,"sprintFly":1.3,"sprint1020":1.33,"broad":90.0,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Alexia Rosas","sex":"F","cmj":9.7,"power":39.3,"rfd":21.2,"rsi":1.48,"rsiMeasured":true,"sprint10":1.92,"sprintFly":1.39,"broad":93.14,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2550,"isosqt_pvfbm":39.41,"isosqt_ttpf":5.084,"isosqt_rfd200":1920,"isosqt_rfd100":2157,"isosqt_rfd200bw":29.6708,"isosqt_rfd100bw":33.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Alexis Hastert","sex":"F","cmj":8.8,"power":43.8,"rfd":111.9,"rsi":0.9824612199999999,"rsiMeasured":true,"sprint10":1.4,"sprintFly":1.38,"broad":76.0,"shuttle":5.17,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Allison Keusch","sex":"F","cmj":10.2,"power":42.3,"rfd":23.6,"rsi":1.33,"rsiMeasured":true,"sprint10":1.79,"sprintFly":1.28,"broad":77.0,"shuttle":5.09,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2407,"isosqt_pvfbm":31.03,"isosqt_ttpf":1.592,"isosqt_rfd200":3160,"isosqt_rfd100":4540,"isosqt_rfd200bw":40.7479,"isosqt_rfd100bw":58.5429,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Anthony Tatar","sex":"M","cmj":7.6,"power":33.4,"rfd":11.8,"rsi":1.19,"rsiMeasured":false,"sprint10":1.51,"sprintFly":0.98,"broad":95.13,"shuttle":4.32,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ariannah Turrubiartes","sex":"F","cmj":7.0,"power":41.3,"rfd":193.5,"rsi":1.75,"rsiMeasured":true,"sprint10":2.197,"sprintFly":1.23,"broad":76.0,"shuttle":4.94,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Audrey Pearl","sex":"F","cmj":9.4,"power":39.5,"rfd":12.4,"rsi":1.19,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.29,"broad":69.01,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Brayden Dent","sex":"M","cmj":17.5,"power":64.0,"rfd":49.9,"rsi":3.03,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.04,"broad":103.0,"shuttle":4.2,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.17,"cmjFD":true,"rsiFD":true},{"name":"Buck Buckner","sex":"M","cmj":13.7,"power":53.9,"rfd":37.4,"rsi":1.71,"rsiMeasured":false,"sprint10":1.58,"sprintFly":0.96,"broad":97.54,"shuttle":4.37,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Caden dearth","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3036522483333333,"rsiMeasured":true,"sprint10":0,"sprintFly":1.14,"sprint1020":1.23,"broad":107.0,"shuttle":4.6,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caden Morente","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.24,"broad":113.0,"shuttle":4.48,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caleb Peters","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.2,"broad":111.0,"shuttle":4.64,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Callie Angulo","sex":"F","cmj":12.7,"power":50.7,"rfd":46.1,"rsi":1.4466108683333332,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.3,"broad":95.0,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Carter Garcia","sex":"M","cmj":13.3,"power":55.4,"rfd":55.4,"rsi":1.91,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.06,"broad":96.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3071,"isosqt_pvfbm":44.67,"isosqt_ttpf":5.314,"isosqt_rfd200":3529,"isosqt_rfd100":2730,"isosqt_rfd200bw":51.3309,"isosqt_rfd100bw":39.7091,"sprint1020":1.25,"cmjFD":true,"rsiFD":true},{"name":"Carter Schmidt","sex":"M","cmj":12.0,"power":44.1,"rfd":1.0,"rsi":1.107489358,"rsiMeasured":true,"sprint10":1.71,"sprintFly":1.38,"broad":98.0,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Catherine Coleman","sex":"M","cmj":14.64679209,"power":0,"rfd":0,"rsi":1.6966706366666664,"rsiMeasured":true,"sprint10":1.88,"sprintFly":0,"sprint1020":1.38,"broad":88.5,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Charlottes Shelton","sex":"F","cmj":11.0,"power":48.7,"rfd":77.9,"rsi":1.15,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.29,"broad":60.35,"shuttle":4.54,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Chloe Jensen","sex":"F","cmj":10.6,"power":45.3,"rfd":32.9,"rsi":1.14,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.24,"broad":78.04,"shuttle":4.47,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ciera Walters","sex":"F","cmj":9.9,"power":44.8,"rfd":45.7,"rsi":0.9327213200000001,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.3,"broad":74.0,"shuttle":4.91,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Cohen Mugford","sex":"M","cmj":14.7,"power":55.7,"rfd":35.0,"rsi":2.39,"rsiMeasured":true,"sprint10":1.63,"sprintFly":1.06,"broad":108.61,"shuttle":4.49,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Connor Bishop","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.1854744416666667,"rsiMeasured":true,"sprint10":0,"sprintFly":1.17,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Eddie Lucero","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.556025785,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.22,"sprint1020":1.29,"broad":90.0,"shuttle":4.44,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Edward Patolo","sex":"M","cmj":12.3,"power":46.1,"rfd":22.3,"rsi":1.83,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.27,"broad":93.86,"shuttle":4.22,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":3242,"isosqt_pvfbm":39.59,"isosqt_ttpf":5.674,"isosqt_rfd200":4127,"isosqt_rfd100":3643,"isosqt_rfd200bw":50.3969,"isosqt_rfd100bw":44.4865,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Elizabeth Burnett","sex":"F","cmj":10.3,"power":41.8,"rfd":20.4,"rsi":1.17,"rsiMeasured":false,"sprint10":1.78,"sprintFly":1.18,"broad":84.35,"shuttle":5.05,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ella Chadwick","sex":"F","cmj":13.1,"power":49.7,"rfd":109.2,"rsi":1.6,"rsiMeasured":true,"sprint10":1.28,"sprintFly":1.21,"broad":88.0,"shuttle":4.552,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Ellie Yoder","sex":"M","cmj":8.8,"power":39.9,"rfd":48.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.62,"sprintFly":1.03,"broad":82.57,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emily Lew","sex":"F","cmj":12.4,"power":48.3,"rfd":11.0,"rsi":1.2,"rsiMeasured":false,"sprint10":1.6,"sprintFly":1.28,"broad":82.72,"shuttle":4.99,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emma Royko Emma Royko","sex":"F","cmj":12.5,"power":51.1,"rfd":1.5,"rsi":1.25,"rsiMeasured":false,"sprint10":1.84,"sprintFly":1.27,"broad":86.89,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Gabby Nevarez","sex":"M","cmj":15.17253277,"power":0,"rfd":0,"rsi":1.3482094433333334,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.23,"sprint1020":1.254,"broad":79.0,"shuttle":4.92,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Gabriela Nevarez","sex":"F","cmj":14.7,"power":54.4,"rfd":27.1,"rsi":1.81,"rsiMeasured":true,"sprint10":1.85,"sprintFly":1.35,"broad":60.03,"shuttle":4.55,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Hank Brown","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0338272716666665,"rsiMeasured":true,"sprint10":0,"sprintFly":1.3,"sprint1020":1.24,"broad":94.0,"shuttle":0.473,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Isabella Esparza","sex":"F","cmj":10.4,"power":46.9,"rfd":64.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.33,"broad":82.35,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Isabella Velasco","sex":"F","cmj":7.9,"power":34.9,"rfd":19.7,"rsi":1.27,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.24,"broad":89.71,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jack Dellinger","sex":"M","cmj":15.7,"power":62.2,"rfd":168.6,"rsi":2.27,"rsiMeasured":true,"sprint10":1.51,"sprintFly":1.09,"broad":108.35,"shuttle":4.4,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Jack Johnson","sex":"M","cmj":13.6,"power":58.3,"rfd":47.5,"rsi":1.6252911333333333,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.21,"broad":86.26,"shuttle":4.93,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jasmine Lee","sex":"M","cmj":11.88736293,"power":0,"rfd":0,"rsi":1.1703213566666666,"rsiMeasured":true,"sprint10":0,"sprintFly":1.31,"sprint1020":1.36,"broad":77.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Jordyn Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.8610560466666667,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Justian Richardson","sex":"M","cmj":25.4,"power":89.4,"rfd":45.7,"rsi":2.86,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.03,"broad":123.0,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3046,"isosqt_pvfbm":39.97,"isosqt_ttpf":6.808,"isosqt_rfd200":2995,"isosqt_rfd100":1980,"isosqt_rfd200bw":39.3045,"isosqt_rfd100bw":25.9843,"sprint1020":1.116,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennel","sex":"M","cmj":11.1,"power":45.2,"rfd":55.8,"rsi":1.36,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.06,"broad":80.0,"shuttle":5.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennell","sex":"M","cmj":14.20353537,"power":0,"rfd":0,"rsi":1.1530390716666667,"rsiMeasured":true,"sprint10":1.781,"sprintFly":0,"sprint1020":1.333,"broad":80.0,"shuttle":5.265,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kaimana Coleman","sex":"F","cmj":14.3,"power":55.0,"rfd":36.8,"rsi":2.84,"rsiMeasured":true,"sprint10":2.0,"sprintFly":1.33,"broad":77.57,"shuttle":4.63,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2134,"isosqt_pvfbm":32.09,"isosqt_ttpf":4.978,"isosqt_rfd200":1715,"isosqt_rfd100":1520,"isosqt_rfd200bw":25.7895,"isosqt_rfd100bw":22.8571,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Kam Labauve","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.31741451,"rsiMeasured":true,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.71,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kassidy King","sex":"F","cmj":15.4,"power":58.7,"rfd":62.3,"rsi":1.97,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.17,"broad":77.76,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2382,"isosqt_pvfbm":35.03,"isosqt_ttpf":8.11,"isosqt_rfd200":1645,"isosqt_rfd100":1420,"isosqt_rfd200bw":24.1912,"isosqt_rfd100bw":20.8824,"sprint1020":1.21,"cmjFD":true,"rsiFD":true},{"name":"Katie Hemerick","sex":"F","cmj":8.5,"power":39.8,"rfd":74.2,"rsi":1.1261566266666667,"rsiMeasured":true,"sprint10":1.76,"sprintFly":1.32,"broad":78.5,"shuttle":4.86,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.41,"cmjFD":true,"rsiFD":false},{"name":"KJ Mendiola","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.45064522,"rsiMeasured":true,"sprint10":0,"sprintFly":1.34,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Landon Simantel","sex":"M","cmj":14.0,"power":58.8,"rfd":47.1,"rsi":1.91,"rsiMeasured":true,"sprint10":1.603,"sprintFly":1.06,"broad":91.63,"shuttle":4.42,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Lillian Ford","sex":"M","cmj":14.345268,"power":0,"rfd":0,"rsi":1.4334087916666667,"rsiMeasured":true,"sprint10":1.83,"sprintFly":0,"sprint1020":0,"broad":88.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Lily Barstad","sex":"F","cmj":10.7,"power":41.5,"rfd":32.6,"rsi":1.65,"rsiMeasured":true,"sprint10":1.84,"sprintFly":1.3,"broad":81.0,"shuttle":5.11,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.35,"cmjFD":true,"rsiFD":true},{"name":"Lola Carson","sex":"F","cmj":14.4,"power":52.2,"rfd":39.0,"rsi":2.24,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.2,"broad":67.75,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2218,"isosqt_pvfbm":41.07,"isosqt_ttpf":7.926,"isosqt_rfd200":2610,"isosqt_rfd100":2070,"isosqt_rfd200bw":48.3333,"isosqt_rfd100bw":38.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Lola Coker","sex":"F","cmj":9.0,"power":42.9,"rfd":61.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.83,"sprintFly":1.3,"broad":58.1,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.37,"cmjFD":true,"rsiFD":false},{"name":"Lucas Black","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3789838966666668,"rsiMeasured":true,"sprint10":1.72,"sprintFly":1.23,"sprint1020":0,"broad":88.0,"shuttle":4.84,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Maddie Waldron","sex":"F","cmj":12.2,"power":47.8,"rfd":11.8,"rsi":1.83,"rsiMeasured":true,"sprint10":1.774,"sprintFly":1.37,"broad":85.5,"shuttle":4.83,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2196,"isosqt_pvfbm":37.2,"isosqt_ttpf":5.878,"isosqt_rfd200":2645,"isosqt_rfd100":2900,"isosqt_rfd200bw":44.8077,"isosqt_rfd100bw":49.1276,"sprint1020":1.33,"cmjFD":true,"rsiFD":true},{"name":"Maizie Smith","sex":"M","cmj":9.93423732,"power":0,"rfd":0,"rsi":1.1464099916666666,"rsiMeasured":true,"sprint10":1.9,"sprintFly":1.36,"sprint1020":0,"broad":73.0,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Malia Jones","sex":"F","cmj":14.1,"power":52.5,"rfd":38.3,"rsi":1.79,"rsiMeasured":true,"sprint10":1.48,"sprintFly":1.14,"broad":85.0,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Malia Lyons","sex":"F","cmj":10.7,"power":46.4,"rfd":35.7,"rsi":1.23,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.33,"broad":82.0,"shuttle":4.81,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.32,"cmjFD":true,"rsiFD":true},{"name":"Marissa Chapman","sex":"F","cmj":6.1,"power":30.5,"rfd":13.9,"rsi":1.1,"rsiMeasured":true,"sprint10":2.12,"sprintFly":1.7,"broad":70.7,"shuttle":4.66,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1746,"isosqt_pvfbm":25.57,"isosqt_ttpf":11.31,"isosqt_rfd200":1512,"isosqt_rfd100":1922,"isosqt_rfd200bw":22.1441,"isosqt_rfd100bw":28.1488,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Maximus Marchi","sex":"M","cmj":11.45543357,"power":0,"rfd":0,"rsi":1.3713687733333335,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.26,"sprint1020":1.29,"broad":78.0,"shuttle":4.97,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mckayla Zuber","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.782006585,"rsiMeasured":true,"sprint10":1.77,"sprintFly":2.741,"sprint1020":1.33,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mia Reynoso","sex":"F","cmj":9.4,"power":48.9,"rfd":152.9,"rsi":2.01,"rsiMeasured":true,"sprint10":1.77,"sprintFly":1.26,"broad":71.48,"shuttle":4.76,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Miles Stroika","sex":"M","cmj":17.17763894,"power":0,"rfd":0,"rsi":1.165359695,"rsiMeasured":true,"sprint10":1.72,"sprintFly":0,"sprint1020":1.28,"broad":91.5,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mimi Botticelli","sex":"F","cmj":6.6,"power":32.4,"rfd":45.6,"rsi":1.25,"rsiMeasured":true,"sprint10":1.83,"sprintFly":1.44,"broad":72.69,"shuttle":4.87,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2086,"isosqt_pvfbm":28.77,"isosqt_ttpf":4.015,"isosqt_rfd200":1083,"isosqt_rfd100":800,"isosqt_rfd200bw":14.9379,"isosqt_rfd100bw":11.0345,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Mya Gonzalez","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.6162357433333332,"rsiMeasured":true,"sprint10":1.78,"sprintFly":0,"sprint1020":1.3,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Nicolas Countreman","sex":"M","cmj":10.7,"power":47.5,"rfd":30.4,"rsi":1.33,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.21,"broad":96.0,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.36,"cmjFD":true,"rsiFD":true},{"name":"Peter Graves","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.73,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Peyton Cantu","sex":"M","cmj":14.30319979,"power":0,"rfd":0,"rsi":1.2227774516666667,"rsiMeasured":true,"sprint10":1.61,"sprintFly":1.3,"sprint1020":1.36,"broad":81.0,"shuttle":4.74,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Riley McGee","sex":"F","cmj":11.6,"power":46.0,"rfd":22.4,"rsi":2.0,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.23,"broad":77.81,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2728,"isosqt_pvfbm":43.58,"isosqt_ttpf":7.71,"isosqt_rfd200":2300,"isosqt_rfd100":2250,"isosqt_rfd200bw":36.7471,"isosqt_rfd100bw":35.9482,"sprint1020":1.31,"cmjFD":true,"rsiFD":true},{"name":"Robert Ghazaryan","sex":"M","cmj":14.07814152,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Rowan Nishimoto","sex":"M","cmj":15.5,"power":68.1,"rfd":129.4,"rsi":1.979208146666667,"rsiMeasured":true,"sprint10":1.564,"sprintFly":1.1,"broad":101.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Ryan Chenoweth","sex":"M","cmj":15.22127983,"power":0,"rfd":0,"rsi":1.1876013933333334,"rsiMeasured":true,"sprint10":1.56,"sprintFly":1.14,"sprint1020":1.16,"broad":92.0,"shuttle":4.62,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sam McCoy","sex":"M","cmj":16.8,"power":60.1,"rfd":36.5,"rsi":2.06,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.019,"broad":102.0,"shuttle":3.7,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.16,"cmjFD":true,"rsiFD":true},{"name":"Sam Shelton","sex":"M","cmj":11.2,"power":51.1,"rfd":41.2,"rsi":1.3,"rsiMeasured":false,"sprint10":1.51,"sprintFly":1.06,"broad":110.45,"shuttle":3.92,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Serenity Humphrey","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.992,"sprintFly":0,"sprint1020":0,"broad":67.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Skylar Gosselin","sex":"M","cmj":10.14997734,"power":0,"rfd":0,"rsi":1.2727755966666667,"rsiMeasured":true,"sprint10":1.86,"sprintFly":0,"sprint1020":1.51,"broad":78.0,"shuttle":5.448,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sofia Andrade The Andrades","sex":"F","cmj":10.9,"power":43.2,"rfd":29.5,"rsi":1.2,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.28,"broad":78.91,"shuttle":5.01,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Sophia Covarrubias","sex":"M","cmj":13.4646096,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.86,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":4.8,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Reilly","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0107670033333334,"rsiMeasured":true,"sprint10":1.91,"sprintFly":1.37,"sprint1020":1.37,"broad":87.0,"shuttle":5.07,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Sophia","sex":"F","cmj":11.5,"power":43.2,"rfd":9.9,"rsi":1.05,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.28,"broad":64.71,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Travis Perry","sex":"M","cmj":18.2,"power":62.0,"rfd":1.8,"rsi":1.66,"rsiMeasured":true,"sprint10":1.59,"sprintFly":1.07,"broad":112.5,"shuttle":4.23,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.14,"cmjFD":true,"rsiFD":true},{"name":"Tristan Richey","sex":"M","cmj":7.3,"power":36.2,"rfd":48.3,"rsi":1.34,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.43,"broad":116.44,"shuttle":4.24,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Vai Escamilla","sex":"F","cmj":8.6,"power":38.2,"rfd":18.8,"rsi":1.07,"rsiMeasured":false,"sprint10":1.73,"sprintFly":1.29,"broad":96.51,"shuttle":4.82,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Violet Todd","sex":"F","cmj":8.9,"power":40.0,"rfd":29.8,"rsi":1.27,"rsiMeasured":true,"sprint10":1.84,"sprintFly":1.43,"broad":68.04,"shuttle":5.0,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Wesley Richey","sex":"F","cmj":15.0,"power":56.7,"rfd":17.2,"rsi":1.35,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.28,"broad":69.43,"shuttle":4.97,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false}];
 
 
 // ForceDeck-measured keys (always real for every athlete — legacy fallback)
@@ -833,6 +894,7 @@ let newAthleteSex = 'F';
 let addPanelOpen = false;
 let editMode = false;      // true = editing existing athlete, false = new
 let newMeasured = {};      // per-metric measured flags in the open panel
+let newCmjFD = false;     // CMJ Force Deck toggle in the open panel
 const COMPARE_COLORS = ['#2dd4bf','#a78bfa','#f0c040','#fb923c'];
 let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
@@ -1008,9 +1070,11 @@ function toggleAddPanel(wantEdit) {
     newAthleteSex = currentAthlete.sex;
     newMeasured = currentAthlete.measured ? {...currentAthlete.measured}
       : Object.fromEntries(METRICS.map(m=>[m.key, !isEstimatedForAthlete(m.key, currentAthlete)]));
+    newCmjFD = !!currentAthlete.cmjFD;
   } else {
     newAthleteSex = 'F';
     newMeasured = Object.fromEntries(METRICS.map(m=>[m.key, true]));
+    newCmjFD = false;
   }
   renderAthletePanel();
   selectNewSex(newAthleteSex);
@@ -1059,6 +1123,13 @@ function renderAthletePanel() {
       </div>
     </div>
     <div class="metric-grid">${metricCells}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-family:'DM Mono',monospace;">CMJ source</span>
+      <button id="panel-cmjfd-btn" onclick="togglePanelCmjFD()"
+        style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid ${newCmjFD?'rgba(52,211,153,.4)':'rgba(255,255,255,.13)'};background:${newCmjFD?'rgba(52,211,153,.08)':'var(--bg2)'};color:${newCmjFD?'var(--green)':'var(--text3)'};cursor:pointer;transition:all .15s;">
+        ${newCmjFD?'✓ Force Deck':'~ Standard sensor'}
+      </button>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn" onclick="saveAthletePanel()"
         style="background:rgba(240,192,64,0.1);border-color:rgba(240,192,64,0.4);color:var(--gold);">
@@ -1077,6 +1148,16 @@ function togglePanelMeasured(key) {
   btn.textContent = on ? '✓ Measured' : '~ Estimated';
 }
 
+function togglePanelCmjFD() {
+  newCmjFD = !newCmjFD;
+  const btn = document.getElementById('panel-cmjfd-btn');
+  if (!btn) return;
+  btn.style.borderColor = newCmjFD ? 'rgba(52,211,153,.4)' : 'rgba(255,255,255,.13)';
+  btn.style.background  = newCmjFD ? 'rgba(52,211,153,.08)' : 'var(--bg2)';
+  btn.style.color       = newCmjFD ? 'var(--green)' : 'var(--text3)';
+  btn.textContent       = newCmjFD ? '✓ Force Deck' : '~ Standard sensor';
+}
+
 function saveAthletePanel() {
   if (editMode) {
     METRICS.forEach(m => {
@@ -1087,6 +1168,7 @@ function saveAthletePanel() {
       currentAthlete.measured[m.key] = !!newMeasured[m.key];
     });
     currentAthlete.sex = newAthleteSex;
+    currentAthlete.cmjFD = newCmjFD;
     athleteData = {...currentAthlete};
     selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
     document.getElementById('norm-select').value = selectedNorm;
@@ -1104,7 +1186,7 @@ function saveAthletePanel() {
     const name = document.getElementById('new-name').value.trim();
     if (!name) { alert('Please enter a name.'); return; }
     const measured = Object.fromEntries(METRICS.map(m=>[m.key, !!newMeasured[m.key]]));
-    const athlete = { name, sex: newAthleteSex, custom: true, measured };
+    const athlete = { name, sex: newAthleteSex, custom: true, measured, cmjFD: newCmjFD };
     METRICS.forEach(m => {
       const raw = document.getElementById('new-inp-'+m.key).value;
       athlete[m.key] = parseFloat(raw) || 0;
@@ -1280,7 +1362,13 @@ function renderCompareTable() {
 function switchTab(tab) {
   activeTab = tab;
   ['analytics','roster','leaderboard','coaches','flags','cards','tests','norms','settings'].forEach(t => {
-    document.getElementById('pane-'+t).style.display = t===tab?'':'none';
+    const pane = document.getElementById('pane-'+t);
+    pane.style.display = t===tab ? '' : 'none';
+    if (t === tab) {
+      pane.classList.remove('tab-fade-in');
+      void pane.offsetWidth; // force reflow
+      pane.classList.add('tab-fade-in');
+    }
     document.getElementById('tab-'+t).className = 'tab-btn'+(t===tab?' active':'');
   });
   if (tab==='norms')       renderNormsTable();
@@ -1297,6 +1385,18 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════════════════════════
 // ATHLETE SELECTOR
 // ═══════════════════════════════════════════════════════════════
+function updateAthleteAvatar(athlete) {
+  const el = document.getElementById('athlete-avatar');
+  if (!el || !athlete) return;
+  const parts = athlete.name.trim().split(/\s+/);
+  const initials = parts.length >= 2 ? parts[0][0] + parts[parts.length-1][0] : parts[0].slice(0,2);
+  const col = athlete.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
+  el.textContent = initials.toUpperCase();
+  el.style.color = col;
+  el.style.borderColor = col;
+  el.style.background = athlete.sex === 'M' ? 'rgba(96,165,250,0.10)' : 'rgba(167,139,250,0.10)';
+}
+
 function onAthleteChange() {
   const name = document.getElementById('athlete-select').value;
   currentAthlete = ATHLETE_DB.find(a=>a.name===name);
@@ -1305,6 +1405,7 @@ function onAthleteChange() {
   compareAthletes.forEach((c,i)=>c.color=COMPARE_COLORS[i]);
   selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
   document.getElementById('norm-select').value = selectedNorm;
+  updateAthleteAvatar(currentAthlete);
   renderCompareStrip();
   renderAll(true);
 }
@@ -1346,17 +1447,44 @@ function renderSummaryCards(results, matrix) {
   const tier = getTier(avg);
   document.getElementById('composite-score').textContent = avg;
   const tb = document.getElementById('composite-tier');
-  tb.textContent = tier.label; tb.style.cssText = `background:${tier.bg};color:${tier.color};`;
+  tb.textContent = tier.label;
+  tb.style.cssText = `background:${tier.bg};color:${tier.color};font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;padding:3px 10px;border-radius:20px;`;
+
   const sorted = [...results].sort((a,b)=>b.percentile-a.percentile);
-  document.getElementById('top-metric').textContent    = sorted[0].label;
-  document.getElementById('top-percentile').textContent = sorted[0].percentile+'th percentile';
-  document.getElementById('low-metric').textContent    = sorted[sorted.length-1].label;
-  document.getElementById('low-percentile').textContent = sorted[sorted.length-1].percentile+'th percentile';
+  const top = sorted[0], low = sorted[sorted.length-1];
+  const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+
+  document.getElementById('top-percentile').textContent = ordinal(top.percentile);
+  document.getElementById('top-metric').textContent     = top.label;
+  document.getElementById('low-percentile').textContent = ordinal(low.percentile);
+  document.getElementById('low-metric').textContent     = low.label;
+
   const q = matrix.quadrant;
   const lbl = document.getElementById('fv-profile-label');
   lbl.textContent = q.label; lbl.style.color = q.color;
-  document.getElementById('fv-profile-desc').textContent = `Force ${Math.round(matrix.forceScore)}  ·  Reactive ${Math.round(matrix.reactiveScore)}`;
-  // Sex badge
+
+  const fScore = Math.round(matrix.forceScore);
+  const rScore = Math.round(matrix.reactiveScore);
+  const fTier  = getTier(fScore);
+  const rTier  = getTier(rScore);
+  document.getElementById('fv-profile-desc').innerHTML =
+    `<div style="display:flex;flex-direction:column;gap:5px;width:100%;">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;width:58px;text-align:right;flex-shrink:0;">Force</span>
+         <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+           <div style="height:100%;width:${fScore}%;background:${fTier.color};border-radius:3px;"></div>
+         </div>
+         <span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${fTier.color};width:28px;">${fScore}</span>
+       </div>
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;width:58px;text-align:right;flex-shrink:0;">Reactive</span>
+         <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+           <div style="height:100%;width:${rScore}%;background:${rTier.color};border-radius:3px;"></div>
+         </div>
+         <span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${rTier.color};width:28px;">${rScore}</span>
+       </div>
+     </div>`;
+
   const sb = document.getElementById('sex-badge');
   sb.textContent = currentAthlete.sex === 'M' ? '♂ Male' : '♀ Female';
   sb.className = 'sex-badge ' + (currentAthlete.sex==='M'?'male':'female');
@@ -1436,7 +1564,9 @@ function renderSelectedChart() {
         const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
         const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
         const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
-        return `<div class="bar-row">
+        const dec2 = r.step < 0.1 ? 2 : 1;
+        const rawD2 = r.val > 0 ? `${r.val.toFixed(dec2)} ${r.unit}` : 'no data';
+        return `<div class="bar-row has-tip" data-tip="${r.label}|${rawD2}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
           <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
@@ -1450,6 +1580,7 @@ function renderSelectedChart() {
 }
 
 function targetLineColor(pct) {
+  if (pct >= 90) return '#a78bfa';
   if (pct >= 85) return '#34d399';
   if (pct >= 70) return '#60a5fa';
   if (pct >= 50) return '#f0c040';
@@ -1490,7 +1621,9 @@ function renderBarChart(results) {
     const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
     const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
     const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
-    return `<div class="bar-row">
+    const dec = r.step < 0.1 ? 2 : 1;
+    const rawDisplay = r.val > 0 ? `${r.val.toFixed(dec)} ${r.unit}` : 'no data';
+    return `<div class="bar-row has-tip" data-tip="${r.label}|${rawDisplay}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
       <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
       <div class="bar-track">
         <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
@@ -1527,7 +1660,7 @@ function renderMatrix(matrix) {
           </div>
         </div>
         <div style="height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;position:relative;">
-          <div style="height:100%;width:${score}%;background:linear-gradient(90deg,${tier.color}99,${tier.color});border-radius:5px;transition:width 0.5s ease;box-shadow:0 0 10px ${tier.color}55;"></div>
+          <div class="gauge-bar-fill" data-w="${score}" style="height:100%;width:0%;background:linear-gradient(90deg,${tier.color}99,${tier.color});border-radius:5px;transition:width 0.6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 10px ${tier.color}55;"></div>
         </div>
       </div>`;
   }
@@ -1535,6 +1668,9 @@ function renderMatrix(matrix) {
   document.getElementById('matrix-gauges').innerHTML =
     gauge('Force Production', forceScore, forceTier) +
     gauge('Elastic / Reactive', reactiveScore, reactiveTier);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll('.gauge-bar-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+  }));
 
   const card = document.getElementById('matrix-zone-card');
   card.style.background   = qDef.bg;
@@ -2299,13 +2435,16 @@ function toggleCardCollapse(id) {
   const btn  = document.querySelector(`.card-chevron[data-collapse="${id}"]`);
   if (!body) return;
   const collapsed = collapsedCards.has(id);
+  body.classList.add('card-collapse-body');
   if (collapsed) {
     collapsedCards.delete(id);
     body.style.display = '';
+    requestAnimationFrame(() => body.classList.remove('collapsing'));
     if (btn) btn.classList.remove('collapsed');
   } else {
     collapsedCards.add(id);
-    body.style.display = 'none';
+    body.classList.add('collapsing');
+    setTimeout(() => { body.style.display = 'none'; body.classList.remove('collapsing'); }, 210);
     if (btn) btn.classList.add('collapsed');
   }
 }
@@ -2541,7 +2680,7 @@ function renderLeaderboard() {
 
     document.getElementById('leaderboard-content').innerHTML = entries.length === 0
       ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-      : `<table style="width:100%;border-collapse:collapse;">
+      : `<table class="sticky-table" style="width:100%;border-collapse:collapse;">
           <thead><tr>
             <th style="${thC}text-align:center;width:36px;">#</th>
             <th style="${thC}text-align:left;">Athlete</th>
@@ -2620,7 +2759,7 @@ function renderLeaderboard() {
 
   document.getElementById('leaderboard-content').innerHTML = pool.length === 0
     ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-    : `<table style="width:100%;border-collapse:collapse;">
+    : `<table class="sticky-table" style="width:100%;border-collapse:collapse;">
         <thead><tr>
           <th style="padding:6px 10px 10px 6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">#</th>
           <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:left;">Athlete</th>
@@ -3264,6 +3403,7 @@ async function insertAthleteToSupabase(athlete) {
 
 // ── New athlete form ──
 let _newAthSex = 'M';
+let _newAthCmjFD = false;
 
 function openNewAthletePanel() {
   const p = document.getElementById('new-athlete-panel');
@@ -3273,6 +3413,9 @@ function openNewAthletePanel() {
     document.getElementById('new-ath-name').value = '';
     _newAthSex = 'M';
     setNewAthSex('M');
+    _newAthCmjFD = false;
+    const cmjBtn = document.getElementById('new-ath-cmjfd');
+    if (cmjBtn) { cmjBtn.textContent = '~ Standard sensor'; cmjBtn.style.borderColor = 'rgba(255,255,255,.13)'; cmjBtn.style.background = 'var(--bg2)'; cmjBtn.style.color = 'var(--text3)'; }
     document.getElementById('new-ath-name').focus();
   }
 }
@@ -3293,13 +3436,23 @@ function setNewAthSex(sex) {
   }
 }
 
+function toggleNewAthCmjFD() {
+  _newAthCmjFD = !_newAthCmjFD;
+  const btn = document.getElementById('new-ath-cmjfd');
+  if (!btn) return;
+  btn.style.borderColor = _newAthCmjFD ? 'rgba(52,211,153,.4)' : 'rgba(255,255,255,.13)';
+  btn.style.background  = _newAthCmjFD ? 'rgba(52,211,153,.08)' : 'var(--bg2)';
+  btn.style.color       = _newAthCmjFD ? 'var(--green)' : 'var(--text3)';
+  btn.textContent       = _newAthCmjFD ? '✓ Force Deck' : '~ Standard sensor';
+}
+
 async function submitNewAthlete() {
   const name = (document.getElementById('new-ath-name').value || '').trim();
   if (!name) { showToast('Enter a name'); return; }
   if (ATHLETE_DB.find(a => a.name.toLowerCase() === name.toLowerCase())) {
     showToast('Athlete already exists'); return;
   }
-  const newAthlete = { name, sex: _newAthSex, measured: {}, _sessions: [], cmjFD: false, rsiFD: false, rsiMeasured: false };
+  const newAthlete = { name, sex: _newAthSex, measured: {}, _sessions: [], cmjFD: _newAthCmjFD, rsiFD: false, rsiMeasured: false };
   METRICS.forEach(m => { newAthlete[m.key] = 0; newAthlete.measured[m.key] = false; });
   await insertAthleteToSupabase(newAthlete);
   ATHLETE_DB.push(newAthlete);
@@ -3411,6 +3564,7 @@ async function init() {
   asel.value = currentAthlete.name;
 
   syncSuppressButtons();
+  updateAthleteAvatar(currentAthlete);
   renderCompareStrip();
 
   setLoadingProgress(100, 'Ready');
@@ -3431,11 +3585,74 @@ async function init() {
     clearTimeout(_resizeTid);
     _resizeTid = setTimeout(() => { const r=getResults(); renderMatrix(computeMatrixProfile(r)); }, 150);
   });
+
+  // Arrow key athlete navigation (Left/Right when not typing)
+  document.addEventListener('keydown', e => {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (activeTab !== 'analytics') return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const sel = document.getElementById('athlete-select');
+    if (!sel) return;
+    const idx = sel.selectedIndex;
+    const newIdx = e.key === 'ArrowLeft' ? Math.max(0, idx - 1) : Math.min(sel.options.length - 1, idx + 1);
+    if (newIdx !== idx) { sel.selectedIndex = newIdx; onAthleteChange(); e.preventDefault(); }
+  });
 }
 
 init();
 
+// ── Bar click detail card ──
+(function() {
+  const tip = document.getElementById('bar-tooltip');
+  if (!tip) return;
+  let openRow = null;
 
+  function showTip(row) {
+    const parts = (row.dataset.tip || '').split('|');
+    // parts: label | raw value+unit | Xth pct | 85th: Y unit
+    const pctNum = parseInt((parts[2] || '').replace(/\D/g,'')) || 0;
+    const tier = typeof getTier === 'function' ? getTier(pctNum) : { color: 'var(--text)', bg: 'transparent', label: '' };
+    tip.innerHTML =
+      `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;">
+         <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);">${parts[0] || ''}</span>
+         <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
+       </div>
+       <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+         <span style="font-size:28px;font-weight:900;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${tier.color};">${parts[1] || '—'}</span>
+       </div>
+       <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:10px;">
+         <div style="height:100%;width:${pctNum}%;background:${tier.color};border-radius:3px;transition:width .4s;"></div>
+       </div>
+       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);">
+         <span>${parts[2] || ''}</span>
+         <span>${parts[3] || ''}</span>
+       </div>`;
+
+    const rect = row.getBoundingClientRect();
+    tip.style.left = rect.left + 'px';
+    tip.style.top  = (rect.bottom + 6) + 'px';
+    // clamp right edge
+    requestAnimationFrame(() => {
+      const tr = tip.getBoundingClientRect();
+      if (tr.right > window.innerWidth - 8) tip.style.left = (window.innerWidth - tr.width - 8) + 'px';
+      if (tr.bottom > window.innerHeight - 8) tip.style.top = (rect.top - tr.height - 6) + 'px';
+    });
+    tip.classList.add('visible');
+    openRow = row;
+  }
+
+  document.addEventListener('click', e => {
+    const row = e.target.closest('.has-tip');
+    if (row) {
+      if (row === openRow) { tip.classList.remove('visible'); openRow = null; }
+      else showTip(row);
+      e.stopPropagation();
+    } else {
+      tip.classList.remove('visible'); openRow = null;
+    }
+  });
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // PER-ATHLETE HISTORY MODAL
@@ -3653,6 +3870,8 @@ async function submitNewSession() {
 <div id="report-overlay" class="report-overlay" style="display:none;" onclick="if(event.target===this)closeReport()">
   <div class="report-modal" id="report-modal-content"></div>
 </div>
+
+<div id="bar-tooltip"></div>
 
 </body>
 </html>

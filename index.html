@@ -360,10 +360,22 @@
     }
 
     /* ── Roster / Leaderboard sticky header ── */
+    .sticky-table-wrap { overflow: auto; max-height: 72vh; }
     .sticky-table thead th {
       position: sticky; top: 0; background: var(--bg2); z-index: 3;
       box-shadow: 0 1px 0 var(--border);
     }
+
+    /* ── Floating bar tooltip ── */
+    #bar-tooltip {
+      position: fixed; z-index: 9000; pointer-events: none;
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 8px 12px; font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--text); max-width: 260px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      opacity: 0; transition: opacity 0.1s; white-space: nowrap;
+    }
+    #bar-tooltip.visible { opacity: 1; }
 
     @media print {
       body > * { display: none !important; }
@@ -612,8 +624,8 @@
         Click any row to load athlete into analytics view. ★ = estimated metric. <span style="color:var(--green);font-weight:600;">Green name</span> = core metrics measured (power, CMJ, RSI, broad jump, 0-10, Fly10, 5-10-5). <span style="color:var(--gold);font-weight:600;">†</span> on CMJ = sensor-measured but not Force Deck (amber).
       </div>
       <div id="roster-col-toggles" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
-      <div style="overflow-x:auto;">
-        <table id="roster-table" class="sticky-table" style="width:100%;border-collapse:collapse;font-size:12px;"></table>
+      <div class="sticky-table-wrap">
+        <table id="roster-table" class="sticky-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;"></table>
       </div>
     </div>
   </div>
@@ -1476,9 +1488,9 @@ function renderSelectedChart() {
         const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
         const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
         const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
-        const rawD2 = r.val > 0 ? `${r.val} ${r.unit}` : 'no data';
-        const ttxt2 = `${r.label}: ${rawD2} · ${r.percentile}th percentile · 85th target: ${r.target85} ${r.unit}`;
-        return `<div class="bar-row" title="${ttxt2}">
+        const dec2 = r.step < 0.1 ? 2 : 1;
+        const rawD2 = r.val > 0 ? `${r.val.toFixed(dec2)} ${r.unit}` : 'no data';
+        return `<div class="bar-row has-tip" data-tip="${r.label}|${rawD2}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
           <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
@@ -1533,9 +1545,9 @@ function renderBarChart(results) {
     const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
     const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
     const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
-    const rawDisplay = r.val > 0 ? `${r.val} ${r.unit}` : 'no data';
-    const tooltipTxt = `${r.label}: ${rawDisplay} · ${r.percentile}th percentile · 85th target: ${r.target85} ${r.unit}`;
-    return `<div class="bar-row" title="${tooltipTxt}">
+    const dec = r.step < 0.1 ? 2 : 1;
+    const rawDisplay = r.val > 0 ? `${r.val.toFixed(dec)} ${r.unit}` : 'no data';
+    return `<div class="bar-row has-tip" data-tip="${r.label}|${rawDisplay}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
       <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
       <div class="bar-track">
         <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
@@ -2486,16 +2498,7 @@ function renderRosterTable() {
       const isCmjNonFD = k==='cmj' && a[k]!=null && !a.cmjFD;
       const cellColor = isCmjNonFD ? 'var(--gold)' : color;
       const cmjSuffix = isCmjNonFD ? '<sup style="font-size:8px;opacity:0.8;">†</sup>' : '';
-      const mObj = METRICS.find(m=>m.key===k);
-      const normKey2 = `Roster — ${a.sex==='M'?'Male':'Female'} (Measured)`;
-      const n2 = norms[normKey2] || {};
-      let heatBg = '';
-      if (mObj && typeof a[k]==='number' && a[k]>0 && n2[k] && !(est && suppressEstimated)) {
-        const pct2 = calcPercentile(a[k], n2[k], mObj.inv);
-        const t2 = getTier(pct2);
-        heatBg = `background:${t2.bg};`;
-      }
-      return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}${heatBg}">${display}${cmjSuffix}</td>`;
+      return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
     }).join('')}
   </tr>`).join('')}</tbody>`;
 
@@ -3509,7 +3512,30 @@ async function init() {
 
 init();
 
-
+// ── Floating bar tooltip ──
+(function() {
+  const tip = document.getElementById('bar-tooltip');
+  if (!tip) return;
+  document.addEventListener('mouseover', e => {
+    const row = e.target.closest('.has-tip');
+    if (!row) { tip.classList.remove('visible'); return; }
+    const parts = (row.dataset.tip || '').split('|');
+    tip.innerHTML = `<span style="color:var(--text);font-weight:700;">${parts[0] || ''}</span>` +
+      (parts[1] ? `<span style="color:var(--gold);margin-left:8px;">${parts[1]}</span>` : '') +
+      (parts[2] ? `<span style="color:var(--text3);margin-left:8px;">${parts[2]}</span>` : '') +
+      (parts[3] ? `<span style="color:var(--text3);margin-left:8px;">· ${parts[3]}</span>` : '');
+    tip.classList.add('visible');
+  });
+  document.addEventListener('mouseout', e => {
+    if (!e.target.closest('.has-tip')) tip.classList.remove('visible');
+  });
+  document.addEventListener('mousemove', e => {
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 10) + 'px';
+    const rect = tip.getBoundingClientRect();
+    if (rect.right > window.innerWidth - 8) tip.style.left = (e.clientX - rect.width - 14) + 'px';
+  });
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // PER-ATHLETE HISTORY MODAL
@@ -3727,6 +3753,8 @@ async function submitNewSession() {
 <div id="report-overlay" class="report-overlay" style="display:none;" onclick="if(event.target===this)closeReport()">
   <div class="report-modal" id="report-modal-content"></div>
 </div>
+
+<div id="bar-tooltip"></div>
 
 </body>
 </html>

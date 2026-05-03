@@ -638,6 +638,10 @@
               <button id="new-ath-f" onclick="setNewAthSex('F')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;">Female</button>
             </div>
           </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">CMJ source</div>
+            <button id="new-ath-cmjfd" onclick="toggleNewAthCmjFD()" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.13);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;">~ Standard sensor</button>
+          </div>
           <button class="btn" onclick="submitNewAthlete()" style="align-self:flex-end;">Add athlete</button>
           <button class="btn" onclick="document.getElementById('new-athlete-panel').style.display='none'" style="align-self:flex-end;">Cancel</button>
         </div>
@@ -890,6 +894,7 @@ let newAthleteSex = 'F';
 let addPanelOpen = false;
 let editMode = false;      // true = editing existing athlete, false = new
 let newMeasured = {};      // per-metric measured flags in the open panel
+let newCmjFD = false;     // CMJ Force Deck toggle in the open panel
 const COMPARE_COLORS = ['#2dd4bf','#a78bfa','#f0c040','#fb923c'];
 let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
@@ -1065,9 +1070,11 @@ function toggleAddPanel(wantEdit) {
     newAthleteSex = currentAthlete.sex;
     newMeasured = currentAthlete.measured ? {...currentAthlete.measured}
       : Object.fromEntries(METRICS.map(m=>[m.key, !isEstimatedForAthlete(m.key, currentAthlete)]));
+    newCmjFD = !!currentAthlete.cmjFD;
   } else {
     newAthleteSex = 'F';
     newMeasured = Object.fromEntries(METRICS.map(m=>[m.key, true]));
+    newCmjFD = false;
   }
   renderAthletePanel();
   selectNewSex(newAthleteSex);
@@ -1116,6 +1123,13 @@ function renderAthletePanel() {
       </div>
     </div>
     <div class="metric-grid">${metricCells}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-family:'DM Mono',monospace;">CMJ source</span>
+      <button id="panel-cmjfd-btn" onclick="togglePanelCmjFD()"
+        style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid ${newCmjFD?'rgba(52,211,153,.4)':'rgba(255,255,255,.13)'};background:${newCmjFD?'rgba(52,211,153,.08)':'var(--bg2)'};color:${newCmjFD?'var(--green)':'var(--text3)'};cursor:pointer;transition:all .15s;">
+        ${newCmjFD?'✓ Force Deck':'~ Standard sensor'}
+      </button>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn" onclick="saveAthletePanel()"
         style="background:rgba(240,192,64,0.1);border-color:rgba(240,192,64,0.4);color:var(--gold);">
@@ -1134,6 +1148,16 @@ function togglePanelMeasured(key) {
   btn.textContent = on ? '✓ Measured' : '~ Estimated';
 }
 
+function togglePanelCmjFD() {
+  newCmjFD = !newCmjFD;
+  const btn = document.getElementById('panel-cmjfd-btn');
+  if (!btn) return;
+  btn.style.borderColor = newCmjFD ? 'rgba(52,211,153,.4)' : 'rgba(255,255,255,.13)';
+  btn.style.background  = newCmjFD ? 'rgba(52,211,153,.08)' : 'var(--bg2)';
+  btn.style.color       = newCmjFD ? 'var(--green)' : 'var(--text3)';
+  btn.textContent       = newCmjFD ? '✓ Force Deck' : '~ Standard sensor';
+}
+
 function saveAthletePanel() {
   if (editMode) {
     METRICS.forEach(m => {
@@ -1144,6 +1168,7 @@ function saveAthletePanel() {
       currentAthlete.measured[m.key] = !!newMeasured[m.key];
     });
     currentAthlete.sex = newAthleteSex;
+    currentAthlete.cmjFD = newCmjFD;
     athleteData = {...currentAthlete};
     selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
     document.getElementById('norm-select').value = selectedNorm;
@@ -1161,7 +1186,7 @@ function saveAthletePanel() {
     const name = document.getElementById('new-name').value.trim();
     if (!name) { alert('Please enter a name.'); return; }
     const measured = Object.fromEntries(METRICS.map(m=>[m.key, !!newMeasured[m.key]]));
-    const athlete = { name, sex: newAthleteSex, custom: true, measured };
+    const athlete = { name, sex: newAthleteSex, custom: true, measured, cmjFD: newCmjFD };
     METRICS.forEach(m => {
       const raw = document.getElementById('new-inp-'+m.key).value;
       athlete[m.key] = parseFloat(raw) || 0;
@@ -3378,6 +3403,7 @@ async function insertAthleteToSupabase(athlete) {
 
 // ── New athlete form ──
 let _newAthSex = 'M';
+let _newAthCmjFD = false;
 
 function openNewAthletePanel() {
   const p = document.getElementById('new-athlete-panel');
@@ -3387,6 +3413,9 @@ function openNewAthletePanel() {
     document.getElementById('new-ath-name').value = '';
     _newAthSex = 'M';
     setNewAthSex('M');
+    _newAthCmjFD = false;
+    const cmjBtn = document.getElementById('new-ath-cmjfd');
+    if (cmjBtn) { cmjBtn.textContent = '~ Standard sensor'; cmjBtn.style.borderColor = 'rgba(255,255,255,.13)'; cmjBtn.style.background = 'var(--bg2)'; cmjBtn.style.color = 'var(--text3)'; }
     document.getElementById('new-ath-name').focus();
   }
 }
@@ -3407,13 +3436,23 @@ function setNewAthSex(sex) {
   }
 }
 
+function toggleNewAthCmjFD() {
+  _newAthCmjFD = !_newAthCmjFD;
+  const btn = document.getElementById('new-ath-cmjfd');
+  if (!btn) return;
+  btn.style.borderColor = _newAthCmjFD ? 'rgba(52,211,153,.4)' : 'rgba(255,255,255,.13)';
+  btn.style.background  = _newAthCmjFD ? 'rgba(52,211,153,.08)' : 'var(--bg2)';
+  btn.style.color       = _newAthCmjFD ? 'var(--green)' : 'var(--text3)';
+  btn.textContent       = _newAthCmjFD ? '✓ Force Deck' : '~ Standard sensor';
+}
+
 async function submitNewAthlete() {
   const name = (document.getElementById('new-ath-name').value || '').trim();
   if (!name) { showToast('Enter a name'); return; }
   if (ATHLETE_DB.find(a => a.name.toLowerCase() === name.toLowerCase())) {
     showToast('Athlete already exists'); return;
   }
-  const newAthlete = { name, sex: _newAthSex, measured: {}, _sessions: [], cmjFD: false, rsiFD: false, rsiMeasured: false };
+  const newAthlete = { name, sex: _newAthSex, measured: {}, _sessions: [], cmjFD: _newAthCmjFD, rsiFD: false, rsiMeasured: false };
   METRICS.forEach(m => { newAthlete[m.key] = 0; newAthlete.measured[m.key] = false; });
   await insertAthleteToSupabase(newAthlete);
   ATHLETE_DB.push(newAthlete);

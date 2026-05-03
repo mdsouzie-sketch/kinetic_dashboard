@@ -152,24 +152,29 @@
     .btn:active { transform: scale(0.97); }
 
     /* ── Summary stats ── */
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; }
     .stat-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 12px 14px;
+      background: #111b2b; border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 20px;
       position: relative; overflow: hidden;
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; text-align: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
+    .stat-card:hover { border-color: var(--border2); box-shadow: 0 6px 26px rgba(0,0,0,0.45); }
     .stat-card::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: var(--accent-color, var(--gold));
+      content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+      background: var(--accent-color, var(--gold)); opacity: 0.6;
     }
     .stat-card .slabel {
-      font-size: 10px; color: var(--text3); text-transform: uppercase;
-      letter-spacing: 0.09em; margin-bottom: 4px; font-family: 'DM Mono', monospace; font-weight: 700;
+      font-size: 11px; color: var(--text3); font-weight: 500;
+      margin-bottom: 8px; font-family: 'DM Sans', sans-serif;
     }
-    .stat-card .sval { font-size: 26px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
-    .stat-card .sdesc { font-size: 11px; color: var(--text2); margin-top: 3px; }
+    .stat-card .sval { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
+    .stat-card .spct { font-size: 32px; font-weight: 900; font-family: 'Barlow Condensed', sans-serif; font-style: italic; line-height: 1; }
+    .stat-card .sname { font-size: 15px; font-weight: 600; margin-top: 4px; }
+    .stat-card .sdesc { font-size: 11px; color: var(--text3); margin-top: 5px; }
 
     .tier-badge {
       display: inline-block; font-size: 10px; font-weight: 800;
@@ -499,27 +504,34 @@
     </div>
 
     <div class="summary-grid">
+      <!-- Composite score -->
       <div class="stat-card" style="--accent-color:var(--gold);">
-        <div class="slabel">Composite index</div>
-        <div style="display:flex;align-items:baseline;gap:10px;justify-content:center;">
-          <span class="sval" id="composite-score">--</span>
-          <span id="composite-tier" class="tier-badge">--</span>
+        <div class="slabel">Composite score</div>
+        <div style="display:flex;align-items:center;gap:14px;justify-content:center;margin:4px 0 6px;">
+          <span class="sval" id="composite-score" style="font-size:52px;">--</span>
+          <div style="text-align:left;">
+            <span id="composite-tier" class="tier-badge" style="font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;">--</span>
+            <div style="font-size:10px;color:var(--text3);margin-top:5px;font-family:'DM Sans',sans-serif;">avg percentile</div>
+          </div>
         </div>
       </div>
+      <!-- Top metric -->
       <div class="stat-card" style="--accent-color:var(--green);">
-        <div class="slabel">Top metric</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="top-metric">--</div>
-        <div class="sdesc" id="top-percentile"></div>
+        <div class="slabel">Strongest metric</div>
+        <div class="spct" id="top-percentile" style="color:var(--green);">--</div>
+        <div class="sname" id="top-metric">--</div>
       </div>
+      <!-- Priority gap -->
       <div class="stat-card" style="--accent-color:var(--red);">
         <div class="slabel">Priority gap</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="low-metric">--</div>
-        <div class="sdesc" id="low-percentile"></div>
+        <div class="spct" id="low-percentile" style="color:var(--red);">--</div>
+        <div class="sname" id="low-metric">--</div>
       </div>
+      <!-- Readiness zone -->
       <div class="stat-card" style="--accent-color:var(--purple);">
         <div class="slabel">Readiness zone</div>
-        <div class="sval" style="font-size:18px;margin-top:3px;" id="fv-profile-label">--</div>
-        <div class="sdesc" id="fv-profile-desc"></div>
+        <div class="sname" style="font-size:17px;margin-bottom:8px;" id="fv-profile-label">--</div>
+        <div id="fv-profile-desc" style="width:100%;"></div>
       </div>
     </div>
 
@@ -1409,17 +1421,44 @@ function renderSummaryCards(results, matrix) {
   const tier = getTier(avg);
   document.getElementById('composite-score').textContent = avg;
   const tb = document.getElementById('composite-tier');
-  tb.textContent = tier.label; tb.style.cssText = `background:${tier.bg};color:${tier.color};`;
+  tb.textContent = tier.label;
+  tb.style.cssText = `background:${tier.bg};color:${tier.color};font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;padding:3px 10px;border-radius:20px;`;
+
   const sorted = [...results].sort((a,b)=>b.percentile-a.percentile);
-  document.getElementById('top-metric').textContent    = sorted[0].label;
-  document.getElementById('top-percentile').textContent = sorted[0].percentile+'th percentile';
-  document.getElementById('low-metric').textContent    = sorted[sorted.length-1].label;
-  document.getElementById('low-percentile').textContent = sorted[sorted.length-1].percentile+'th percentile';
+  const top = sorted[0], low = sorted[sorted.length-1];
+  const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+
+  document.getElementById('top-percentile').textContent = ordinal(top.percentile);
+  document.getElementById('top-metric').textContent     = top.label;
+  document.getElementById('low-percentile').textContent = ordinal(low.percentile);
+  document.getElementById('low-metric').textContent     = low.label;
+
   const q = matrix.quadrant;
   const lbl = document.getElementById('fv-profile-label');
   lbl.textContent = q.label; lbl.style.color = q.color;
-  document.getElementById('fv-profile-desc').textContent = `Force ${Math.round(matrix.forceScore)}  ·  Reactive ${Math.round(matrix.reactiveScore)}`;
-  // Sex badge
+
+  const fScore = Math.round(matrix.forceScore);
+  const rScore = Math.round(matrix.reactiveScore);
+  const fTier  = getTier(fScore);
+  const rTier  = getTier(rScore);
+  document.getElementById('fv-profile-desc').innerHTML =
+    `<div style="display:flex;flex-direction:column;gap:5px;width:100%;">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;width:58px;text-align:right;flex-shrink:0;">Force</span>
+         <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+           <div style="height:100%;width:${fScore}%;background:${fTier.color};border-radius:3px;"></div>
+         </div>
+         <span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${fTier.color};width:28px;">${fScore}</span>
+       </div>
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif;width:58px;text-align:right;flex-shrink:0;">Reactive</span>
+         <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+           <div style="height:100%;width:${rScore}%;background:${rTier.color};border-radius:3px;"></div>
+         </div>
+         <span style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${rTier.color};width:28px;">${rScore}</span>
+       </div>
+     </div>`;
+
   const sb = document.getElementById('sex-badge');
   sb.textContent = currentAthlete.sex === 'M' ? '♂ Male' : '♀ Female';
   sb.className = 'sex-badge ' + (currentAthlete.sex==='M'?'male':'female');

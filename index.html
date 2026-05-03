@@ -371,16 +371,20 @@
       box-shadow: 0 1px 0 var(--border);
     }
 
-    /* ── Floating bar tooltip ── */
+    /* ── Bar click detail card ── */
     #bar-tooltip {
-      position: fixed; z-index: 9000; pointer-events: none;
-      background: var(--bg3); border: 1px solid var(--border2);
-      border-radius: 8px; padding: 8px 12px; font-family: 'DM Mono', monospace;
-      font-size: 11px; color: var(--text); max-width: 260px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-      opacity: 0; transition: opacity 0.1s; white-space: nowrap;
+      position: fixed; z-index: 9000; pointer-events: auto;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 12px 16px; font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--text); min-width: 220px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
+      pointer-events: none;
     }
-    #bar-tooltip.visible { opacity: 1; }
+    #bar-tooltip.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .bar-row.has-tip { cursor: pointer; }
+    .bar-row.has-tip:hover { background: rgba(255,255,255,0.03); border-radius: 4px; }
 
     @media print {
       body > * { display: none !important; }
@@ -3519,31 +3523,54 @@ async function init() {
 
 init();
 
-// ── Floating bar tooltip ──
+// ── Bar click detail card ──
 (function() {
   const tip = document.getElementById('bar-tooltip');
   if (!tip) return;
-  let lastRow = null;
-  document.addEventListener('mousemove', e => {
+  let openRow = null;
+
+  function showTip(row) {
+    const parts = (row.dataset.tip || '').split('|');
+    // parts: label | raw value+unit | Xth pct | 85th: Y unit
+    const pctNum = parseInt((parts[2] || '').replace(/\D/g,'')) || 0;
+    const tier = typeof getTier === 'function' ? getTier(pctNum) : { color: 'var(--text)', bg: 'transparent', label: '' };
+    tip.innerHTML =
+      `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;">
+         <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);">${parts[0] || ''}</span>
+         <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
+       </div>
+       <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+         <span style="font-size:28px;font-weight:900;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${tier.color};">${parts[1] || '—'}</span>
+       </div>
+       <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:10px;">
+         <div style="height:100%;width:${pctNum}%;background:${tier.color};border-radius:3px;transition:width .4s;"></div>
+       </div>
+       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);">
+         <span>${parts[2] || ''}</span>
+         <span>${parts[3] || ''}</span>
+       </div>`;
+
+    const rect = row.getBoundingClientRect();
+    tip.style.left = rect.left + 'px';
+    tip.style.top  = (rect.bottom + 6) + 'px';
+    // clamp right edge
+    requestAnimationFrame(() => {
+      const tr = tip.getBoundingClientRect();
+      if (tr.right > window.innerWidth - 8) tip.style.left = (window.innerWidth - tr.width - 8) + 'px';
+      if (tr.bottom > window.innerHeight - 8) tip.style.top = (rect.top - tr.height - 6) + 'px';
+    });
+    tip.classList.add('visible');
+    openRow = row;
+  }
+
+  document.addEventListener('click', e => {
     const row = e.target.closest('.has-tip');
-    if (row !== lastRow) {
-      lastRow = row;
-      if (row) {
-        const parts = (row.dataset.tip || '').split('|');
-        tip.innerHTML = `<span style="color:var(--text);font-weight:700;">${parts[0] || ''}</span>` +
-          (parts[1] ? `<span style="color:var(--gold);margin-left:8px;">${parts[1]}</span>` : '') +
-          (parts[2] ? `<span style="color:var(--text3);margin-left:8px;">${parts[2]}</span>` : '') +
-          (parts[3] ? `<span style="color:var(--text3);margin-left:8px;">· ${parts[3]}</span>` : '');
-        tip.classList.add('visible');
-      } else {
-        tip.classList.remove('visible');
-      }
-    }
-    if (lastRow) {
-      tip.style.left = (e.clientX + 14) + 'px';
-      tip.style.top  = (e.clientY - 10) + 'px';
-      const rect = tip.getBoundingClientRect();
-      if (rect.right > window.innerWidth - 8) tip.style.left = (e.clientX - rect.width - 14) + 'px';
+    if (row) {
+      if (row === openRow) { tip.classList.remove('visible'); openRow = null; }
+      else showTip(row);
+      e.stopPropagation();
+    } else {
+      tip.classList.remove('visible'); openRow = null;
     }
   });
 })();

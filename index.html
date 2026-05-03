@@ -363,7 +363,21 @@
   </style>
 </head>
 <body>
-<div id="loading-overlay" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;"><div style="font-size:32px;font-weight:800;color:var(--gold);font-family:'DM Mono',monospace;">KINETIC</div><div style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;">Loading roster from database...</div></div>
+<div id="loading-overlay" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity 0.4s ease;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:20px;width:320px;">
+    <div style="text-align:center;">
+      <div style="font-size:11px;letter-spacing:0.25em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:6px;">ATHLETIC PERFORMANCE</div>
+      <div style="font-size:42px;font-weight:900;color:var(--gold);font-family:'Barlow Condensed','DM Mono',monospace;letter-spacing:0.05em;line-height:1;">KINETIC</div>
+      <div style="font-size:13px;letter-spacing:0.18em;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px;">BENCHMARK</div>
+    </div>
+    <div style="width:100%;">
+      <div style="width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;">
+        <div id="loading-bar" style="height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width 0.35s ease;"></div>
+      </div>
+      <div id="loading-status" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;text-align:center;min-height:16px;">Connecting to database...</div>
+    </div>
+  </div>
+</div>
 <div class="wrap">
 
   <div class="header">
@@ -3262,21 +3276,30 @@ function rebuildInitialNorms() {
   norms = JSON.parse(JSON.stringify(INITIAL_NORMS));
 }
 
+// ── Loading progress helper ──
+function setLoadingProgress(pct, msg) {
+  const bar = document.getElementById('loading-bar');
+  const status = document.getElementById('loading-status');
+  if (bar) bar.style.width = pct + '%';
+  if (status && msg) status.textContent = msg;
+}
+
 // ── Async init ──
 async function init() {
+  setLoadingProgress(10, 'Connecting to database...');
+
   try {
+    setLoadingProgress(25, 'Loading athlete roster...');
     const loaded = await loadFromSupabase();
     ATHLETE_DB = loaded;
+    setLoadingProgress(60, `Processing ${ATHLETE_DB.length} athletes...`);
     console.log('Loaded', ATHLETE_DB.length, 'athletes from Supabase');
   } catch(e) {
     console.error('Supabase load failed, using fallback:', e);
     ATHLETE_DB = ATHLETE_DB_FALLBACK.map(a => ({...a}));
+    setLoadingProgress(60, 'Using offline data...');
     showToast('Using offline data (DB unavailable)');
   }
-
-  // Hide loading overlay
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.style.display = 'none';
 
   // Migrate measured flags
   ATHLETE_DB.forEach(a => {
@@ -3291,8 +3314,10 @@ async function init() {
     }
   });
 
-  // Rebuild norms now that ATHLETE_DB is populated
+  setLoadingProgress(75, 'Building performance norms...');
   rebuildInitialNorms();
+
+  setLoadingProgress(88, 'Preparing interface...');
 
   // Athlete selector
   const asel = document.getElementById('athlete-select');
@@ -3322,7 +3347,17 @@ async function init() {
 
   syncSuppressButtons();
   renderCompareStrip();
+
+  setLoadingProgress(100, 'Ready');
   renderAll();
+
+  // Fade out overlay
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.display = 'none'; }, 420);
+  }
+
   let _resizeTid;
   window.addEventListener('resize', () => {
     clearTimeout(_resizeTid);

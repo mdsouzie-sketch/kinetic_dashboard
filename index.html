@@ -15,8 +15,8 @@
       --border:    rgba(240,192,64,0.30);
       --border2:   rgba(240,192,64,0.50);
       --text:      #f0f4ff;
-      --text2:     #b8c8e8;
-      --text3:     #7a90b8;
+      --text2:     #d8e8ff;
+      --text3:     #a0b8d8;
       --gold:      #f0c040;
       --gold-dim:  rgba(240,192,64,0.12);
       --teal:      #2dd4bf;
@@ -38,7 +38,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.5;
     }
 
@@ -77,13 +77,13 @@
       letter-spacing: 0.5px; text-transform: uppercase; line-height: 1;
     }
     .header-title span { color: var(--text3); font-style: normal; font-weight: 600; }
-    .header-sub { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.09em; font-family: 'DM Mono', monospace; }
+    .header-sub { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.09em; font-family: 'DM Mono', monospace; }
 
     /* ── Tabs ── */
     .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: var(--radius-lg); border: 1px solid var(--border); }
     .tab-btn {
       padding: 6px 18px; border-radius: var(--radius-md); border: none;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
       cursor: pointer; background: transparent; color: var(--text3); transition: all 0.15s;
       font-family: 'DM Sans', sans-serif;
     }
@@ -96,7 +96,7 @@
       border-radius: var(--radius-lg); padding: 14px 16px;
     }
     .card-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.09em; color: var(--text3); margin-bottom: 10px;
       display: flex; align-items: center; gap: 6px;
       font-family: 'DM Mono', monospace;
@@ -107,7 +107,7 @@
     }
     .card-chevron {
       background: none; border: none; cursor: pointer; color: var(--text3);
-      font-size: 13px; padding: 2px 5px; border-radius: 4px; line-height: 1;
+      font-size: 14px; padding: 2px 5px; border-radius: 4px; line-height: 1;
       transition: transform 0.2s, color 0.15s; user-select: none; flex-shrink: 0;
     }
     .card-chevron:hover { color: var(--text2); }
@@ -120,20 +120,20 @@
     .select-wrap { position: relative; flex: 1; min-width: 200px; }
     .select-wrap::after {
       content: '▾'; position: absolute; right: 10px; top: 50%;
-      transform: translateY(-50%); font-size: 10px; color: var(--text3); pointer-events: none;
+      transform: translateY(-50%); font-size: 11px; color: var(--text3); pointer-events: none;
     }
     select {
       width: 100%; appearance: none; -webkit-appearance: none;
       background: var(--bg2); border: 1px solid var(--border2);
       border-radius: var(--radius-md); padding: 7px 28px 7px 10px;
-      font-size: 12px; color: var(--text); cursor: pointer; outline: none;
+      font-size: 13px; color: var(--text); cursor: pointer; outline: none;
       transition: border-color 0.15s; font-family: 'DM Sans', sans-serif;
     }
     select:focus { border-color: var(--gold); }
 
     .sex-badge {
       padding: 7px 14px; border-radius: var(--radius-md);
-      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
       border: 1px solid var(--border2); background: var(--bg2);
       color: var(--text2); font-family: 'DM Mono', monospace;
       white-space: nowrap; min-width: 66px; text-align: center;
@@ -146,7 +146,7 @@
     .btn {
       display: flex; align-items: center; gap: 5px; padding: 7px 12px;
       border-radius: var(--radius-md); border: 1px solid var(--border2);
-      background: var(--bg2); color: var(--text2); font-size: 11px;
+      background: var(--bg2); color: var(--text2); font-size: 12px;
       cursor: pointer; transition: all 0.15s; white-space: nowrap;
       font-family: 'DM Sans', sans-serif; font-weight: 600;
     }
@@ -167,14 +167,14 @@
       background: var(--accent-color, var(--gold));
     }
     .stat-card .slabel {
-      font-size: 9px; color: var(--text3); text-transform: uppercase;
+      font-size: 10px; color: var(--text3); text-transform: uppercase;
       letter-spacing: 0.09em; margin-bottom: 4px; font-family: 'DM Mono', monospace; font-weight: 700;
     }
     .stat-card .sval { font-size: 26px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
-    .stat-card .sdesc { font-size: 10px; color: var(--text2); margin-top: 3px; }
+    .stat-card .sdesc { font-size: 11px; color: var(--text2); margin-top: 3px; }
 
     .tier-badge {
-      display: inline-block; font-size: 9px; font-weight: 800;
+      display: inline-block; font-size: 10px; font-weight: 800;
       text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px;
       border-radius: 20px; font-family: 'DM Mono', monospace; white-space: nowrap;
     }
@@ -184,14 +184,14 @@
     @media (max-width: 1100px) { .metric-grid { grid-template-columns: repeat(4, 1fr); } }
     @media (max-width: 700px)  { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
     .metric-field label {
-      display: block; font-size: 9px; font-weight: 700; text-transform: uppercase;
+      display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.06em; color: var(--text3); margin-bottom: 3px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       font-family: 'DM Mono', monospace;
     }
     .metric-field input {
       width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 7px 6px; font-size: 13px; font-weight: 700;
+      border-radius: var(--radius-md); padding: 7px 6px; font-size: 14px; font-weight: 700;
       color: var(--text); text-align: center; font-family: 'DM Mono', monospace;
       outline: none; transition: border-color 0.15s; -moz-appearance: textfield;
     }
@@ -203,7 +203,7 @@
 
     /* ── Measured / estimated toggle in edit panel ── */
     .meas-toggle {
-      width: 100%; margin-top: 4px; padding: 3px 6px; font-size: 9px; font-weight: 700;
+      width: 100%; margin-top: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700;
       font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
       border-radius: var(--radius-md); border: 1px solid; cursor: pointer;
       background: transparent; transition: all 0.15s;
@@ -217,15 +217,15 @@
     /* ── Bar chart ── */
     .bar-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
     .bar-row:last-child { border-bottom: none; }
-    .bar-name { width: 115px; flex-shrink: 0; font-size: 9px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+    .bar-name { width: 115px; flex-shrink: 0; font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
     .bar-track { flex: 1; height: 9px; background: var(--bg3); border-radius: 5px; position: relative; overflow: visible; }
     .bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
     .bar-target { position: absolute; top: -4px; width: 2px; height: 17px; border-radius: 1px; opacity: 0.75; }
-    .bar-pct { width: 34px; text-align: right; font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0; }
+    .bar-pct { width: 34px; text-align: right; font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0; }
     .bar-badge { width: 80px; flex-shrink: 0; text-align: center; }
 
     .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
     .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
     /* ── Matrix ── */
@@ -233,20 +233,20 @@
       margin-top: 10px; border-radius: var(--radius-lg); padding: 10px 12px;
       border: 1px solid var(--border); transition: all 0.3s;
     }
-    .matrix-active-zone .maz-title { font-weight: 700; margin-bottom: 3px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; letter-spacing: 0.3px; font-size: 15px; }
-    .matrix-active-zone .maz-desc  { font-size: 11px; color: var(--text2); line-height: 1.55; }
-    .matrix-active-zone .maz-rx    { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 7px; font-family: 'DM Mono', monospace; }
+    .matrix-active-zone .maz-title { font-weight: 700; margin-bottom: 3px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; letter-spacing: 0.3px; font-size: 16px; }
+    .matrix-active-zone .maz-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; }
+    .matrix-active-zone .maz-rx    { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 7px; font-family: 'DM Mono', monospace; }
 
     /* ── Coaching ── */
     .coaching-cards { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .coaching-card { flex: 1; min-width: 200px; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 13px; }
-    .coaching-card .ctype { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctitle { font-size: 15px; font-weight: 700; margin-bottom: 5px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
-    .coaching-card .ctext { font-size: 11px; color: var(--text2); line-height: 1.6; }
+    .coaching-card .ctype { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+    .coaching-card .ctitle { font-size: 16px; font-weight: 700; margin-bottom: 5px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
+    .coaching-card .ctext { font-size: 12px; color: var(--text2); line-height: 1.6; }
     .coaching-card .cmethods { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .coaching-card .cmethod-tag { font-size: 9px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctarget { font-size: 10px; color: var(--text3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; font-family: 'DM Mono', monospace; }
-    .coaching-below { font-size: 11px; color: var(--text3); margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+    .coaching-card .cmethod-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-family: 'DM Mono', monospace; }
+    .coaching-card .ctarget { font-size: 11px; color: var(--text3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; font-family: 'DM Mono', monospace; }
+    .coaching-below { font-size: 12px; color: var(--text3); margin-bottom: 5px; font-family: 'DM Mono', monospace; }
 
     /* ── Comparison panel ── */
     .compare-strip {
@@ -254,34 +254,34 @@
       border-radius: var(--radius-lg); padding: 11px 14px; margin-bottom: 10px;
     }
     .compare-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
-    .compare-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
+    .compare-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
     .compare-title::before { content:''; width:5px; height:5px; border-radius:2px; background:var(--teal); opacity:0.6; flex-shrink:0; }
     .compare-scroll { display: flex; gap: 6px; flex-wrap: wrap; }
     .athlete-chip {
       display: flex; align-items: center; gap: 5px; padding: 4px 9px;
       border-radius: 20px; border: 1px solid var(--border2); background: var(--bg3);
-      font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
       font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text2);
     }
     .athlete-chip:hover { border-color: var(--teal); color: var(--teal); }
     .athlete-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.08); font-weight: 700; }
-    .athlete-chip .chip-sex { font-size: 9px; font-family: 'DM Mono', monospace; opacity: 0.7; }
+    .athlete-chip .chip-sex { font-size: 10px; font-family: 'DM Mono', monospace; opacity: 0.7; }
 
     /* ── Norms table ── */
     .norms-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 0; border-bottom: 1px solid var(--border); }
     .norms-row:last-child { border-bottom: none; }
-    .norms-name { flex: 1; min-width: 120px; font-size: 12px; }
+    .norms-name { flex: 1; min-width: 120px; font-size: 13px; }
     .norms-field { display: flex; align-items: center; gap: 5px; }
-    .norms-field span { font-size: 9px; text-transform: uppercase; color: var(--text3); font-weight: 700; font-family: 'DM Mono', monospace; }
-    .norms-field input { width: 72px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 7px; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text); text-align: center; outline: none; }
+    .norms-field span { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 700; font-family: 'DM Mono', monospace; }
+    .norms-field input { width: 72px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 7px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--text); text-align: center; outline: none; }
     .norms-field input:focus { border-color: var(--gold); }
-    .norms-unit { font-size: 10px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
+    .norms-unit { font-size: 11px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
 
     /* ── Estimated data notice ── */
     .est-notice {
       display: flex; align-items: center; gap: 7px; padding: 7px 11px;
       background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.2);
-      border-radius: var(--radius-md); font-size: 10px; color: var(--orange);
+      border-radius: var(--radius-md); font-size: 11px; color: var(--orange);
       margin-bottom: 10px; font-family: 'DM Mono', monospace;
     }
 
@@ -300,16 +300,16 @@
     }
     .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 16px; }
     .report-name { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; font-style: italic; text-transform: uppercase; line-height: 1.1; }
-    .report-meta { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+    .report-meta { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
     .report-composite { text-align: center; flex-shrink: 0; }
     .report-composite .rc-score { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 800; line-height: 1; }
-    .report-composite .rc-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-top: 4px; }
-    .report-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 16px 0 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .report-composite .rc-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-top: 4px; }
+    .report-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 16px 0 8px; border-top: 1px solid var(--border); padding-top: 12px; }
     .report-metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
     .report-metric-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg3); border-radius: var(--radius-md); }
-    .report-metric-name { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'DM Mono', monospace; color: var(--text3); flex: 1; }
-    .report-metric-val { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; }
-    .report-metric-pct { font-size: 11px; font-family: 'DM Mono', monospace; min-width: 30px; text-align: right; }
+    .report-metric-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'DM Mono', monospace; color: var(--text3); flex: 1; }
+    .report-metric-val { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .report-metric-pct { font-size: 12px; font-family: 'DM Mono', monospace; min-width: 30px; text-align: right; }
     .report-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
 
     /* ── Export PDF modal ── */
@@ -325,24 +325,24 @@
       padding: 22px; margin: 0 auto;
     }
     .export-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 5px; }
-    .export-check-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; background: var(--bg3); border-radius: 6px; cursor: pointer; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); user-select: none; transition: background 0.1s; }
+    .export-check-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; background: var(--bg3); border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text2); user-select: none; transition: background 0.1s; }
     .export-check-item:hover { background: rgba(255,255,255,0.05); }
     .export-check-item input[type=checkbox] { cursor: pointer; accent-color: var(--gold); }
-    .export-sec-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 12px 0 6px; grid-column: 1/-1; }
+    .export-sec-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 12px 0 6px; grid-column: 1/-1; }
     #export-print-area { display: none; }
     .print-mode-seg { display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border2); }
-    .print-mode-btn { padding: 5px 14px; font-size: 10px; font-family: 'DM Mono', monospace; cursor: pointer; background: var(--bg3); color: var(--text3); border: none; transition: all 0.15s; white-space: nowrap; }
+    .print-mode-btn { padding: 5px 14px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; background: var(--bg3); color: var(--text3); border: none; transition: all 0.15s; white-space: nowrap; }
     .print-mode-btn.active { background: rgba(255,255,255,0.1); color: var(--text); }
     .print-mode-btn:hover:not(.active) { color: var(--text2); }
 
     /* ── Flags tab ── */
-    .flag-section-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin: 0 0 10px; }
+    .flag-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin: 0 0 10px; }
     .flag-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 5px; flex-wrap: wrap; }
     .flag-row:hover { border-color: var(--border2); }
-    .flag-name { font-size: 13px; font-weight: 600; min-width: 150px; }
+    .flag-name { font-size: 14px; font-weight: 600; min-width: 150px; }
     .flag-chips { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-    .flag-chip { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-    .flag-load-btn { font-size: 10px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; white-space: nowrap; }
+    .flag-chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+    .flag-load-btn { font-size: 11px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; white-space: nowrap; }
     .flag-load-btn:hover { border-color: var(--gold); color: var(--gold); }
 
     @media print {

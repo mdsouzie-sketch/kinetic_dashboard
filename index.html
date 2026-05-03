@@ -655,7 +655,7 @@
       <div class="select-wrap">
         <select id="test-athlete-select" onchange="onTestAthleteChange()"></select>
       </div>
-      <div class="sex-badge" id="test-sex-badge">—</div>
+      <div class="sex-badge male" id="test-sex-badge" onclick="toggleTestSex()" style="cursor:pointer;" title="Click to switch sex filter">♂ Male</div>
       <div class="select-wrap" style="max-width:230px;">
         <select id="test-norm-select" onchange="onTestNormChange()"></select>
       </div>
@@ -843,6 +843,7 @@ let cardsNormRight = 'Roster — Female (Measured)';
 let cardsPanelSexLeft  = 'M';
 let cardsPanelSexRight = 'F';
 let testActiveGroup = 'isosqt';
+let testSex         = 'M';
 let testAthlete     = null;
 let testNorm        = null;
 let testCompare     = [];
@@ -1900,7 +1901,13 @@ function toggleCardPanelSex(panelSlot) {
 function getTestPool() {
   const group = TEST_GROUPS.find(g => g.key === testActiveGroup);
   if (!group) return [];
-  return ATHLETE_DB.filter(a => group.hasData(a)).sort((a,b) => a.name.localeCompare(b.name));
+  return ATHLETE_DB.filter(a => group.hasData(a) && a.sex === testSex).sort((a,b) => a.name.localeCompare(b.name));
+}
+
+function toggleTestSex() {
+  testSex = testSex === 'M' ? 'F' : 'M';
+  testAthlete = null; testCompare = []; testNorm = null;
+  renderTestsTab();
 }
 
 function getTestResults(athlete, normKey) {
@@ -1984,12 +1991,12 @@ function renderTestsTab() {
   const group = TEST_GROUPS.find(g => g.key === testActiveGroup);
   if (!testAthlete || !pool.find(a => a.name === testAthlete)) testAthlete = pool[0].name;
   const athlete = pool.find(a => a.name === testAthlete);
-  if (!testNorm || !norms[testNorm]) testNorm = group.defaultNorm(athlete.sex);
+  if (!testNorm || !norms[testNorm]) testNorm = group.defaultNorm(testSex);
 
-  // Athlete select
+  // Athlete select — same sex only
   const asel = document.getElementById('test-athlete-select');
   asel.innerHTML = pool.map(a =>
-    `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name} (${a.sex})</option>`
+    `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name}</option>`
   ).join('');
 
   // Norm select — all norms
@@ -1999,15 +2006,15 @@ function renderTestsTab() {
   ).join('');
   nsel.value = testNorm;
 
-  // Compare select
+  // Compare select — same sex only, excluding current athlete and already-added
   const csel = document.getElementById('test-compare-select');
   const cmpPool = pool.filter(a => a.name !== testAthlete && !testCompare.includes(a.name));
   csel.innerHTML = '<option value="">Add comparison…</option>' +
-    cmpPool.map(a => `<option value="${a.name}">${a.name} (${a.sex})</option>`).join('');
+    cmpPool.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
 
-  // Sex badge
+  // Sex badge — reflects testSex, clickable to toggle
   const sb = document.getElementById('test-sex-badge');
-  if (sb) { sb.textContent = athlete.sex==='M' ? '♂ Male' : '♀ Female'; sb.className = 'sex-badge ' + (athlete.sex==='M'?'male':'female'); }
+  if (sb) { sb.textContent = testSex==='M' ? '♂ Male' : '♀ Female'; sb.className = 'sex-badge ' + (testSex==='M'?'male':'female'); sb.style.cursor='pointer'; }
 
   // Default rank metric
   if (!testRankMetric || !group.metrics.includes(testRankMetric)) testRankMetric = group.metrics[0];

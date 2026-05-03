@@ -3705,12 +3705,19 @@ function openHistoryModal() {
         const color = isBest ? 'var(--green)' : (val ? 'var(--text)' : 'var(--text3)');
         cells += '<td style="padding:6px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:' + color + ';border-bottom:1px solid var(--border);">' + (val || '—') + '</td>';
       });
-      rowsHTML += '<tr>' + cells + '</tr>';
+      const delBtn = '<td style="padding:4px 6px;border-bottom:1px solid var(--border);text-align:center;">'
+        + '<button onclick="deleteSession(\'' + (sess.id||'') + '\')" title="Delete session"'
+        + ' style="background:none;border:1px solid rgba(248,113,113,0.3);border-radius:6px;color:rgba(248,113,113,0.5);cursor:pointer;font-size:12px;padding:3px 7px;line-height:1;transition:all .15s;"'
+        + ' onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\';"'
+        + ' onmouseout="this.style.borderColor=\'rgba(248,113,113,0.3)\';this.style.color=\'rgba(248,113,113,0.5)\';">✕</button>'
+        + '</td>';
+      rowsHTML += '<tr>' + cells + delBtn + '</tr>';
     });
   }
 
   const headerCells = '<th style="padding:6px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-family:\'DM Mono\',monospace;white-space:nowrap;border-bottom:1px solid var(--border2);">Date</th>'
-    + HISTORY_METRICS.map(m => '<th style="padding:6px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-family:\'DM Mono\',monospace;white-space:nowrap;border-bottom:1px solid var(--border2);">' + m.label + '</th>').join('');
+    + HISTORY_METRICS.map(m => '<th style="padding:6px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-family:\'DM Mono\',monospace;white-space:nowrap;border-bottom:1px solid var(--border2);">' + m.label + '</th>').join('')
+    + '<th style="padding:6px 10px;border-bottom:1px solid var(--border2);"></th>';
 
   const modalHTML = '<div class="report-header">'
     + '<div><div class="report-name">' + a.name + '</div><div class="report-meta">Session history · ' + sessions.length + ' session' + (sessions.length!==1?'s':'') + '</div></div>'
@@ -3737,6 +3744,44 @@ function openHistoryModal() {
   }
   document.getElementById('history-modal-content').innerHTML = modalHTML;
   overlay.style.display = 'flex';
+}
+
+async function deleteSession(sessId) {
+  if (!sessId) return;
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+
+  if (currentAthlete._supabase_id) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/sessions?id=eq.' + sessId, {
+        method: 'DELETE', headers: SUPABASE_HEADERS
+      });
+    } catch(e) { console.error('Supabase session delete error:', e); }
+  }
+
+  currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
+
+  // Recompute best values across remaining sessions
+  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle',
+    'isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'];
+  const bestValues = {}, bestSource = {};
+  (currentAthlete._sessions || []).forEach(session => {
+    (session.measurements || []).forEach(m => {
+      const val = parseFloat(m.value) || 0;
+      if (!val) return;
+      const existing = bestValues[m.metric];
+      if (existing === undefined) { bestValues[m.metric] = val; bestSource[m.metric] = m.source; }
+      else if (INVERSE_METRICS.has(m.metric) ? val < existing : val > existing) {
+        bestValues[m.metric] = val; bestSource[m.metric] = m.source;
+      }
+    });
+  });
+  ALL_KEYS.forEach(k => { if (bestValues[k] !== undefined) currentAthlete[k] = bestValues[k]; });
+  currentAthlete.cmjFD = bestSource['cmj'] === 'FD';
+  currentAthlete.rsiFD = bestSource['rsi'] === 'FD';
+  athleteData = {...currentAthlete};
+
+  renderAll(true);
+  openHistoryModal();
 }
 
 function openNewSessionForm() {

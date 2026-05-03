@@ -943,6 +943,20 @@ function getResultsFor(athlete, normKey) {
 
 const FORCE_WEIGHTS    = {power:0.25, rfd:0.25, cmj:0.20, sprint10:0.15, broad:0.15};
 const REACTIVE_WEIGHTS = {rsi:0.40, sprintFly:0.35, shuttle:0.25};
+
+function getZoneStyle(force, reactive) {
+  const highT = 65, lowT = 30, midT = matrixThreshold;
+  if (force >= highT && reactive >= highT)
+    return { color:'#a78bfa', bg:'rgba(167,139,250,0.15)', border:'rgba(167,139,250,0.4)' };
+  if (force < lowT && reactive < lowT)
+    return { color:'#f87171', bg:'rgba(248,113,113,0.15)', border:'rgba(248,113,113,0.4)' };
+  if (force >= midT && reactive >= midT)
+    return { color:'#60a5fa', bg:'rgba(96,165,250,0.15)',  border:'rgba(96,165,250,0.4)'  };
+  if (Math.max(force, reactive) >= midT && Math.min(force, reactive) < lowT)
+    return { color:'#fb923c', bg:'rgba(251,146,60,0.15)',  border:'rgba(251,146,60,0.4)'  };
+  return   { color:'#34d399', bg:'rgba(52,211,153,0.15)',  border:'rgba(52,211,153,0.4)'  };
+}
+
 function computeMatrixProfile(results) {
   function weightedScore(weights) {
     const active = Object.entries(weights).filter(([k]) => !disabledMetrics.has(k));
@@ -954,7 +968,9 @@ function computeMatrixProfile(results) {
   const reactiveScore = weightedScore(REACTIVE_WEIGHTS);
   const xHigh = reactiveScore >= matrixThreshold;
   const yHigh = forceScore    >= matrixThreshold;
-  return { forceScore, reactiveScore, xHigh, yHigh, quadrant: QUADRANTS.find(q=>q.xHigh===xHigh&&q.yHigh===yHigh) };
+  const baseQuadrant = QUADRANTS.find(q=>q.xHigh===xHigh&&q.yHigh===yHigh);
+  const quadrant = { ...baseQuadrant, ...getZoneStyle(forceScore, reactiveScore) };
+  return { forceScore, reactiveScore, xHigh, yHigh, quadrant };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1499,23 +1515,35 @@ function renderMatrix(matrix) {
   const PAD = {top:28,right:16,bottom:36,left:46};
   const gx=PAD.left, gy=PAD.top, gw=W-PAD.left-PAD.right, gh=H-PAD.top-PAD.bottom;
   const midX=gx+gw/2, midY=gy+gh/2;
-  const quadDefs = [
-    {xHigh:false,yHigh:true, color:'rgba(52,211,153,0.06)',  x:gx,   y:gy,    w:gw/2,h:gh/2},
-    {xHigh:true, yHigh:true, color:'rgba(167,139,250,0.06)', x:midX, y:gy,    w:gw/2,h:gh/2},
-    {xHigh:false,yHigh:false,color:'rgba(248,113,113,0.06)', x:gx,   y:midY,  w:gw/2,h:gh/2},
-    {xHigh:true, yHigh:false,color:'rgba(52,211,153,0.06)',  x:midX, y:midY,  w:gw/2,h:gh/2},
+  const highT = 65, lowT = 30;
+  const xLow  = gx + (lowT/100)*gw,  xHigh2 = gx + (highT/100)*gw;
+  const yLow  = gy + gh*(1-lowT/100), yHigh2 = gy + gh*(1-highT/100);
+  // Background zone tints
+  const zoneBg = [
+    {x:gx,     y:gy,     w:gw,   h:gh,   color:'rgba(248,113,113,0.04)'},  // base red
+    {x:gx,     y:gy,     w:gw,   h:yLow-gy, color:'rgba(251,146,60,0.04)'},  // orange band (force mid)
+    {x:xLow,   y:gy,     w:gw-xLow+gx, h:gh, color:'rgba(52,211,153,0.04)'}, // green band (reactive mid)
+    {x:midX,   y:gy,     w:gw/2, h:gh/2, color:'rgba(96,165,250,0.05)'},  // blue top-right
+    {x:xHigh2, y:gy,     w:gw-(xHigh2-gx), h:yHigh2-gy+gh*(1-highT/100), color:'rgba(167,139,250,0.06)'}, // purple corner
   ];
-  quadDefs.forEach(q=>{ctx.fillStyle=q.color;ctx.fillRect(q.x,q.y,q.w,q.h);});
-  const aq=quadDefs.find(q=>q.xHigh===matrix.xHigh&&q.yHigh===matrix.yHigh);
-  const qDef=QUADRANTS.find(q=>q.xHigh===matrix.xHigh&&q.yHigh===matrix.yHigh);
-  ctx.fillStyle=qDef.bg; ctx.fillRect(aq.x,aq.y,aq.w,aq.h);
+  zoneBg.forEach(z=>{ctx.fillStyle=z.color;ctx.fillRect(z.x,z.y,z.w,z.h);});
+  const qDef = matrix.quadrant;
+  const aqX = matrix.xHigh ? midX : gx, aqY = matrix.yHigh ? gy : midY;
+  ctx.fillStyle=qDef.bg; ctx.fillRect(aqX,aqY,gw/2,gh/2);
   ctx.strokeStyle=qDef.border; ctx.lineWidth=1.5;
-  ctx.strokeRect(aq.x+1,aq.y+1,aq.w-2,aq.h-2);
+  ctx.strokeRect(aqX+1,aqY+1,gw/2-2,gh/2-2);
   ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.lineWidth=1;
   ctx.strokeRect(gx,gy,gw,gh);
+  // Main midpoint lines
   ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
   ctx.beginPath();ctx.moveTo(midX,gy);ctx.lineTo(midX,gy+gh);ctx.stroke();
   ctx.beginPath();ctx.moveTo(gx,midY);ctx.lineTo(gx+gw,midY);ctx.stroke();
+  // Secondary threshold lines at 30 and 65
+  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.setLineDash([2,4]);
+  ctx.beginPath();ctx.moveTo(xLow,gy);ctx.lineTo(xLow,gy+gh);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xHigh2,gy);ctx.lineTo(xHigh2,gy+gh);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(gx,yLow);ctx.lineTo(gx+gw,yLow);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(gx,yHigh2);ctx.lineTo(gx+gw,yHigh2);ctx.stroke();
   ctx.setLineDash([]);
   const qlabels=[
     {text:'Power deficient',   x:gx+gw*0.25,y:gy+14,   xHigh:false,yHigh:true },

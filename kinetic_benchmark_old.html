@@ -2000,10 +2000,10 @@ function renderTestsTab() {
     `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name}</option>`
   ).join('');
 
-  // Norm select — sex-filtered
+  // Norm select — sex-filtered, ISOSQT norms only when on ISOSQT group
   const nsel = document.getElementById('test-norm-select');
   nsel.innerHTML = Object.keys(INITIAL_NORMS)
-    .filter(k => k.includes(sexWord))
+    .filter(k => k.includes(sexWord) && (testActiveGroup === 'isosqt' || !k.startsWith('ISOSQT')))
     .map(k => `<option value="${k}"${k===testNorm?' selected':''}>${k}</option>`)
     .join('');
   nsel.value = testNorm;

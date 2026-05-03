@@ -842,6 +842,7 @@ let cardsNormLeft  = 'Roster — Male (Measured)';
 let cardsNormRight = 'Roster — Female (Measured)';
 let cardsPanelSexLeft  = 'M';
 let cardsPanelSexRight = 'F';
+let activeTab       = 'analytics';
 let testActiveGroup = 'isosqt';
 let testSex         = 'M';
 let testAthlete     = null;
@@ -1255,6 +1256,7 @@ function renderCompareTable() {
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════════════════
 function switchTab(tab) {
+  activeTab = tab;
   ['analytics','roster','leaderboard','coaches','flags','cards','tests','norms','settings'].forEach(t => {
     document.getElementById('pane-'+t).style.display = t===tab?'':'none';
     document.getElementById('tab-'+t).className = 'tab-btn'+(t===tab?' active':'');
@@ -1267,6 +1269,7 @@ function switchTab(tab) {
   if (tab==='cards')       renderCardsTab();
   if (tab==='settings')    renderSettings();
   if (tab==='tests')       renderTestsTab();
+  saveState();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2925,6 +2928,56 @@ function renderAll(rebuildInputs=true) {
   }
   renderSelectedChart();
   renderCompareTable();
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PERSIST STATE
+// ═══════════════════════════════════════════════════════════════
+const KINETIC_STATE_KEY = 'kinetic_v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(KINETIC_STATE_KEY, JSON.stringify({
+      athlete:          currentAthlete?.name,
+      norm:             selectedNorm,
+      tab:              activeTab,
+      suppressEstimated,
+      measuredOnlyMode,
+      disabledMetrics:  [...disabledMetrics],
+      tierThresholds,
+      matrixThreshold,
+      selectedChartMode,
+      testActiveGroup,
+      testSex,
+      testAthlete,
+      testNorm
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KINETIC_STATE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.athlete) {
+      const a = ATHLETE_DB.find(x => x.name === s.athlete);
+      if (a) { currentAthlete = a; athleteData = Object.assign({}, a); }
+    }
+    if (s.norm && norms[s.norm])           selectedNorm      = s.norm;
+    if (s.suppressEstimated !== undefined) suppressEstimated = s.suppressEstimated;
+    if (s.measuredOnlyMode  !== undefined) measuredOnlyMode  = s.measuredOnlyMode;
+    if (Array.isArray(s.disabledMetrics))  disabledMetrics   = new Set(s.disabledMetrics);
+    if (Array.isArray(s.tierThresholds) && s.tierThresholds.length === 4) tierThresholds = s.tierThresholds;
+    if (typeof s.matrixThreshold === 'number') matrixThreshold = s.matrixThreshold;
+    if (s.selectedChartMode) selectedChartMode = s.selectedChartMode;
+    if (s.testActiveGroup)   testActiveGroup   = s.testActiveGroup;
+    if (s.testSex)           testSex           = s.testSex;
+    if (s.testAthlete)       testAthlete       = s.testAthlete;
+    if (s.testNorm && norms[s.testNorm]) testNorm = s.testNorm;
+    if (s.tab)               activeTab         = s.tab;
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3345,11 +3398,16 @@ async function init() {
     nsel.appendChild(o);
   });
 
-  // Apply measured-only defaults
+  // Apply defaults
   currentAthlete = ATHLETE_DB[0];
   athleteData = Object.assign({}, currentAthlete);
   selectedNorm = 'Roster — ' + (currentAthlete.sex==='M'?'Male':'Female') + ' (Measured)';
   selectedChartKeys = new Set(METRICS.filter(m => !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
+
+  // Restore saved state (overrides defaults above)
+  loadState();
+
+  // Sync selectors to state (may have changed via loadState)
   document.getElementById('norm-select').value = selectedNorm;
   asel.value = currentAthlete.name;
 
@@ -3358,6 +3416,9 @@ async function init() {
 
   setLoadingProgress(100, 'Ready');
   renderAll();
+
+  // Restore active tab (after renderAll so content is ready)
+  if (activeTab !== 'analytics') switchTab(activeTab);
 
   // Fade out overlay
   const overlay = document.getElementById('loading-overlay');

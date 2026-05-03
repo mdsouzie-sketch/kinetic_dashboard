@@ -14,9 +14,9 @@
       --bg3:       #172032;
       --border:    rgba(240,192,64,0.30);
       --border2:   rgba(240,192,64,0.50);
-      --text:      #e8edf5;
-      --text2:     #8a9ab8;
-      --text3:     #4a5878;
+      --text:      #f0f4ff;
+      --text2:     #b8c8e8;
+      --text3:     #7a90b8;
       --gold:      #f0c040;
       --gold-dim:  rgba(240,192,64,0.12);
       --teal:      #2dd4bf;
@@ -514,11 +514,8 @@
           <button class="card-chevron" data-collapse="cbody-matrix" onclick="toggleCardCollapse('cbody-matrix')">▾</button>
         </div>
         <div id="cbody-matrix">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;margin-top:6px;font-family:'DM Mono',monospace;">Force production vs. elastic/reactive quality</div>
-          <div style="position:relative;width:100%;">
-            <canvas id="matrix-canvas" height="260" style="display:block;width:100%;"></canvas>
-          </div>
-          <div class="matrix-active-zone" id="matrix-zone-card"></div>
+          <div id="matrix-gauges" style="margin-top:12px;"></div>
+          <div class="matrix-active-zone" id="matrix-zone-card" style="margin-top:12px;"></div>
         </div>
       </div>
     </div>
@@ -1502,87 +1499,39 @@ function renderBarChart(results) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RENDER — matrix canvas
+// RENDER — readiness gauges
 // ═══════════════════════════════════════════════════════════════
 function renderMatrix(matrix) {
-  const canvas = document.getElementById('matrix-canvas');
-  const W = canvas.parentElement.clientWidth || 320;
-  const H = 260;
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = W * dpr; canvas.height = H * dpr;
-  canvas.style.width = W+'px'; canvas.style.height = H+'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0,0,W,H);
-  const PAD = {top:28,right:16,bottom:36,left:46};
-  const gx=PAD.left, gy=PAD.top, gw=W-PAD.left-PAD.right, gh=H-PAD.top-PAD.bottom;
-  const midX=gx+gw/2, midY=gy+gh/2;
-  const highT = 65, lowT = 30;
-  const xLow  = gx + (lowT/100)*gw,  xHigh2 = gx + (highT/100)*gw;
-  const yLow  = gy + gh*(1-lowT/100), yHigh2 = gy + gh*(1-highT/100);
-  // Background zone tints
-  const zoneBg = [
-    {x:gx,     y:gy,     w:gw,   h:gh,   color:'rgba(248,113,113,0.04)'},  // base red
-    {x:gx,     y:gy,     w:gw,   h:yLow-gy, color:'rgba(251,146,60,0.04)'},  // orange band (force mid)
-    {x:xLow,   y:gy,     w:gw-xLow+gx, h:gh, color:'rgba(52,211,153,0.04)'}, // green band (reactive mid)
-    {x:midX,   y:gy,     w:gw/2, h:gh/2, color:'rgba(96,165,250,0.05)'},  // blue top-right
-    {x:xHigh2, y:gy,     w:gw-(xHigh2-gx), h:yHigh2-gy+gh*(1-highT/100), color:'rgba(167,139,250,0.06)'}, // purple corner
-  ];
-  zoneBg.forEach(z=>{ctx.fillStyle=z.color;ctx.fillRect(z.x,z.y,z.w,z.h);});
-  const qDef = matrix.quadrant;
-  const aqX = matrix.xHigh ? midX : gx, aqY = matrix.yHigh ? gy : midY;
-  ctx.fillStyle=qDef.bg; ctx.fillRect(aqX,aqY,gw/2,gh/2);
-  ctx.strokeStyle=qDef.border; ctx.lineWidth=1.5;
-  ctx.strokeRect(aqX+1,aqY+1,gw/2-2,gh/2-2);
-  ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.lineWidth=1;
-  ctx.strokeRect(gx,gy,gw,gh);
-  // Main midpoint lines
-  ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-  ctx.beginPath();ctx.moveTo(midX,gy);ctx.lineTo(midX,gy+gh);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(gx,midY);ctx.lineTo(gx+gw,midY);ctx.stroke();
-  // Secondary threshold lines at 30 and 65
-  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.setLineDash([2,4]);
-  ctx.beginPath();ctx.moveTo(xLow,gy);ctx.lineTo(xLow,gy+gh);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(xHigh2,gy);ctx.lineTo(xHigh2,gy+gh);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(gx,yLow);ctx.lineTo(gx+gw,yLow);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(gx,yHigh2);ctx.lineTo(gx+gw,yHigh2);ctx.stroke();
-  ctx.setLineDash([]);
-  const qlabels=[
-    {text:'Power deficient',   x:gx+gw*0.25,y:gy+14,   xHigh:false,yHigh:true },
-    {text:'High performer',    x:gx+gw*0.75,y:gy+14,   xHigh:true, yHigh:true },
-    {text:'Underdeveloped',    x:gx+gw*0.25,y:midY+14,  xHigh:false,yHigh:false},
-    {text:'Strength deficient',x:gx+gw*0.75,y:midY+14,  xHigh:true, yHigh:false},
-  ];
-  qlabels.forEach(l=>{
-    const qd=QUADRANTS.find(q=>q.xHigh===l.xHigh&&q.yHigh===l.yHigh);
-    const isActive=l.xHigh===matrix.xHigh&&l.yHigh===matrix.yHigh;
-    ctx.fillStyle=isActive?qd.color:'rgba(148,163,184,0.30)';
-    ctx.font=`${isActive?700:600} 12px 'DM Mono', monospace`;
-    ctx.textAlign='center'; ctx.fillText(l.text.toUpperCase(),l.x,l.y);
-  });
-  ctx.fillStyle='rgba(74,88,120,0.9)'; ctx.font="12px 'DM Mono',monospace"; ctx.textAlign='center';
-  ctx.fillText('Elastic / Reactive quality →',gx+gw/2,H-6);
-  ctx.save();ctx.translate(13,gy+gh/2);ctx.rotate(-Math.PI/2);ctx.fillText('Force production →',0,0);ctx.restore();
-  ctx.fillStyle='rgba(74,88,120,0.7)'; ctx.font="11px 'DM Mono',monospace";
-  ctx.textAlign='center';
-  [0,25,50,75,100].forEach(v=>{ctx.fillText(v,gx+(v/100)*gw,gy+gh+14);});
-  ctx.textAlign='right';
-  [0,25,50,75,100].forEach(v=>{ctx.fillText(v,gx-6,gy+gh-(v/100)*gh+3);});
-  const dotX=gx+(matrix.reactiveScore/100)*gw;
-  const dotY=gy+gh-(matrix.forceScore/100)*gh;
-  const grd=ctx.createRadialGradient(dotX,dotY,2,dotX,dotY,20);
-  grd.addColorStop(0,qDef.color+'cc'); grd.addColorStop(1,qDef.color+'00');
-  ctx.beginPath();ctx.arc(dotX,dotY,20,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
-  ctx.beginPath();ctx.arc(dotX,dotY,8,0,Math.PI*2);ctx.fillStyle=qDef.color;ctx.fill();
-  ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();
-  ctx.strokeStyle=qDef.color+'55';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(dotX,dotY);ctx.lineTo(dotX,gy+gh);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(dotX,dotY);ctx.lineTo(gx,dotY);ctx.stroke();
-  ctx.setLineDash([]);
-  const card=document.getElementById('matrix-zone-card');
-  card.style.background=qDef.bg; card.style.borderColor=qDef.border;
-  card.innerHTML=`<div class="maz-title" style="color:${qDef.color};">${qDef.title}</div>
+  const forceScore    = Math.round(matrix.forceScore);
+  const reactiveScore = Math.round(matrix.reactiveScore);
+  const forceTier     = getTier(forceScore);
+  const reactiveTier  = getTier(reactiveScore);
+  const qDef          = matrix.quadrant;
+
+  function gauge(label, score, tier) {
+    return `
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;">${label}</div>
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="font-size:26px;font-weight:900;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${tier.color};line-height:1;">${score}<span style="font-size:11px;opacity:0.55;font-style:normal;font-weight:600;">th</span></span>
+            <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
+          </div>
+        </div>
+        <div style="height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;position:relative;">
+          <div style="height:100%;width:${score}%;background:linear-gradient(90deg,${tier.color}99,${tier.color});border-radius:5px;transition:width 0.5s ease;box-shadow:0 0 10px ${tier.color}55;"></div>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('matrix-gauges').innerHTML =
+    gauge('Force Production', forceScore, forceTier) +
+    gauge('Elastic / Reactive', reactiveScore, reactiveTier);
+
+  const card = document.getElementById('matrix-zone-card');
+  card.style.background   = qDef.bg;
+  card.style.borderColor  = qDef.border;
+  card.innerHTML = `<div class="maz-title" style="color:${qDef.color};">${qDef.title}</div>
     <div class="maz-desc">${qDef.desc}</div>
     <div class="maz-rx" style="color:${qDef.color};">Recommended focus → <span style="opacity:0.7;font-weight:500;text-transform:none;">${qDef.rx}</span></div>`;
 }

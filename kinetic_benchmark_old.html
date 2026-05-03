@@ -1329,14 +1329,15 @@ function resetNorms() { norms = JSON.parse(JSON.stringify(INITIAL_NORMS)); rende
 // RENDER — input grid
 // ═══════════════════════════════════════════════════════════════
 function renderInputGrid() {
-  document.getElementById('input-grid').innerHTML = METRICS.map(m => {
-    const isEst = isEstimated(m.key);
-    return `<div class="metric-field ${isEst?'estimated':''}">
-      <label>${m.label} <span style="color:var(--text3);font-size:9px;">(${m.unit})</span></label>
-      <input id="inp-${m.key}" type="number" step="${m.step}" value="${athleteData[m.key]}" oninput="onInput('${m.key}',this.value)" />
-    </div>`;
-  }).join('');
-  // Show/hide estimated notice
+  document.getElementById('input-grid').innerHTML = METRICS
+    .filter(m => !disabledMetrics.has(m.key))
+    .map(m => {
+      const isEst = isEstimated(m.key);
+      return `<div class="metric-field ${isEst?'estimated':''}">
+        <label>${m.label} <span style="color:var(--text3);font-size:9px;">(${m.unit})</span></label>
+        <input id="inp-${m.key}" type="number" step="${m.step}" value="${athleteData[m.key]}" oninput="onInput('${m.key}',this.value)" />
+      </div>`;
+    }).join('');
   document.getElementById('est-notice').style.display = '';
 }
 
@@ -1373,9 +1374,9 @@ function toggleMeasuredOnly() {
   suppressEstimated = measuredOnlyMode;
   selectedChartMode = measuredOnlyMode ? 'measured' : 'all';
   if (measuredOnlyMode) {
-    selectedChartKeys = new Set(METRICS.filter(m => !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
+    selectedChartKeys = new Set(METRICS.filter(m => !disabledMetrics.has(m.key) && !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
   } else {
-    selectedChartKeys = new Set(METRICS.map(m => m.key));
+    selectedChartKeys = new Set(METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => m.key));
   }
   syncSuppressButtons();
   renderRosterTable();
@@ -1385,9 +1386,9 @@ function toggleMeasuredOnly() {
 function setChartMode(mode) {
   selectedChartMode = mode;
   if (mode === 'all') {
-    selectedChartKeys = new Set(METRICS.map(m => m.key));
+    selectedChartKeys = new Set(METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => m.key));
   } else if (mode === 'measured') {
-    selectedChartKeys = new Set(METRICS.filter(m => !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
+    selectedChartKeys = new Set(METRICS.filter(m => !disabledMetrics.has(m.key) && !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
   } else if (mode === 'none') {
     selectedChartKeys = new Set();
   }
@@ -1416,16 +1417,18 @@ function renderSelectedChart() {
   syncChartModeButtons();
   const results = getResults();
 
-  document.getElementById('selected-chart-chips').innerHTML = METRICS.map(m => {
-    const active = selectedChartKeys.has(m.key);
-    const est = isEstimatedForAthlete(m.key, currentAthlete);
-    const estDot = est ? ' <span style="color:var(--orange);font-size:9px;">★</span>' : '';
-    return `<button onclick="toggleSelectedMetric('${m.key}')"
-      style="padding:4px 11px;border-radius:12px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;
-             border:1px solid ${active ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.1)'};
-             background:${active ? 'rgba(96,165,250,0.1)' : 'var(--bg2)'};
-             color:${active ? 'var(--blue)' : 'var(--text3)'};">${m.label}${estDot}</button>`;
-  }).join('');
+  document.getElementById('selected-chart-chips').innerHTML = METRICS
+    .filter(m => !disabledMetrics.has(m.key))
+    .map(m => {
+      const active = selectedChartKeys.has(m.key);
+      const est = isEstimatedForAthlete(m.key, currentAthlete);
+      const estDot = est ? ' <span style="color:var(--orange);font-size:9px;">★</span>' : '';
+      return `<button onclick="toggleSelectedMetric('${m.key}')"
+        style="padding:4px 11px;border-radius:12px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;
+               border:1px solid ${active ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.1)'};
+               background:${active ? 'rgba(96,165,250,0.1)' : 'var(--bg2)'};
+               color:${active ? 'var(--blue)' : 'var(--text3)'};">${m.label}${estDot}</button>`;
+    }).join('');
 
   const filtered = results.filter(r => selectedChartKeys.has(r.key));
   const sorted = [...filtered].sort((a, b) => b.percentile - a.percentile);

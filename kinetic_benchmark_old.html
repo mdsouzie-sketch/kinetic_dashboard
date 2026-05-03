@@ -1440,13 +1440,21 @@ function renderSelectedChart() {
           <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
-            <div class="bar-target" style="left:85%;background:${r.meetingTarget?'#34d399':'#fb923c'};"></div>
+            <div class="bar-target" style="left:85%;background:${targetLineColor(r.percentile)};"></div>
           </div>
           <div class="bar-pct" style="color:${r.tier.color};">${r.percentile}%</div>
           <div class="bar-badge"><span class="tier-badge" style="background:${r.tier.bg};color:${r.tier.color};">${r.tier.label}</span></div>
           ${makeTrendBadge(currentAthlete, r.key)}
         </div>`;
       }).join('');
+}
+
+function targetLineColor(pct) {
+  if (pct >= 85) return '#34d399';
+  if (pct >= 70) return '#60a5fa';
+  if (pct >= 50) return '#f0c040';
+  if (pct >= 30) return '#fb923c';
+  return '#f87171';
 }
 
 function getTrendForMetric(athlete, key) {
@@ -1486,7 +1494,7 @@ function renderBarChart(results) {
       <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
       <div class="bar-track">
         <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
-        <div class="bar-target" style="left:85%;background:${r.meetingTarget?'#34d399':'#fb923c'};"></div>
+        <div class="bar-target" style="left:85%;background:${targetLineColor(r.percentile)};"></div>
       </div>
       <div class="bar-pct" style="color:${r.tier.color};">${r.percentile}%</div>
       <div class="bar-badge"><span class="tier-badge" style="background:${r.tier.bg};color:${r.tier.color};">${r.tier.label}</span></div>

@@ -1356,8 +1356,35 @@ function renderSelectedChart() {
           </div>
           <div class="bar-pct" style="color:${r.tier.color};">${r.percentile}%</div>
           <div class="bar-badge"><span class="tier-badge" style="background:${r.tier.bg};color:${r.tier.color};">${r.tier.label}</span></div>
+          ${makeTrendBadge(currentAthlete, r.key)}
         </div>`;
       }).join('');
+}
+
+function getTrendForMetric(athlete, key) {
+  const INVERSE = new Set(['sprint10','sprintFly','sprint1020','shuttle']);
+  const sessions = [...(athlete._sessions || [])].sort((a,b) => b.session_date.localeCompare(a.session_date));
+  const vals = [];
+  for (const s of sessions) {
+    const meas = (s.measurements || []).find(m => m.metric === key);
+    if (meas) { const v = parseFloat(meas.value); if (v) { vals.push(v); if (vals.length === 2) break; } }
+  }
+  if (vals.length < 2) return null;
+  const [latest, prev] = vals;
+  return { delta: INVERSE.has(key) ? prev - latest : latest - prev, latest, prev };
+}
+
+function makeTrendBadge(athlete, key) {
+  const trend = getTrendForMetric(athlete, key);
+  if (!trend) return '<div style="width:52px;flex-shrink:0;"></div>';
+  const mDef = METRICS.find(m => m.key === key);
+  const d = mDef && mDef.step < 0.1 ? 2 : 1;
+  const abs = Math.abs(trend.delta).toFixed(d);
+  const improved = trend.delta > 0.0009;
+  const declined = trend.delta < -0.0009;
+  const arrow = improved ? '↑' : declined ? '↓' : '→';
+  const color = improved ? 'var(--green)' : declined ? 'var(--red)' : 'var(--text3)';
+  return `<div style="width:52px;flex-shrink:0;text-align:right;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:${color};white-space:nowrap;" title="vs prior session: ${trend.prev.toFixed(d)} → ${trend.latest.toFixed(d)}">${arrow}<span style="font-size:9px;"> ${abs}</span></div>`;
 }
 
 function renderBarChart(results) {
@@ -1376,6 +1403,7 @@ function renderBarChart(results) {
       </div>
       <div class="bar-pct" style="color:${r.tier.color};">${r.percentile}%</div>
       <div class="bar-badge"><span class="tier-badge" style="background:${r.tier.bg};color:${r.tier.color};">${r.tier.label}</span></div>
+      ${makeTrendBadge(currentAthlete, r.key)}
     </div>`;
   }).join('');
 
@@ -2006,7 +2034,7 @@ function renderFlags() {
       const v = a[m.key]; if (!v || v<=0) return false;
       return calcPercentile(v, sexNorm[m.key], m.inv) < 15;
     });
-    const missing = activeM.filter(m => !a.measured || !a.measured[m.key]);
+    const missing = activeM.filter(m => coreMeasuredKeys.has(m.key) && (!a.measured || !a.measured[m.key]));
     return { a, criticals, missing };
   }).filter(x => x.criticals.length>=1 || x.missing.length>=3);
 
@@ -2032,7 +2060,7 @@ function renderFlags() {
       <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">${flagged.length} athlete${flagged.length!==1?'s':''} flagged</div>
     </div>
     ${withCriticals.length ? `<div class="flag-section-title" style="color:var(--red);">Critical / Sub-optimal metrics (below 15th percentile)</div>${withCriticals.map(makeRow).join('')}` : ''}
-    ${gapsOnly.length ? `<div class="flag-section-title" style="margin-top:${withCriticals.length?18:0}px;color:var(--orange);">Measurement gaps (3+ estimated metrics)</div>${gapsOnly.map(makeRow).join('')}` : ''}
+    ${gapsOnly.length ? `<div class="flag-section-title" style="margin-top:${withCriticals.length?18:0}px;color:var(--orange);">Measurement gaps (3+ required metrics missing)</div>${gapsOnly.map(makeRow).join('')}` : ''}
     ${flagged.length===0 ? '<div style="color:var(--text3);font-family:\'DM Mono\',monospace;font-size:12px;padding:20px 0;text-align:center;">No flags — all athletes are performing above critical thresholds.</div>' : ''}
   </div>`;
 }

@@ -875,10 +875,10 @@ const TIERS = [
   { min:0,  label:'Critical',    color:'#f87171', bg:'rgba(248,113,113,0.15)'  },
 ];
 const QUADRANTS = [
-  { id:'high-performer',    xHigh:true,  yHigh:true,  label:'High performer',     color:'#34d399', bg:'rgba(52,211,153,0.12)',   border:'rgba(52,211,153,0.4)',   title:'High performer',     desc:'Strong force production and well-developed elastic/reactive qualities. Athlete is near their neuromuscular ceiling.', rx:'Maintenance loading · Sport integration · Resilience work' },
-  { id:'strength-deficient',xHigh:true,  yHigh:false, label:'Strength deficient', color:'#f0c040', bg:'rgba(240,192,64,0.12)',   border:'rgba(240,192,64,0.4)',   title:'Strength deficient', desc:'Elastic and reactive qualities are developed, but absolute force production is the limiting factor. Maximal strength is the primary lever.', rx:'Maximal strength emphasis · Force ceiling development' },
-  { id:'power-deficient',   xHigh:false, yHigh:true,  label:'Power deficient',    color:'#f0c040', bg:'rgba(240,192,64,0.12)',   border:'rgba(240,192,64,0.4)',   title:'Power deficient',   desc:'Strong force foundation but elastic efficiency and reactive output are underexpressed. SSC development and reactive loading should be prioritized.', rx:'SSC efficiency training · Reactive loading · Plyometric volume' },
-  { id:'underdeveloped',    xHigh:false, yHigh:false, label:'Underdeveloped',     color:'#f87171', bg:'rgba(248,113,113,0.12)',  border:'rgba(248,113,113,0.4)',  title:'Underdeveloped',    desc:'Both force production and elastic/reactive qualities are below threshold. GPP targeting foundational strength and basic plyometric exposure is the starting point.', rx:'General physical preparedness · Foundational strength · Basic plyometrics' },
+  { id:'high-performer',    xHigh:true,  yHigh:true,  label:'High performer',     color:'#a78bfa', bg:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.4)', title:'High performer',     desc:'Strong force production and well-developed elastic/reactive qualities. Athlete is near their neuromuscular ceiling.', rx:'Maintenance loading · Sport integration · Resilience work' },
+  { id:'strength-deficient',xHigh:true,  yHigh:false, label:'Strength deficient', color:'#34d399', bg:'rgba(52,211,153,0.12)',  border:'rgba(52,211,153,0.4)',  title:'Strength deficient', desc:'Elastic and reactive qualities are developed, but absolute force production is the limiting factor. Maximal strength is the primary lever.', rx:'Maximal strength emphasis · Force ceiling development' },
+  { id:'power-deficient',   xHigh:false, yHigh:true,  label:'Power deficient',    color:'#34d399', bg:'rgba(52,211,153,0.12)',  border:'rgba(52,211,153,0.4)',  title:'Power deficient',   desc:'Strong force foundation but elastic efficiency and reactive output are underexpressed. SSC development and reactive loading should be prioritized.', rx:'SSC efficiency training · Reactive loading · Plyometric volume' },
+  { id:'underdeveloped',    xHigh:false, yHigh:false, label:'Underdeveloped',     color:'#f87171', bg:'rgba(248,113,113,0.12)', border:'rgba(248,113,113,0.4)', title:'Underdeveloped',    desc:'Both force production and elastic/reactive qualities are below threshold. GPP targeting foundational strength and basic plyometric exposure is the starting point.', rx:'General physical preparedness · Foundational strength · Basic plyometrics' },
 ];
 const COACHING_LIB = {
   shuttle:   { title:'Change-of-direction efficiency', text:'Deceleration capacity is the primary limiter. Shift emphasis toward eccentric overload methods and repeated direction-change exposure at near-maximal intent.', methods:['Eccentric overload','Deceleration emphasis','COD at max intent','Reactive agility'] },
@@ -1500,10 +1500,10 @@ function renderMatrix(matrix) {
   const gx=PAD.left, gy=PAD.top, gw=W-PAD.left-PAD.right, gh=H-PAD.top-PAD.bottom;
   const midX=gx+gw/2, midY=gy+gh/2;
   const quadDefs = [
-    {xHigh:false,yHigh:true, color:'rgba(240,192,64,0.06)',  x:gx,   y:gy,    w:gw/2,h:gh/2},
-    {xHigh:true, yHigh:true, color:'rgba(52,211,153,0.06)',  x:midX, y:gy,    w:gw/2,h:gh/2},
+    {xHigh:false,yHigh:true, color:'rgba(52,211,153,0.06)',  x:gx,   y:gy,    w:gw/2,h:gh/2},
+    {xHigh:true, yHigh:true, color:'rgba(167,139,250,0.06)', x:midX, y:gy,    w:gw/2,h:gh/2},
     {xHigh:false,yHigh:false,color:'rgba(248,113,113,0.06)', x:gx,   y:midY,  w:gw/2,h:gh/2},
-    {xHigh:true, yHigh:false,color:'rgba(240,192,64,0.06)',  x:midX, y:midY,  w:gw/2,h:gh/2},
+    {xHigh:true, yHigh:false,color:'rgba(52,211,153,0.06)',  x:midX, y:midY,  w:gw/2,h:gh/2},
   ];
   quadDefs.forEach(q=>{ctx.fillStyle=q.color;ctx.fillRect(q.x,q.y,q.w,q.h);});
   const aq=quadDefs.find(q=>q.xHigh===matrix.xHigh&&q.yHigh===matrix.yHigh);

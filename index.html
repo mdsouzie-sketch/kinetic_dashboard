@@ -2432,7 +2432,7 @@ function renderRosterTable() {
       if (k==='name') {
         const nameColor = hasAllMeasured(a) ? 'color:var(--green);' : '';
         const tier = getAthleteOverallTier(a);
-        const dot = tier ? `<span style="color:${tier.color};font-size:9px;margin-right:5px;" title="${tier.label}">●</span>` : '';
+        const dot = tier ? `<span style="color:${tier.color};font-size:9px;margin-right:5px;">●</span>` : '';
         return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);font-weight:600;${nameColor}">${dot}${a.custom?'<span style="color:var(--teal);">✦</span> ':''}${a[k]}</td>`;
       }
       if (k==='sex') {

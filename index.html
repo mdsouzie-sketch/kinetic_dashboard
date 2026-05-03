@@ -361,6 +361,11 @@
 
     /* ── Roster / Leaderboard sticky header ── */
     .sticky-table-wrap { overflow: auto; max-height: 72vh; }
+    .sticky-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
+    .sticky-table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .sticky-table-wrap::-webkit-scrollbar-thumb { background: rgba(240,192,64,0.18); border-radius: 10px; }
+    .sticky-table-wrap::-webkit-scrollbar-thumb:hover { background: rgba(240,192,64,0.35); }
+    .sticky-table-wrap { scrollbar-width: thin; scrollbar-color: rgba(240,192,64,0.18) transparent; }
     .sticky-table thead th {
       position: sticky; top: 0; background: var(--bg2); z-index: 3;
       box-shadow: 0 1px 0 var(--border);
@@ -3516,24 +3521,28 @@ init();
 (function() {
   const tip = document.getElementById('bar-tooltip');
   if (!tip) return;
-  document.addEventListener('mouseover', e => {
-    const row = e.target.closest('.has-tip');
-    if (!row) { tip.classList.remove('visible'); return; }
-    const parts = (row.dataset.tip || '').split('|');
-    tip.innerHTML = `<span style="color:var(--text);font-weight:700;">${parts[0] || ''}</span>` +
-      (parts[1] ? `<span style="color:var(--gold);margin-left:8px;">${parts[1]}</span>` : '') +
-      (parts[2] ? `<span style="color:var(--text3);margin-left:8px;">${parts[2]}</span>` : '') +
-      (parts[3] ? `<span style="color:var(--text3);margin-left:8px;">· ${parts[3]}</span>` : '');
-    tip.classList.add('visible');
-  });
-  document.addEventListener('mouseout', e => {
-    if (!e.target.closest('.has-tip')) tip.classList.remove('visible');
-  });
+  let lastRow = null;
   document.addEventListener('mousemove', e => {
-    tip.style.left = (e.clientX + 14) + 'px';
-    tip.style.top  = (e.clientY - 10) + 'px';
-    const rect = tip.getBoundingClientRect();
-    if (rect.right > window.innerWidth - 8) tip.style.left = (e.clientX - rect.width - 14) + 'px';
+    const row = e.target.closest('.has-tip');
+    if (row !== lastRow) {
+      lastRow = row;
+      if (row) {
+        const parts = (row.dataset.tip || '').split('|');
+        tip.innerHTML = `<span style="color:var(--text);font-weight:700;">${parts[0] || ''}</span>` +
+          (parts[1] ? `<span style="color:var(--gold);margin-left:8px;">${parts[1]}</span>` : '') +
+          (parts[2] ? `<span style="color:var(--text3);margin-left:8px;">${parts[2]}</span>` : '') +
+          (parts[3] ? `<span style="color:var(--text3);margin-left:8px;">· ${parts[3]}</span>` : '');
+        tip.classList.add('visible');
+      } else {
+        tip.classList.remove('visible');
+      }
+    }
+    if (lastRow) {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top  = (e.clientY - 10) + 'px';
+      const rect = tip.getBoundingClientRect();
+      if (rect.right > window.innerWidth - 8) tip.style.left = (e.clientX - rect.width - 14) + 'px';
+    }
   });
 })();
 

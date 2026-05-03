@@ -552,6 +552,28 @@
             style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">
             Hide estimated from comparisons
           </button>
+          <button onclick="openNewAthletePanel()"
+            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(45,212,191,0.35);background:var(--bg2);color:var(--teal);cursor:pointer;">
+            + New athlete
+          </button>
+        </div>
+      </div>
+      <div id="new-athlete-panel" style="display:none;margin-bottom:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;">New athlete</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">Name</div>
+            <input id="new-ath-name" type="text" placeholder="Full name" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:200px;" />
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">Sex</div>
+            <div style="display:flex;gap:4px;">
+              <button id="new-ath-m" onclick="setNewAthSex('M')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid rgba(96,165,250,0.45);background:rgba(96,165,250,0.15);color:var(--blue);cursor:pointer;">Male</button>
+              <button id="new-ath-f" onclick="setNewAthSex('F')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;">Female</button>
+            </div>
+          </div>
+          <button class="btn" onclick="submitNewAthlete()" style="align-self:flex-end;">Add athlete</button>
+          <button class="btn" onclick="document.getElementById('new-athlete-panel').style.display='none'" style="align-self:flex-end;">Cancel</button>
         </div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
@@ -699,6 +721,7 @@ const ISOSQT_METRICS = [
   { key:'isosqt_rfd100bw', label:'RFD 100ms / BM (ISO)', inv:false, unit:'N/s/kg', step:0.01 },
 ];
 METRICS.push(...ISOSQT_METRICS);
+const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
 
 // ═══════════════════════════════════════════════════════════════
 // NORMS — internal (computed from roster) + external NCAA
@@ -1362,7 +1385,6 @@ function renderSelectedChart() {
 }
 
 function getTrendForMetric(athlete, key) {
-  const INVERSE = new Set(['sprint10','sprintFly','sprint1020','shuttle']);
   const sessions = [...(athlete._sessions || [])].sort((a,b) => b.session_date.localeCompare(a.session_date));
   const vals = [];
   for (const s of sessions) {
@@ -1371,7 +1393,7 @@ function getTrendForMetric(athlete, key) {
   }
   if (vals.length < 2) return null;
   const [latest, prev] = vals;
-  return { delta: INVERSE.has(key) ? prev - latest : latest - prev, latest, prev };
+  return { delta: INVERSE_METRICS.has(key) ? prev - latest : latest - prev, latest, prev };
 }
 
 function makeTrendBadge(athlete, key) {
@@ -2329,15 +2351,76 @@ function renderLeaderboard() {
   if (!sel) return;
   const prevKey = sel.value;
   sel.innerHTML = '';
+  const compOpt = document.createElement('option');
+  compOpt.value = '__composite__'; compOpt.textContent = 'Composite Score';
+  sel.appendChild(compOpt);
   METRICS.filter(m => !disabledMetrics.has(m.key)).forEach(m => {
     const o = document.createElement('option');
     o.value = m.key; o.textContent = m.label + ' (' + m.unit + ')';
     sel.appendChild(o);
   });
-  const activeKeys = METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => m.key);
+  const activeKeys = ['__composite__', ...METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => m.key)];
   if (activeKeys.includes(prevKey)) sel.value = prevKey;
-  const metKey = sel.value || activeKeys[0] || METRICS[0].key;
+  const metKey = sel.value || '__composite__';
   const metric = METRICS.find(m => m.key === metKey);
+
+  // ── Composite mode ──
+  if (metKey === '__composite__') {
+    const normForC = sex => {
+      const mk = `Roster — ${sex==='M'?'Male':'Female'} (Measured)`;
+      const bk  = `Roster — ${sex==='M'?'Male':'Female'}`;
+      return norms[mk] || norms[bk] || norms[selectedNorm];
+    };
+    const entries = ATHLETE_DB
+      .filter(a => lbSex === 'all' || a.sex === lbSex)
+      .map(a => {
+        const n = normForC(a.sex);
+        const activeM = METRICS.filter(m => !disabledMetrics.has(m.key) && n[m.key]);
+        const pcts = activeM
+          .filter(m => (!suppressEstimated || !isEstimatedForAthlete(m.key, a)) && (a[m.key] || 0) > 0)
+          .map(m => calcPercentile(a[m.key], n[m.key], m.inv));
+        const score = pcts.length > 0 ? Math.round(pcts.reduce((s,v) => s+v, 0) / pcts.length) : null;
+        return { a, score, cnt: pcts.length };
+      })
+      .filter(x => x.score !== null && (!lbMeasuredOnly || hasAllMeasured(x.a)))
+      .sort((x, y) => y.score - x.score);
+
+    const thC = `padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);`;
+    const compRows = entries.map(({a, score, cnt}, i) => {
+      const tier = getTier(score);
+      const sc = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+      return `<tr>
+        <td style="padding:8px 10px 8px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;width:36px;">${medal || (i+1)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">${a.name}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;"><span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${score}</span><span style="font-size:9px;color:var(--text3);margin-left:3px;">pct</span></td>
+        <td style="padding:8px 12px 8px 20px;border-bottom:1px solid var(--border);min-width:140px;"><div style="position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="position:absolute;left:0;top:0;height:100%;width:${score}%;background:${tier.color};border-radius:4px;transition:width .3s;"></div></div></td>
+        <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">${cnt} metrics</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid var(--border);"><span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('leaderboard-content').innerHTML = entries.length === 0
+      ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
+      : `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th style="${thC}text-align:center;width:36px;">#</th>
+            <th style="${thC}text-align:left;">Athlete</th>
+            <th style="${thC}text-align:center;">Sex</th>
+            <th style="${thC}text-align:right;">Composite</th>
+            <th style="padding:6px 20px 10px;border-bottom:1px solid var(--border2);"></th>
+            <th style="${thC}text-align:center;">Metrics</th>
+            <th style="${thC}">Tier</th>
+          </tr></thead>
+          <tbody>${compRows}</tbody>
+        </table>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;">
+          ${entries.length} athlete${entries.length!==1?'s':''} · composite = avg percentile across all active metrics · sex-specific norms
+          ${lbMeasuredOnly ? ' · <span style="color:var(--green);">full athletes only</span>' : ''}
+        </div>`;
+    return;
+  }
 
   // Sex-specific norm lookup: measured roster norm for each sex, falling back gracefully
   const normFor = sex => {
@@ -2885,7 +2968,6 @@ function showToast(msg) {
 
 // ── Build ATHLETE_DB from Supabase response ──
 function buildAthleteFromSupabase(row) {
-  const INVERSE_METRICS = new Set(['sprint10','sprintFly','sprint1020','shuttle']);
   const bestValues = {};
   const bestSource = {};
 
@@ -2943,14 +3025,14 @@ async function loadFromSupabase() {
 }
 
 // ── Save new session to Supabase (fire-and-forget) ──
-async function saveSessionToSupabase(athlete, metricsMap) {
+async function saveSessionToSupabase(athlete, metricsMap, date) {
   if (!athlete._supabase_id) return;
-  const today = new Date().toISOString().slice(0,10);
+  const sessionDate = date || new Date().toISOString().slice(0,10);
   try {
     const sessResp = await fetch(SUPABASE_URL + '/rest/v1/sessions', {
       method: 'POST',
       headers: { ...SUPABASE_HEADERS, 'Prefer': 'return=representation' },
-      body: JSON.stringify({ athlete_id: athlete._supabase_id, session_date: today, notes: 'Manual entry' })
+      body: JSON.stringify({ athlete_id: athlete._supabase_id, session_date: sessionDate, notes: 'Manual entry' })
     });
     if (!sessResp.ok) throw new Error('Session insert failed');
     const sessArr = await sessResp.json();
@@ -2990,6 +3072,69 @@ async function insertAthleteToSupabase(athlete) {
     console.error('Supabase insert error:', e);
     showToast('Athlete saved locally only');
   }
+}
+
+// ── New athlete form ──
+let _newAthSex = 'M';
+
+function openNewAthletePanel() {
+  const p = document.getElementById('new-athlete-panel');
+  const open = p.style.display === 'none';
+  p.style.display = open ? '' : 'none';
+  if (open) {
+    document.getElementById('new-ath-name').value = '';
+    _newAthSex = 'M';
+    setNewAthSex('M');
+    document.getElementById('new-ath-name').focus();
+  }
+}
+
+function setNewAthSex(sex) {
+  _newAthSex = sex;
+  const mBtn = document.getElementById('new-ath-m');
+  const fBtn = document.getElementById('new-ath-f');
+  if (mBtn) {
+    mBtn.style.background  = sex==='M' ? 'rgba(96,165,250,0.15)'  : 'var(--bg2)';
+    mBtn.style.borderColor = sex==='M' ? 'rgba(96,165,250,0.45)'  : 'var(--border2)';
+    mBtn.style.color       = sex==='M' ? 'var(--blue)'            : 'var(--text3)';
+  }
+  if (fBtn) {
+    fBtn.style.background  = sex==='F' ? 'rgba(167,139,250,0.15)' : 'var(--bg2)';
+    fBtn.style.borderColor = sex==='F' ? 'rgba(167,139,250,0.45)' : 'var(--border2)';
+    fBtn.style.color       = sex==='F' ? 'var(--purple)'          : 'var(--text3)';
+  }
+}
+
+async function submitNewAthlete() {
+  const name = (document.getElementById('new-ath-name').value || '').trim();
+  if (!name) { showToast('Enter a name'); return; }
+  if (ATHLETE_DB.find(a => a.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Athlete already exists'); return;
+  }
+  const newAthlete = { name, sex: _newAthSex, measured: {}, _sessions: [], cmjFD: false, rsiFD: false, rsiMeasured: false };
+  METRICS.forEach(m => { newAthlete[m.key] = 0; newAthlete.measured[m.key] = false; });
+  await insertAthleteToSupabase(newAthlete);
+  ATHLETE_DB.push(newAthlete);
+  ATHLETE_DB.sort((a,b) => a.name.localeCompare(b.name));
+  rebuildAthleteSelector();
+  rebuildInitialNorms();
+  document.getElementById('new-athlete-panel').style.display = 'none';
+  renderRosterTable();
+}
+
+function rebuildAthleteSelector() {
+  const asel = document.getElementById('athlete-select');
+  if (!asel) return;
+  const cur = asel.value;
+  asel.innerHTML = '';
+  ATHLETE_DB.sort((a,b) => a.name.localeCompare(b.name)).forEach(a => {
+    const o = document.createElement('option');
+    o.value = a.name;
+    o.textContent = (hasAllMeasured(a) ? '● ' : '') + a.name + ' (' + a.sex + ')' + (a.custom ? ' ✦' : '');
+    if (hasAllMeasured(a)) o.style.color = '#34d399';
+    asel.appendChild(o);
+  });
+  if (cur) asel.value = cur;
 }
 
 // ── Rebuild norms after data loads ──
@@ -3089,8 +3234,6 @@ const HISTORY_METRICS = [
   { key:'broad',      label:'Broad'  },
   { key:'shuttle',    label:'Shuttle'},
 ];
-const HISTORY_INVERSE = new Set(['sprint10','sprintFly','sprint1020','shuttle']);
-
 function openHistoryModal() {
   const a = currentAthlete;
   if (!a) return;
@@ -3105,7 +3248,7 @@ function openHistoryModal() {
         const v = parseFloat(meas.value);
         if (!v) return;
         if (best === null) { best = v; return; }
-        best = HISTORY_INVERSE.has(m.key) ? Math.min(best, v) : Math.max(best, v);
+        best = INVERSE_METRICS.has(m.key) ? Math.min(best, v) : Math.max(best, v);
       });
     });
     bestPer[m.key] = best;
@@ -3216,7 +3359,7 @@ async function submitNewSession() {
     const val = parseFloat(metricsMap[m.key].value);
     if (!val) return;
     const cur = a[m.key] || 0;
-    const better = HISTORY_INVERSE.has(m.key) ? (cur === 0 || val < cur) : val > cur;
+    const better = INVERSE_METRICS.has(m.key) ? (cur === 0 || val < cur) : val > cur;
     if (better) { a[m.key] = val; }
     // Update measured flag
     if (!a.measured) a.measured = {};
@@ -3232,29 +3375,7 @@ async function submitNewSession() {
   if (!a._sessions) a._sessions = [];
   a._sessions.push(newSess);
 
-  // Save to Supabase (with date override)
-  if (a._supabase_id) {
-    try {
-      const sessResp = await fetch(SUPABASE_URL + '/rest/v1/sessions', {
-        method: 'POST',
-        headers: { ...SUPABASE_HEADERS, 'Prefer': 'return=representation' },
-        body: JSON.stringify({ athlete_id: a._supabase_id, session_date: dateVal, notes: 'Manual entry' })
-      });
-      if (sessResp.ok) {
-        const sessArr = await sessResp.json();
-        const sessionId = sessArr[0].id;
-        const measurements = Object.entries(metricsMap).map(([metric, v]) => ({
-          session_id: sessionId, metric, value: parseFloat(v.value), source: v.source
-        }));
-        await fetch(SUPABASE_URL + '/rest/v1/measurements', {
-          method: 'POST',
-          headers: SUPABASE_HEADERS,
-          body: JSON.stringify(measurements)
-        });
-        showToast('Session saved to database');
-      }
-    } catch(e) { showToast('Saved locally only'); }
-  }
+  await saveSessionToSupabase(a, metricsMap, dateVal);
 
   // Re-render
   if (a.name === currentAthlete.name) {

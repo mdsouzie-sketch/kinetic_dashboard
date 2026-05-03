@@ -2880,17 +2880,17 @@ function renderMetricsTable(results) {
     const gapColor = r.meetingTarget ? 'var(--green)' : 'var(--orange)';
     const valDisplay = r.val > 0 ? r.val.toFixed(d) : '—';
     return `<tr>
-      <td style="padding:5px 8px 5px 0;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;">
+      <td style="padding:5px 8px 5px 0;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;width:35%;">
         ${r.label}${estMark}
       </td>
-      <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;width:22%;">
         <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:${r.tier.color};background:${r.tier.bg};padding:2px 7px;border-radius:5px;">${valDisplay}</span>
         <span style="font-size:8px;color:var(--text3);margin-left:2px;">${r.unit}</span>
       </td>
-      <td style="padding:5px 6px;border-bottom:1px solid var(--border);font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:right;white-space:nowrap;">
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:center;white-space:nowrap;width:22%;">
         ${r.target85.toFixed(d)} <span style="font-size:8px;color:var(--text3);">${r.unit}</span>
       </td>
-      <td style="padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${gapColor};text-align:right;white-space:nowrap;">
+      <td style="padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${gapColor};text-align:center;white-space:nowrap;width:21%;">
         ${r.meetingTarget ? '✓' : '▲'} ${gapStr}
       </td>
     </tr>`;
@@ -2900,10 +2900,10 @@ function renderMetricsTable(results) {
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px;">
       <table style="width:100%;border-collapse:collapse;">
         <thead><tr>
-          <th style="padding:0 8px 7px 0;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:left;font-weight:700;border-bottom:1px solid var(--border2);">Metric</th>
-          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:right;font-weight:700;border-bottom:1px solid var(--border2);">Athlete</th>
-          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:right;font-weight:700;border-bottom:1px solid var(--border2);">85th target</th>
-          <th style="padding:0 0 7px 8px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:right;font-weight:700;border-bottom:1px solid var(--border2);">Gap</th>
+          <th style="padding:0 8px 7px 0;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:left;font-weight:700;border-bottom:1px solid var(--border2);width:35%;">Metric</th>
+          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">Athlete</th>
+          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">85th Target</th>
+          <th style="padding:0 0 7px 8px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:21%;">Gap</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>

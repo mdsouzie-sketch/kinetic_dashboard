@@ -795,23 +795,10 @@ const METRICS = [
   { key:'broad',     label:'Broad jump',         inv:false, unit:'in',   step:0.1  },
   { key:'shuttle',   label:'Pro agility',        inv:true,  unit:'s',    step:0.01 },
 ];
-const ISOSQT_METRICS = [
-  { key:'isosqt_pvf',    label:'Peak Force',          inv:false, unit:'N',    step:1    },
-  { key:'isosqt_pvfbm',  label:'Peak Force / BM',     inv:false, unit:'N/kg', step:0.01 },
-  { key:'isosqt_ttpf',   label:'Time to Peak Force',  inv:true,  unit:'s',    step:0.001},
-  { key:'isosqt_rfd200', label:'RFD 200ms (ISO)',      inv:false, unit:'N/s',  step:1    },
-  { key:'isosqt_rfd100',   label:'RFD 100ms (ISO)',      inv:false, unit:'N/s',    step:1    },
-  { key:'isosqt_rfd200bw', label:'RFD 200ms / BM (ISO)', inv:false, unit:'N/s/kg', step:0.01 },
-  { key:'isosqt_rfd100bw', label:'RFD 100ms / BM (ISO)', inv:false, unit:'N/s/kg', step:0.01 },
-];
-METRICS.push(...ISOSQT_METRICS);
+
 const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
 
 const TEST_GROUPS = [
-  { key:'isosqt', label:'Isometric Squat', shortLabel:'ISOSQT',
-    metrics:['isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'],
-    defaultNorm: sex => `ISOSQT — ${sex==='M'?'Male':'Female'}`,
-    hasData: a => (a.isosqt_pvf||0) > 0 },
   { key:'cmj', label:'CMJ & Force', shortLabel:'CMJ',
     metrics:['cmj','rfd','power'],
     defaultNorm: sex => `Roster — ${sex==='M'?'Male':'Female'} (Measured)`,
@@ -858,18 +845,7 @@ function computeMeasuredNorms(sexKey) {
   return out;
 }
 
-function computeISQNorms(sex) {
-  const group = ATHLETE_DB.filter(a => a.sex === sex && (a.isosqt_pvf||0) > 0);
-  const out = {};
-  ISOSQT_METRICS.forEach(m => {
-    const vals = group.map(a => a[m.key]).filter(v => v > 0);
-    if (!vals.length) { out[m.key] = {m:0, sd:1}; return; }
-    const mean = vals.reduce((s,v)=>s+v,0)/vals.length;
-    const sd   = Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length) || 1;
-    out[m.key] = { m: parseFloat(mean.toFixed(3)), sd: parseFloat(sd.toFixed(3)) };
-  });
-  return out;
-}
+
 let INITIAL_NORMS = {
   "Roster — Male":              computeInternalNorms('M'),
   "Roster — Female":            computeInternalNorms('F'),
@@ -881,8 +857,7 @@ let INITIAL_NORMS = {
   "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, shuttle:{m:4.62,sd:0.12} },
   "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, shuttle:{m:4.80,sd:0.15} },
   "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, shuttle:{m:5.05,sd:0.20} },
-  "ISOSQT — Male":   computeISQNorms('M'),
-  "ISOSQT — Female": computeISQNorms('F'),
+
 };
 
 let norms = JSON.parse(JSON.stringify(INITIAL_NORMS));
@@ -913,7 +888,7 @@ let cardsNormRight = 'Roster — Female (Measured)';
 let cardsPanelSexLeft  = 'M';
 let cardsPanelSexRight = 'F';
 let activeTab       = 'analytics';
-let testActiveGroup = 'isosqt';
+let testActiveGroup = 'cmj';
 let testSex         = 'M';
 let testAthlete     = null;
 let testNorm        = null;
@@ -971,10 +946,9 @@ function calcPercentile(value, norm, inv) {
 }
 
 function getResults() {
-  const n     = norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${currentAthlete.sex==='M'?'Male':'Female'}`] || {};
+  const n = norms[selectedNorm];
   return METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athleteData[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, currentAthlete);
     const val = suppressed ? 0 : (athleteData[m.key] || 0);
@@ -988,9 +962,8 @@ function getResults() {
 
 function getResultsFor(athlete, normKey) {
   const n     = norms[normKey] || norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${athlete.sex==='M'?'Male':'Female'}`] || {};
   return METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athlete[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, athlete);
     const val = suppressed ? 0 : (athlete[m.key] || 0);
@@ -1768,17 +1741,9 @@ let reportPrintMode = 'dark';
 function openReport() {
   const activeMetrics  = METRICS.filter(m => !disabledMetrics.has(m.key));
   reportIncludedKeys   = new Set(activeMetrics.map(m => m.key));
-  const stdMetrics     = activeMetrics.filter(m => !m.key.startsWith('isosqt_'));
-  const isosqtMetrics  = activeMetrics.filter(m =>  m.key.startsWith('isosqt_'));
-  let checksHTML = stdMetrics.map(m =>
+  let checksHTML = activeMetrics.map(m =>
     `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onReportMetricToggle(this)">${m.label}</label>`
   ).join('');
-  if (isosqtMetrics.length) {
-    checksHTML += `<div class="export-sec-lbl">ISOSQT</div>`;
-    checksHTML += isosqtMetrics.map(m =>
-      `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onReportMetricToggle(this)">${m.label}</label>`
-    ).join('');
-  }
   document.getElementById('report-modal-content').innerHTML = `
     <div id="report-controls-bar">
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
@@ -1841,9 +1806,8 @@ let exportPrintMode = 'dark';
 
 function getResultsForExport(athlete, normKey, includeSet) {
   const n     = norms[normKey] || norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${athlete.sex==='M'?'Male':'Female'}`] || {};
   return METRICS.filter(m => includeSet.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athlete[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, athlete);
     const val = suppressed ? 0 : (athlete[m.key] || 0);
@@ -1938,13 +1902,7 @@ function openExportPDF() {
   // Build metric checkboxes: only metrics not globally disabled
   const activeMetrics  = METRICS.filter(m => !disabledMetrics.has(m.key));
   exportIncludedKeys   = new Set(activeMetrics.map(m => m.key));
-  const stdMetrics     = activeMetrics.filter(m => !m.key.startsWith('isosqt_'));
-  const isosqtMetrics  = activeMetrics.filter(m =>  m.key.startsWith('isosqt_'));
-  let checksHTML = stdMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
-  if (isosqtMetrics.length) {
-    checksHTML += `<div class="export-sec-lbl">ISOSQT</div>`;
-    checksHTML += isosqtMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
-  }
+  let checksHTML = activeMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
   document.getElementById('export-metric-checks').innerHTML = checksHTML;
   overlay.style.display = 'flex';
   updateExportPreview();
@@ -2157,10 +2115,10 @@ function renderTestsTab() {
     `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name}</option>`
   ).join('');
 
-  // Norm select — sex-filtered, ISOSQT norms only when on ISOSQT group
+  // Norm select — sex-filtered
   const nsel = document.getElementById('test-norm-select');
   nsel.innerHTML = Object.keys(INITIAL_NORMS)
-    .filter(k => k.includes(sexWord) && (testActiveGroup === 'isosqt' || !k.startsWith('ISOSQT')))
+    .filter(k => k.includes(sexWord))
     .map(k => `<option value="${k}"${k===testNorm?' selected':''}>${k}</option>`)
     .join('');
   nsel.value = testNorm;
@@ -3566,8 +3524,7 @@ function buildAthleteFromSupabase(row) {
     });
   });
 
-  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle',
-    'isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'];
+  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
 
   const measured = {};
   ALL_KEYS.forEach(k => {
@@ -3733,8 +3690,6 @@ function rebuildInitialNorms() {
   INITIAL_NORMS["Roster — Female"]            = computeInternalNorms('F');
   INITIAL_NORMS["Roster — Male (Measured)"]   = computeMeasuredNorms('M');
   INITIAL_NORMS["Roster — Female (Measured)"] = computeMeasuredNorms('F');
-  INITIAL_NORMS["ISOSQT — Male"]              = computeISQNorms('M');
-  INITIAL_NORMS["ISOSQT — Female"]            = computeISQNorms('F');
   norms = JSON.parse(JSON.stringify(INITIAL_NORMS));
 }
 
@@ -4004,8 +3959,7 @@ async function deleteSession(sessId) {
   currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
 
   // Recompute best values across remaining sessions
-  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle',
-    'isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'];
+  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
   const bestValues = {}, bestSource = {};
   (currentAthlete._sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {

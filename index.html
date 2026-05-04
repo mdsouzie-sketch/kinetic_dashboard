@@ -1349,15 +1349,17 @@ function renderCompareTable() {
 // ═══════════════════════════════════════════════════════════════
 function switchTab(tab) {
   activeTab = tab;
-  ['analytics','roster','leaderboard','coaches','flags','cards','tests','norms','history','settings'].forEach(t => {
+  ['analytics','roster','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
     const pane = document.getElementById('pane-'+t);
+    const btn  = document.getElementById('tab-'+t);
+    if (!pane || !btn) return;
     pane.style.display = t===tab ? '' : 'none';
     if (t === tab) {
       pane.classList.remove('tab-fade-in');
-      void pane.offsetWidth; // force reflow
+      void pane.offsetWidth;
       pane.classList.add('tab-fade-in');
     }
-    document.getElementById('tab-'+t).className = 'tab-btn'+(t===tab?' active':'');
+    btn.className = 'tab-btn'+(t===tab?' active':'');
   });
   if (tab==='roster')      renderRosterTable();
   if (tab==='leaderboard') renderLeaderboard();

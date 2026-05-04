@@ -3321,6 +3321,24 @@ function loadState() {
 // ===============================================================
 // SETTINGS TAB
 // ===============================================================
+function toggleAllMetrics() {
+  if (disabledMetrics.size === 0) {
+    METRICS.slice(1).forEach(m => disabledMetrics.add(m.key));
+  } else {
+    disabledMetrics.clear();
+  }
+  renderSettings();
+  renderAll(false);
+  const pr = document.getElementById('pane-roster');
+  const pf = document.getElementById('pane-flags');
+  const pl = document.getElementById('pane-leaderboard');
+  const pc = document.getElementById('pane-coaches');
+  if (pr && pr.style.display !== 'none') renderRosterTable();
+  if (pf && pf.style.display !== 'none') renderFlags();
+  if (pl && pl.style.display !== 'none') renderLeaderboard();
+  if (pc && pc.style.display !== 'none') renderCoachesPage();
+}
+
 function toggleMetricEnabled(key) {
   if (disabledMetrics.has(key)) {
     disabledMetrics.delete(key);
@@ -3453,8 +3471,11 @@ function renderSettings() {
     + '<div class="card">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
     + '<div class="card-label" style="margin-bottom:0;">Active Metrics</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;">'
     + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + activeCount + ' / ' + METRICS.length + ' active</span>'
+    + '<button onclick="toggleAllMetrics()" style="font-size:10px;font-family:\'DM Mono\',monospace;padding:3px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);transition:all .15s;" onmouseover="this.style.color=\'var(--text)\'" onmouseout="this.style.color=\'var(--text3)\'">' + (disabledMetrics.size === 0 ? 'Disable all' : 'Enable all') + '</button>'
     + '</div>'
+    + '</div>' // end flex header row
     + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Disabled metrics are excluded from composite scores, coaching priorities, bar charts, comparison tables, leaderboard, and matrix calculations. Raw values still appear in the roster.</div>'
     + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + metGrid + '</div>'
     + '</div>'

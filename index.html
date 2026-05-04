@@ -2011,7 +2011,8 @@ function renderCardsTab() {
     const sexColor = sex==='M' ? 'var(--blue)' : 'var(--purple)';
     const sexLabel = sex==='M' ? '♂ Male' : '♀ Female';
     const athOpts  = pool.map(a=>`<option value="${a.name}"${a.name===curName?' selected':''}>${hasAllMeasured(a)?'● ':''} ${a.name}</option>`).join('');
-    const normOpts = Object.keys(INITIAL_NORMS).map(k=>`<option value="${k}"${k===normKey?' selected':''}>${k}</option>`).join('');
+    const normWord = sex === 'M' ? 'Male' : 'Female';
+    const normOpts = Object.keys(INITIAL_NORMS).filter(k=>k.includes(normWord)).map(k=>`<option value="${k}"${k===normKey?' selected':''}>${k}</option>`).join('');
     return `<div class="report-modal" style="max-width:none;max-height:none;overflow:visible;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:12px;">
         <span onclick="toggleCardPanelSex('${panelSlot}')" title="Click to toggle male/female" style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:${sexColor};text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;padding:3px 8px;border:1px solid ${sexColor};border-radius:6px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">${sexLabel}</span>
@@ -2368,7 +2369,9 @@ function renderHistoryTab() {
   }).join('');
 
   // Athlete selector for individual mode
-  const athOptions = ATHLETE_DB.map(a => `<option value="${a.name.replace(/"/g,'&quot;')}"${a.name===histAthlete?' selected':''}>${a.name} (${a.sex})</option>`).join('');
+  const athPool = ATHLETE_DB.filter(a => a.sex === histSex).sort((a,b)=>a.name.localeCompare(b.name));
+  if (!histAthlete || !athPool.find(a=>a.name===histAthlete)) histAthlete = athPool.length ? athPool[0].name : '';
+  const athOptions = athPool.map(a => `<option value="${a.name.replace(/"/g,'&quot;')}"${a.name===histAthlete?' selected':''}>${a.name}</option>`).join('');
 
   // Sex toggle for team mode
   const sexM = `<button onclick="histSetSex('M')" style="${btnBase}background:${histSex==='M'?'rgba(96,165,250,0.15)':'var(--bg2)'};border-color:${histSex==='M'?'rgba(96,165,250,0.45)':'rgba(255,255,255,0.13)'};color:${histSex==='M'?'var(--blue)':'var(--text3)'};">♂ Male</button>`;
@@ -2401,7 +2404,12 @@ function renderHistoryTab() {
 
 function histSetMode(m) { histMode = m; renderHistoryTab(); }
 function histSetMetric(m) { histMetric = m; renderHistoryTab(); }
-function histSetSex(s) { histSex = s; renderHistoryTab(); }
+function histSetSex(s) {
+  histSex = s;
+  const pool = ATHLETE_DB.filter(a => a.sex === s);
+  histAthlete = pool.length ? pool[0].name : '';
+  renderHistoryTab();
+}
 
 function renderHistChart() {
   const area = document.getElementById('hist-chart-area');
@@ -3043,12 +3051,13 @@ function renderCoachesPage() {
     const sel = document.getElementById(`coaches-norm-${sex}`);
     if (!sel || sel.options.length > 0) return;
     const defaultNorm = `Roster — ${sex==='M'?'Male':'Female'} (Measured)`;
-    Object.keys(INITIAL_NORMS).forEach(s => {
+    const sexWord = sex === 'M' ? 'Male' : 'Female';
+    Object.keys(INITIAL_NORMS).filter(s => s.includes(sexWord)).forEach(s => {
       const o = document.createElement('option');
       o.value = s; o.textContent = s;
       sel.appendChild(o);
     });
-    sel.value = INITIAL_NORMS[defaultNorm] ? defaultNorm : Object.keys(INITIAL_NORMS)[0];
+    sel.value = INITIAL_NORMS[defaultNorm] ? defaultNorm : Object.keys(INITIAL_NORMS).find(k=>k.includes(sexWord));
   });
 }
 
@@ -3063,7 +3072,7 @@ function coachesRebuildPanel(sex) {
   const newSel = document.getElementById(`coaches-norm-${sex}`);
   if (newSel && newSel.options.length === 0) {
     const defaultNorm = `Roster — ${sexLabel} (Measured)`;
-    Object.keys(INITIAL_NORMS).forEach(s => {
+    Object.keys(INITIAL_NORMS).filter(s => s.includes(sexLabel)).forEach(s => {
       const o = document.createElement('option'); o.value = s; o.textContent = s; newSel.appendChild(o);
     });
     newSel.value = normKey;

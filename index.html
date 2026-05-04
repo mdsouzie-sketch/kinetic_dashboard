@@ -41,6 +41,7 @@
       text-rendering: optimizeLegibility;
       font-size: 14px;
       line-height: 1.5;
+      overflow-y: scroll;
     }
 
     /* Subtle grid background */
@@ -898,6 +899,8 @@ const TEST_COMPARE_COLORS = ['#f97316','#a78bfa','#34d399','#fb7185'];
 let disabledMetrics = new Set();
 let tierThresholds  = [90, 70, 40, 15]; // Elite, Advanced, Developed, Sub-optimal
 let matrixThreshold = 50;
+let compactRoster   = false;
+let historySmoothing = false;
 
 // ═══════════════════════════════════════════════════════════════
 // TIER / MATH HELPERS
@@ -2419,6 +2422,23 @@ function renderHistChart() {
   area.innerHTML = buildHistSVG(series, metaM);
 }
 
+function catmullRomPath(pts) {
+  if (pts.length < 2) return pts.length === 1 ? `M${pts[0].x},${pts[0].y}` : '';
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i - 1, 0)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(i + 2, pts.length - 1)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
 function buildHistSVG(series, metaM) {
   const W = 760, H = 300;
   const ML = 54, MR = 20, MT = 20, MB = 50;
@@ -2472,10 +2492,10 @@ function buildHistSVG(series, metaM) {
       : sorted.reduce((a,b) => b.val > a.val ? b : a);
 
     // Path
-    const pathD = sorted.map((p, i) => {
-      const x = xScale(p.date), y = yScale(p.val);
-      return (i===0?'M':'L') + `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
+    const pts = sorted.map(p => ({ x: xScale(p.date), y: yScale(p.val) }));
+    const pathD = historySmoothing
+      ? catmullRomPath(pts)
+      : pts.map((p, i) => (i===0?'M':'L') + `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
     linesHTML += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
 
     // Dots + tooltips
@@ -2762,15 +2782,16 @@ function renderRosterTable() {
             onmouseout="this.style.borderColor='rgba(248,113,113,0.3)';this.style.color='rgba(248,113,113,0.5)';">✕</button>
         </td>`;
       }
+      const rp = compactRoster ? '3px 8px' : '7px 10px';
       if (k==='name') {
         const nameColor = hasAllMeasured(a) ? 'color:var(--green);' : '';
         const tier = getAthleteOverallTier(a);
         const dot = tier ? `<span style="color:${tier.color};font-size:9px;margin-right:5px;">●</span>` : '';
-        return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);font-weight:600;${nameColor}">${dot}${a.custom?'<span style="color:var(--teal);">✦</span> ':''}${a[k]}</td>`;
+        return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);font-weight:600;${nameColor}">${dot}${a.custom?'<span style="color:var(--teal);">✦</span> ':''}${a[k]}</td>`;
       }
       if (k==='sex') {
         const col = a[k]==='M'?'var(--blue)':'var(--purple)';
-        return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${col};font-family:'DM Mono',monospace;text-align:center;">${a[k]}</td>`;
+        return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${col};font-family:'DM Mono',monospace;text-align:center;">${a[k]}</td>`;
       }
       const est = isEstimatedForAthlete(k,a);
       const color = est ? (suppressEstimated ? 'var(--text3)' : 'var(--orange)') : 'var(--green)';
@@ -2780,7 +2801,7 @@ function renderRosterTable() {
       const isCmjNonFD = k==='cmj' && a[k]!=null && !a.cmjFD;
       const cellColor = isCmjNonFD ? 'var(--gold)' : color;
       const cmjSuffix = isCmjNonFD ? '<sup style="font-size:8px;opacity:0.8;">†</sup>' : '';
-      return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
+      return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
     }).join('')}
   </tr>`).join('')}</tbody>`;
 
@@ -3367,11 +3388,25 @@ function updateMatrixThreshold(val) {
   renderAll(false);
 }
 
+function toggleCompactRoster() {
+  compactRoster = !compactRoster;
+  renderSettings();
+  renderRosterTable();
+}
+
+function toggleHistorySmoothing() {
+  historySmoothing = !historySmoothing;
+  renderSettings();
+  renderHistoryTab();
+}
+
 function resetSettings() {
   disabledMetrics   = new Set();
   coreMeasuredKeys  = new Set(CORE_MEASURED_DEFAULTS);
   tierThresholds    = [90, 70, 40, 15];
   matrixThreshold   = 50;
+  compactRoster     = false;
+  historySmoothing  = false;
   renderSettings();
   renderRosterTable();
   renderAll(false);
@@ -3416,7 +3451,35 @@ function renderSettings() {
   const suppCol = suppressEstimated ? 'var(--green)'          : 'var(--text3)';
   const activeCount = METRICS.length - disabledMetrics.size;
 
-  pane.innerHTML = '<div style="display:flex;flex-direction:column;gap:14px;max-width:900px;">'
+  const coreGrid = METRICS.map(m => {
+    const on = coreMeasuredKeys.has(m.key);
+    const c  = on ? 'var(--green)'          : 'var(--text3)';
+    const bg = on ? 'rgba(52,211,153,0.08)' : 'var(--bg2)';
+    const bd = on ? 'rgba(52,211,153,0.35)' : 'var(--border)';
+    const sc = on ? '#34d399' : 'rgba(248,113,113,0.7)';
+    const sb = on ? 'rgba(52,211,153,0.1)'  : 'rgba(248,113,113,0.1)';
+    const sd = on ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
+    return '<button onclick="toggleCoreMetric(\'' + m.key + '\')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';cursor:pointer;transition:all .15s;text-align:left;width:100%;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;">'
+      + '<span style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + c + ';text-transform:uppercase;letter-spacing:0.05em;">' + m.label + '</span>'
+      + '<span style="font-size:9px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + sc + ';background:' + sb + ';border:1px solid ' + sd + ';padding:1px 6px;border-radius:4px;">' + (on ? 'REQ' : 'OPT') + '</span>'
+      + '</div>'
+      + '<span style="font-size:10px;color:var(--text3);">' + m.unit + '</span>'
+      + '</button>';
+  }).join('');
+
+  function settingRow(label, desc, toggleFn, isOn) {
+    const bg  = isOn ? 'rgba(52,211,153,0.12)' : 'var(--bg3)';
+    const bd  = isOn ? 'rgba(52,211,153,0.45)' : 'var(--border2)';
+    const col = isOn ? 'var(--green)'           : 'var(--text3)';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:8px;">'
+      + '<div><div style="font-size:13px;font-weight:600;">' + label + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + desc + '</div></div>'
+      + '<button onclick="' + toggleFn + '()" style="padding:6px 16px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';color:' + col + ';font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:16px;">' + (isOn ? 'ON' : 'OFF') + '</button>'
+      + '</div>';
+  }
+
+  const leftCol = '<div style="display:flex;flex-direction:column;gap:14px;">'
 
     + '<div class="card">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
@@ -3427,63 +3490,50 @@ function renderSettings() {
     + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + metGrid + '</div>'
     + '</div>'
 
-    + (function() {
-        const coreGrid = METRICS.map(m => {
-          const on = coreMeasuredKeys.has(m.key);
-          const c  = on ? 'var(--green)'              : 'var(--text3)';
-          const bg = on ? 'rgba(52,211,153,0.08)'     : 'var(--bg2)';
-          const bd = on ? 'rgba(52,211,153,0.35)'     : 'var(--border)';
-          const statusColor = on ? '#34d399' : 'rgba(248,113,113,0.7)';
-          const statusBg    = on ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)';
-          const statusBd    = on ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
-          return '<button onclick="toggleCoreMetric(\'' + m.key + '\')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';cursor:pointer;transition:all .15s;text-align:left;width:100%;">'
-            + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;">'
-            + '<span style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + c + ';text-transform:uppercase;letter-spacing:0.05em;">' + m.label + '</span>'
-            + '<span style="font-size:9px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + statusColor + ';background:' + statusBg + ';border:1px solid ' + statusBd + ';padding:1px 6px;border-radius:4px;">' + (on ? 'REQ' : 'OPT') + '</span>'
-            + '</div>'
-            + '<span style="font-size:10px;color:var(--text3);">' + m.unit + '</span>'
-            + '</button>';
-        }).join('');
-        return '<div class="card">'
-          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-          + '<div class="card-label" style="margin-bottom:0;">Full Athlete Definition</div>'
-          + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + coreMeasuredKeys.size + ' required</span>'
-          + '</div>'
-          + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Required metrics for an athlete to be considered fully measured (green name, sorts to top of roster).</div>'
-          + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + coreGrid + '</div>'
-          + '</div>';
-      })()
+    + '<div class="card">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    + '<div class="card-label" style="margin-bottom:0;">Full Athlete Definition</div>'
+    + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + coreMeasuredKeys.size + ' required</span>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Required metrics for an athlete to be considered fully measured (green name, sorts to top of roster).</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + coreGrid + '</div>'
+    + '</div>'
+
+    + '</div>';
+
+  const rightCol = '<div style="display:flex;flex-direction:column;gap:14px;min-width:300px;">'
 
     + '<div class="card">'
-    + '<div class="card-label">Performance Tier Thresholds</div>'
-    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:16px;">Set the minimum percentile for each tier. Changes apply globally to all badges, scores, and coaching across the app.</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:18px 28px;">' + tierInputs + '</div>'
+    + '<div class="card-label">Performance Tiers</div>'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:16px;">Minimum percentile for each tier. Applies globally to all badges, scores, and coaching.</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;">' + tierInputs + '</div>'
     + '</div>'
 
     + '<div class="card">'
     + '<div class="card-label">Matrix Quadrant Threshold</div>'
-    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:14px;">Percentile boundary separating high from low on the force–reactive matrix. Default 50th. Raise it to require a stricter standard for the &ldquo;high&rdquo; classification.</div>'
-    + '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">'
-    + '<input type="range" min="20" max="80" value="' + matrixThreshold + '" oninput="updateMatrixThreshold(this.value)" style="flex:1;min-width:160px;max-width:280px;accent-color:var(--gold);height:4px;" />'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:14px;">Percentile boundary separating high from low on the force–reactive matrix.</div>'
+    + '<div style="display:flex;align-items:center;gap:14px;">'
+    + '<input type="range" min="20" max="80" value="' + matrixThreshold + '" oninput="updateMatrixThreshold(this.value)" style="flex:1;accent-color:var(--gold);height:4px;" />'
     + '<span id="matrix-thr-display" style="font-size:20px;font-weight:800;font-family:\'DM Mono\',monospace;color:var(--gold);min-width:52px;">' + matrixThreshold + 'th</span>'
-    + '<span style="font-size:11px;color:var(--text3);">percentile</span>'
     + '</div>'
     + '<div id="matrix-thr-desc" style="margin-top:10px;font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">Force score &ge; ' + matrixThreshold + ' = high &nbsp;&middot;&nbsp; Reactive score &ge; ' + matrixThreshold + ' = high</div>'
     + '</div>'
 
     + '<div class="card">'
     + '<div class="card-label">Display</div>'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">'
-    + '<div><div style="font-size:13px;font-weight:600;">Suppress estimated metrics</div>'
-    + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Hide non-measured metrics from all calculations and charts</div></div>'
-    + '<button class="suppress-est-btn" onclick="toggleSuppressEstimated()" style="padding:6px 16px;border-radius:var(--radius-md);border:1px solid ' + suppBd + ';background:' + suppBg + ';color:' + suppCol + ';font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:16px;">' + (suppressEstimated ? 'ON' : 'OFF') + '</button>'
-    + '</div>'
+    + settingRow('Suppress estimated metrics', 'Hide non-measured metrics from all calculations and charts', 'toggleSuppressEstimated', suppressEstimated)
+    + settingRow('Compact roster rows', 'Reduce row height to fit more athletes on screen at once', 'toggleCompactRoster', compactRoster)
+    + settingRow('Smooth history curves', 'Use bezier curves instead of straight lines in history charts', 'toggleHistorySmoothing', historySmoothing)
     + '</div>'
 
     + '<div>'
-    + '<button class="btn" onclick="resetSettings()" style="background:transparent;border-color:rgba(248,113,113,0.35);color:rgba(248,113,113,0.8);" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'rgba(248,113,113,0.35)\';this.style.color=\'rgba(248,113,113,0.8)\'">Reset all settings to defaults</button>'
+    + '<button class="btn" onclick="resetSettings()" style="background:transparent;border-color:rgba(248,113,113,0.35);color:rgba(248,113,113,0.8);width:100%;" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'rgba(248,113,113,0.35)\';this.style.color=\'rgba(248,113,113,0.8)\'">Reset all settings to defaults</button>'
     + '</div>'
 
+    + '</div>';
+
+  pane.innerHTML = '<div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">'
+    + leftCol + rightCol
     + '</div>';
 }
 

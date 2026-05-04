@@ -35,11 +35,16 @@ def sb_delete(path):
 
 def parse_date(val):
     if val is None: return None
+    import datetime as _dt
+    if isinstance(val, (_dt.datetime, _dt.date)):
+        return val.strftime('%Y-%m-%d')
     s = str(val)
     m = re.match(r'(\d{4})/(\d{2})/(\d{2})', s)
     if m: return f'{m.group(1)}-{m.group(2)}-{m.group(3)}'
     m = re.match(r'(\d{1,2})/(\d{1,2})/(\d{4})', s)
     if m: return f'{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}'
+    m = re.match(r'(\d{4})-(\d{2})-(\d{2})', s)
+    if m: return f'{m.group(1)}-{m.group(2)}-{m.group(3)}'
     return None
 
 def parse_mean(val):
@@ -61,16 +66,31 @@ raw = defaultdict(lambda: defaultdict(list))
 OUTLIERS = {('lily barstad', 'sprint10', lambda v: v < 1.0)}
 INVERSE = {'sprint10', 'sprintFly', 'sprint1020', 'shuttle'}
 
+NAME_ALIASES = {
+    'charlottes shelton':           'charlotte shelton',
+    'emma royko emma royko':        'emma royko',
+    'gabby nevarez':                'gabriela nevarez',
+    'kai fennel':                   'kai fennell',
+    'sofia andrade the andrades':   'sofia andrade',
+    'ahnie murilo':                 'ahnalisa murillo',
+}
+
+def norm_name(name):
+    """Collapse whitespace, lowercase, and apply known aliases."""
+    n = ' '.join(str(name).split()).lower() if name else ''
+    return NAME_ALIASES.get(n, n)
+
 def add(name, date, metric, value, source='manual'):
     if not name or not date or value is None: return
     try: v = float(value)
     except (ValueError, TypeError): return
     if v <= 0: return
+    nl = norm_name(name)
     # Outlier filter
-    if name.lower() == 'lily barstad' and metric == 'sprint10' and v < 1.0:
+    if nl == 'lily barstad' and metric == 'sprint10' and v < 1.0:
         print(f'  OUTLIER SKIPPED: {name} {metric}={v}')
         return
-    raw[(name.lower().strip(), date)][metric].append((v, source))
+    raw[(nl, date)][metric].append((v, source))
 
 # 0-10 Acceleration → sprint10
 for r in get_rows('0-10 Acceleration'):
@@ -106,6 +126,12 @@ for r in get_rows('5-10-5 Pro Agility'):
 for r in get_rows('10-5 Reactive Strength'):
     add(r.get('Full Name'), parse_date(r.get('Completed Date')), 'rsi', r.get('RSI'), 'sensor')
 
+# FD RSI (drop jump with dates) → rsi + power
+for r in get_rows('fdrsiwithtime'):
+    d = parse_date(r.get('Date'))
+    add(r.get('Name'), d, 'rsi',   parse_mean(r.get('RSI (Flight Time/Contact Time) ')), 'FD')
+    add(r.get('Name'), d, 'power', parse_mean(r.get('Peak Power / BM [W/kg] ')),        'FD')
+
 # Force Deck CMJ → cmj (FD), power, rfd
 fd_rows = get_rows('Force Deck CMJ')
 fd_cmj_col  = next((k for k in (fd_rows[0].keys() if fd_rows else []) if 'Height' in str(k) and k), None)
@@ -136,7 +162,7 @@ print(f'\nTotal (athlete, date) sessions to import: {len(final)}')
 
 # Get athlete ID map from Supabase
 athletes_sb = sb_get('/rest/v1/athletes?select=id,name,sex')
-id_map = {a['name'].lower().strip(): a for a in athletes_sb}
+id_map = {norm_name(a['name']): a for a in athletes_sb}
 print(f'Athletes in Supabase: {len(id_map)}')
 
 # Delete all existing sessions (cascades to measurements)

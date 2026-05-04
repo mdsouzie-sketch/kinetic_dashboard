@@ -1260,7 +1260,7 @@ function renderCompareStrip() {
   const sel = document.getElementById('compare-select');
   sel.innerHTML = '<option value="">— pick athlete —</option>';
   ATHLETE_DB
-    .filter(a=>a.name!==currentAthlete.name && !compareAthletes.find(c=>c.name===a.name))
+    .filter(a=>a.name!==currentAthlete.name && a.sex===currentAthlete.sex && !compareAthletes.find(c=>c.name===a.name))
     .sort((a,b)=>a.name.localeCompare(b.name))
     .forEach(a=>{
       const o = document.createElement('option');
@@ -1404,7 +1404,7 @@ function onAthleteChange() {
   const name = document.getElementById('athlete-select').value;
   currentAthlete = ATHLETE_DB.find(a=>a.name===name);
   athleteData = {...currentAthlete};
-  compareAthletes = compareAthletes.filter(c=>c.name!==name);
+  compareAthletes = compareAthletes.filter(c=>c.name!==name && ATHLETE_DB.find(a=>a.name===c.name)?.sex===currentAthlete.sex);
   compareAthletes.forEach((c,i)=>c.color=COMPARE_COLORS[i]);
   selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
   document.getElementById('norm-select').value = selectedNorm;

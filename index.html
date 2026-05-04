@@ -2698,22 +2698,15 @@ function rosterSort(key) {
 function renderRosterTable() {
   const tbl = document.getElementById('roster-table');
 
-  const ALL_METRIC_COLS = [
-    {key:'cmj',       label:'CMJ (in)'},
-    {key:'power',     label:'Power (W/kg)'},
-    {key:'rfd',       label:'RFD (N/s)'},
-    {key:'rsi',       label:'RSI'},
-    {key:'sprint10',  label:'10yd (s)'},
-    {key:'sprintFly', label:'Fly10 (s)'},
-    {key:'sprint1020',label:'10-20 (s)'},
-    {key:'broad',     label:'Broad (in)'},
-    {key:'shuttle',   label:'Shuttle (s)'},
-  ];
+  const ALL_METRIC_COLS = METRICS.map(m => ({key: m.key, label: m.label + (m.unit ? ' (' + m.unit + ')' : '')}));
+  // Remove disabled metrics from visible set
+  ALL_METRIC_COLS.forEach(c => { if (disabledMetrics.has(c.key)) rosterVisibleCols.delete(c.key); });
+  const activeCols = ALL_METRIC_COLS.filter(c => !disabledMetrics.has(c.key));
 
   // Render column toggle pills
   const togglesEl = document.getElementById('roster-col-toggles');
   if (togglesEl) {
-    togglesEl.innerHTML = ALL_METRIC_COLS.map(c => {
+    togglesEl.innerHTML = activeCols.map(c => {
       const on = rosterVisibleCols.has(c.key);
       return `<button onclick="toggleRosterCol('${c.key}')"
         style="font-size:10px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:10px;cursor:pointer;transition:all 0.15s;
@@ -2723,7 +2716,7 @@ function renderRosterTable() {
     }).join('');
   }
 
-  const visibleMetrics = ALL_METRIC_COLS.filter(c => rosterVisibleCols.has(c.key));
+  const visibleMetrics = activeCols.filter(c => rosterVisibleCols.has(c.key));
   const colLabels = ['Name', 'Sex', ...visibleMetrics.map(c => c.label), ''];
   const keys      = ['name', 'sex', ...visibleMetrics.map(c => c.key), '_del'];
 

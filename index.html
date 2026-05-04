@@ -1172,8 +1172,7 @@ function saveAthletePanel() {
     currentAthlete.sex = newAthleteSex;
     currentAthlete.cmjFD = newCmjFD;
     athleteData = {...currentAthlete};
-    selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-    document.getElementById('norm-select').value = selectedNorm;
+    rebuildNormSelect();
     const sb = document.getElementById('sex-badge');
     sb.textContent = currentAthlete.sex==='M'?'♂ Male':'♀ Female';
     sb.className = 'sex-badge '+(currentAthlete.sex==='M'?'male':'female');
@@ -1216,8 +1215,7 @@ function deleteAthlete(name) {
     athleteData = {...currentAthlete};
     rebuildAthleteSelect();
     document.getElementById('athlete-select').value = currentAthlete.name;
-    selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-    document.getElementById('norm-select').value = selectedNorm;
+    rebuildNormSelect();
     renderCompareStrip();
     renderAll(true);
   } else {
@@ -1237,6 +1235,26 @@ function rebuildAthleteSelect() {
     if (hasAllMeasured(a)) o.style.color = '#34d399';
     asel.appendChild(o);
   });
+}
+
+function rebuildNormSelect() {
+  const sex = currentAthlete ? currentAthlete.sex : 'F';
+  const word = sex === 'M' ? 'Male' : 'Female';
+  const nsel = document.getElementById('norm-select');
+  if (!nsel) return;
+  const cur = nsel.value;
+  nsel.innerHTML = '';
+  Object.keys(INITIAL_NORMS)
+    .filter(k => k.includes(word))
+    .forEach(k => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = k;
+      nsel.appendChild(o);
+    });
+  // Keep current selection if still valid, otherwise default to roster norm
+  nsel.value = nsel.querySelector(`option[value="${CSS.escape(cur)}"]`) ? cur
+    : `Roster — ${word} (Measured)`;
+  selectedNorm = nsel.value;
 }
 
 function addComparePick() {
@@ -1406,8 +1424,7 @@ function onAthleteChange() {
   athleteData = {...currentAthlete};
   compareAthletes = compareAthletes.filter(c=>c.name!==name && ATHLETE_DB.find(a=>a.name===c.name)?.sex===currentAthlete.sex);
   compareAthletes.forEach((c,i)=>c.color=COMPARE_COLORS[i]);
-  selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-  document.getElementById('norm-select').value = selectedNorm;
+  rebuildNormSelect();
   updateAthleteAvatar(currentAthlete);
   renderCompareStrip();
   renderAll(true);
@@ -3765,18 +3782,12 @@ async function init() {
     asel.appendChild(o);
   });
 
-  // Norm selector
-  const nsel = document.getElementById('norm-select');
-  Object.keys(INITIAL_NORMS).forEach(s=>{
-    const o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    nsel.appendChild(o);
-  });
+  // Norm selector — populated per-sex via rebuildNormSelect()
 
   // Apply defaults
   currentAthlete = ATHLETE_DB[0];
   athleteData = Object.assign({}, currentAthlete);
-  selectedNorm = 'Roster — ' + (currentAthlete.sex==='M'?'Male':'Female') + ' (Measured)';
+  rebuildNormSelect();
   selectedChartKeys = new Set(METRICS.filter(m => !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
 
   // Restore saved state (overrides defaults above)

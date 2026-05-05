@@ -845,12 +845,12 @@ let INITIAL_NORMS = {
   "Roster — Female":            computeInternalNorms('F'),
   "Roster — Male (Measured)":   computeMeasuredNorms('M'),
   "Roster — Female (Measured)": computeMeasuredNorms('F'),
-  "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, shuttle:{m:4.15,sd:0.10} },
-  "Male NCAA D2":   { power:{m:66.5,sd:4.8}, sprint10:{m:1.51,sd:0.04}, sprintFly:{m:1.04,sd:0.03}, rsi:{m:1.48,sd:0.18}, cmj:{m:10.2,sd:1.8}, broad:{m:99,sd:9.0},  rfd:{m:210,sd:22.0}, shuttle:{m:4.32,sd:0.12} },
-  "Male NCAA D3":   { power:{m:58.2,sd:5.5}, sprint10:{m:1.58,sd:0.06}, sprintFly:{m:1.12,sd:0.04}, rsi:{m:1.30,sd:0.20}, cmj:{m:9.2,sd:2.0},  broad:{m:90,sd:10.0}, rfd:{m:185,sd:25.0}, shuttle:{m:4.48,sd:0.15} },
-  "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, shuttle:{m:4.62,sd:0.12} },
-  "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, shuttle:{m:4.80,sd:0.15} },
-  "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, shuttle:{m:5.05,sd:0.20} },
+  "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, eccBrakingRFD:{m:95,sd:30}, shuttle:{m:4.15,sd:0.10} },
+  "Male NCAA D2":   { power:{m:66.5,sd:4.8}, sprint10:{m:1.51,sd:0.04}, sprintFly:{m:1.04,sd:0.03}, rsi:{m:1.48,sd:0.18}, cmj:{m:10.2,sd:1.8}, broad:{m:99,sd:9.0},  rfd:{m:210,sd:22.0}, eccBrakingRFD:{m:80,sd:28}, shuttle:{m:4.32,sd:0.12} },
+  "Male NCAA D3":   { power:{m:58.2,sd:5.5}, sprint10:{m:1.58,sd:0.06}, sprintFly:{m:1.12,sd:0.04}, rsi:{m:1.30,sd:0.20}, cmj:{m:9.2,sd:2.0},  broad:{m:90,sd:10.0}, rfd:{m:185,sd:25.0}, eccBrakingRFD:{m:65,sd:25}, shuttle:{m:4.48,sd:0.15} },
+  "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, eccBrakingRFD:{m:75,sd:28}, shuttle:{m:4.62,sd:0.12} },
+  "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, eccBrakingRFD:{m:60,sd:25}, shuttle:{m:4.80,sd:0.15} },
+  "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, eccBrakingRFD:{m:50,sd:22}, shuttle:{m:5.05,sd:0.20} },
 
 };
 
@@ -1055,9 +1055,11 @@ function toggleAddPanel(wantEdit) {
 function renderAthletePanel() {
   const LBL = 'display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;font-family:\'DM Mono\',monospace;';
   const nameRow = editMode
-    ? `<div>
-        <div style="${LBL}">Editing</div>
-        <div style="font-size:16px;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-style:italic;letter-spacing:.3px;">${currentAthlete.name}</div>
+    ? `<div style="flex:1;min-width:160px;">
+        <label style="${LBL}">Athlete name</label>
+        <input id="new-name" type="text" value="${(currentAthlete.name || '').replace(/"/g,'&quot;')}"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor=''" />
        </div>`
     : `<div style="flex:1;min-width:160px;">
         <label style="${LBL}">Athlete name</label>
@@ -1132,6 +1134,13 @@ function togglePanelCmjFD() {
 
 function saveAthletePanel() {
   if (editMode) {
+    const newName = (document.getElementById('new-name').value || '').trim();
+    if (!newName) { alert('Name cannot be empty.'); return; }
+    const oldName = currentAthlete.name;
+    const nameChanged = newName !== oldName;
+    if (nameChanged && ATHLETE_DB.some(a => a !== currentAthlete && a.name === newName)) {
+      alert('Another athlete already has that name.'); return;
+    }
     METRICS.forEach(m => {
       const raw = document.getElementById('new-inp-'+m.key).value;
       const val = parseFloat(raw);
@@ -1139,9 +1148,15 @@ function saveAthletePanel() {
       if (!currentAthlete.measured) currentAthlete.measured = {};
       currentAthlete.measured[m.key] = !!newMeasured[m.key];
     });
+    currentAthlete.name = newName;
     currentAthlete.sex = newAthleteSex;
     currentAthlete.cmjFD = newCmjFD;
     athleteData = {...currentAthlete};
+    if (nameChanged) {
+      rebuildAthleteSelect();
+      const sel = document.getElementById('athlete-select');
+      if (sel) sel.value = newName;
+    }
     rebuildNormSelect();
     const sb = document.getElementById('sex-badge');
     sb.textContent = currentAthlete.sex==='M'?'♂ Male':'♀ Female';
@@ -1149,6 +1164,7 @@ function saveAthletePanel() {
     closeAthletePanel();
     renderAll(true);
     if (currentAthlete._supabase_id) {
+      renameAthleteInSupabase(currentAthlete._supabase_id, newName, currentAthlete.sex);
       const mm = {};
       METRICS.forEach(m => { if (currentAthlete[m.key]) mm[m.key] = { value: currentAthlete[m.key], source: currentAthlete.measured && currentAthlete.measured[m.key] ? 'manual' : 'estimated' }; });
       saveSessionToSupabase(currentAthlete, mm);
@@ -3632,6 +3648,22 @@ async function saveSessionToSupabase(athlete, metricsMap, date) {
   } catch(e) {
     console.error('Supabase save error:', e);
     showToast('Saved locally (DB sync failed)');
+  }
+}
+
+// ── Rename / update sex of an existing athlete in Supabase ──
+async function renameAthleteInSupabase(id, name, sex) {
+  try {
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/athletes?id=eq.' + id, {
+      method: 'PATCH',
+      headers: SUPABASE_HEADERS,
+      body: JSON.stringify({ name, sex })
+    });
+    if (!resp.ok) throw new Error('Athlete update failed');
+    showToast('Athlete updated in database');
+  } catch(e) {
+    console.error('Supabase rename error:', e);
+    showToast('Rename saved locally only');
   }
 }
 

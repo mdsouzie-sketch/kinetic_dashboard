@@ -745,7 +745,7 @@ const ATHLETE_DB_FALLBACK = [];
 
 
 // ForceDeck-measured keys (always real for every athlete — legacy fallback)
-const REAL_KEYS = new Set(['cmj','power','rfd']);
+const REAL_KEYS = new Set(['cmj','power','rfd','eccBrakingRFD']);
 function isEstimatedForAthlete(key, athlete) {
   if (athlete.measured) return !athlete.measured[key];
   if (key === 'rsi') return !athlete.rsiMeasured;
@@ -781,6 +781,7 @@ const METRICS = [
   { key:'power',     label:'Peak power',         inv:false, unit:'W/kg', step:0.1  },
   { key:'rsi',       label:'Reactive strength',  inv:false, unit:'idx',  step:0.01 },
   { key:'rfd',       label:'Rate of force dev',  inv:false, unit:'N/s',  step:1    },
+  { key:'eccBrakingRFD', label:'Ecc braking RFD', inv:false, unit:'N/s/kg', step:1 },
   { key:'cmj',       label:'Vertical jump',      inv:false, unit:'in',   step:0.1  },
   { key:'sprint10',  label:'10yd start',         inv:true,  unit:'s',    step:0.01 },
   { key:'sprintFly', label:'Fly 10yd (20–30)',   inv:true,  unit:'s',    step:0.01 },
@@ -793,7 +794,7 @@ const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
 
 const TEST_GROUPS = [
   { key:'cmj', label:'CMJ & Force', shortLabel:'CMJ',
-    metrics:['cmj','rfd','power'],
+    metrics:['cmj','rfd','eccBrakingRFD','power'],
     defaultNorm: sex => `Roster — ${sex==='M'?'Male':'Female'} (Measured)`,
     hasData: a => (a.cmj||0) > 0 || (a.rfd||0) > 0 },
   { key:'sprint', label:'Sprint', shortLabel:'Sprint',
@@ -870,7 +871,7 @@ let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
 let rosterSortKey = 'name';
 let rosterSortDir = 1; // 1 = asc (A→Z / low→high), -1 = desc (Z→A / high→low)
-let rosterVisibleCols = new Set(['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle']);
+let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle']);
 let collapsedCards = new Set();
 let suppressEstimated = true;
 let selectedChartMode = 'measured'; // 'all' | 'measured' | 'none' | 'custom'
@@ -916,6 +917,7 @@ const COACHING_LIB = {
   sprintFly: { title:'Maximum velocity development',   text:'Top-end speed is underexpressed. Prioritize high-velocity running volume, elastic stiffness development, and reducing ground contact time at speed.',          methods:['High-velocity running','Elastic stiffness loading','Sprint mechanics','Speed endurance'] },
   rsi:       { title:'Reactive strength & SSC efficiency', text:'Tendon-muscle stiffness and SSC efficiency are limiting power output. Emphasize short-contact plyometrics with strict constraints on amortization time.',   methods:['Short-contact plyometrics','SSC efficiency work','Stiffness-based loading','Tendon conditioning'] },
   rfd:       { title:'Rate of force development',      text:'Early-phase explosive force is the primary deficit. Target neural drive through intent-based training and rapid concentric acceleration.',                        methods:['Ballistic intent training','Neural drive emphasis','Contrast loading','Early-phase RFD'] },
+  eccBrakingRFD: { title:'Eccentric braking capacity', text:'Eccentric braking RFD reflects how quickly the athlete absorbs and reverses force at jump landing — a key driver of SSC efficiency. Target heavy eccentrics, accentuated-eccentric jumps, and tempo squats.', methods:['Heavy eccentric loading','Accentuated-eccentric jumps','Tempo squat work','Drop-landing absorption'] },
   sprint10:  { title:'Acceleration mechanics',         text:'Force application in initial acceleration is below norms. Prioritize horizontal force production and drive phase positional strength.',                          methods:['Resisted acceleration','Horizontal force emphasis','Drive phase mechanics','Positional strength'] },
   cmj:       { title:'Vertical power expression',      text:'CMJ height indicates a deficit in vertical power. Develop reactive power through SSC alongside eccentric loading to build the force foundation.',               methods:['Loaded jump training','SSC power development','Eccentric loading','Concentric intent'] },
   broad:     { title:'Horizontal power output',        text:'Horizontal power and projection mechanics underperforming. Develop unilateral hip extension strength and horizontal momentum generation.',                      methods:['Unilateral hip extension','Horizontal intent loading','Projection mechanics','Single-leg power'] },
@@ -2301,6 +2303,7 @@ const HIST_METRICS = [
   { key:'cmj',       label:'CMJ',     unit:'in',     inv:false },
   { key:'power',     label:'Power',   unit:'W/kg',   inv:false },
   { key:'rfd',       label:'RFD',     unit:'N/s/kg', inv:false },
+  { key:'eccBrakingRFD', label:'Ecc Brk', unit:'N/s/kg', inv:false },
   { key:'rsi',       label:'RSI',     unit:'',       inv:false },
   { key:'sprint10',  label:'0-10',    unit:'s',      inv:true  },
   { key:'sprintFly', label:'Fly 10',  unit:'s',      inv:true  },
@@ -3137,6 +3140,7 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
     cmj:       { title:'Vertical jump',        tip:'Prioritise reactive plyometrics — depth jumps, continuous hurdle hops, and loaded jump squats to drive CMJ height.' },
     power:     { title:'Peak power',           tip:'Add Olympic lifting variations (hang clean, power snatch) and short-contact box jumps to maximise rate of force development into peak power output.' },
     rfd:       { title:'Rate of force dev',    tip:'Incorporate ballistic exercises — jump squats, medicine-ball throws, and sprint-specific resisted starts — to sharpen neuromuscular firing rate.' },
+    eccBrakingRFD: { title:'Ecc braking RFD',  tip:'Train eccentric absorption with tempo squats (4-1-1), heavy eccentric step-downs, and drop-landing progressions to build the braking phase that fuels reactive power.' },
     rsi:       { title:'Reactive strength',    tip:'Build RSI with a progressive drop-jump programme. Focus on short ground-contact times and stiffness cues; add ankle stiffness drills and bounding.' },
     sprint10:  { title:'10 yd acceleration',  tip:'Target starting mechanics: sled pushes at 80 % BW, wicket drills for stride frequency, and hip-flexor strength work to improve first-step explosiveness.' },
     sprintFly: { title:'Max velocity',         tip:'Address top-end speed with fly 10s, wicket runs, and A-skip / B-skip progressions. Focus on posture, dorsiflexion, and front-side mechanics.' },
@@ -3566,7 +3570,7 @@ function buildAthleteFromSupabase(row) {
     });
   });
 
-  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
 
   const measured = {};
   ALL_KEYS.forEach(k => {
@@ -3895,6 +3899,7 @@ const HISTORY_METRICS = [
   { key:'cmj',        label:'CMJ'    },
   { key:'power',      label:'Power'  },
   { key:'rfd',        label:'RFD'    },
+  { key:'eccBrakingRFD', label:'EccBrk' },
   { key:'rsi',        label:'RSI'    },
   { key:'sprint10',   label:'10yd'   },
   { key:'sprintFly',  label:'Fly10'  },
@@ -3995,7 +4000,7 @@ async function deleteSession(sessId) {
   currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
 
   // Recompute best values across remaining sessions
-  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
   const bestValues = {}, bestSource = {};
   (currentAthlete._sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {

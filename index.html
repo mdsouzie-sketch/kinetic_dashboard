@@ -1023,6 +1023,8 @@ function toggleCoreMetric(key) {
   else coreMeasuredKeys.add(key);
   renderSettings();
   renderRosterTable();
+  renderAll(false);
+  saveState();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1465,11 +1467,36 @@ function saveAthletePanel() {
   }
 }
 
-function deleteAthlete(name) {
+async function deleteAthlete(name) {
   if (ATHLETE_DB.length <= 1) { alert('Cannot delete the last athlete.'); return; }
-  if (!confirm(`Remove "${name}" from the roster?`)) return;
   const idx = ATHLETE_DB.findIndex(a=>a.name===name);
   if (idx < 0) return;
+  const athlete = ATHLETE_DB[idx];
+  const sessionCount = (athlete._sessions || []).length;
+  const detail = sessionCount > 0
+    ? ` This will also delete ${sessionCount} session${sessionCount===1?'':'s'} of measurement history.`
+    : '';
+  if (!confirm(`Permanently delete "${name}" from the database?${detail} This cannot be undone.`)) return;
+
+  // Delete from Supabase first if the athlete has a server-side row
+  if (athlete._supabase_id) {
+    try {
+      // Sessions cascade to measurements (matches the existing session-delete pattern)
+      await fetch(SUPABASE_URL + '/rest/v1/sessions?athlete_id=eq.' + athlete._supabase_id, {
+        method: 'DELETE', headers: SUPABASE_HEADERS,
+      });
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/athletes?id=eq.' + athlete._supabase_id, {
+        method: 'DELETE', headers: SUPABASE_HEADERS,
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    } catch(e) {
+      console.error('Supabase athlete delete error:', e);
+      alert(`Failed to delete "${name}" from the database. Athlete remains in roster. See console for details.`);
+      return;
+    }
+  }
+
+  // Local state
   ATHLETE_DB.splice(idx, 1);
   compareAthletes = compareAthletes.filter(c=>c.name!==name);
   if (currentAthlete.name === name) {
@@ -1484,7 +1511,10 @@ function deleteAthlete(name) {
     rebuildAthleteSelect();
     renderCompareStrip();
   }
+  // Recompute roster norms since the cohort changed
+  rebuildInitialNorms();
   renderRosterTable();
+  if (typeof showToast === 'function') showToast('Deleted ' + name);
 }
 
 function rebuildAthleteSelect() {
@@ -3875,6 +3905,7 @@ function buildStateObj() {
     rosterFullOnly,
     compactRoster,
     disabledMetrics:  [...disabledMetrics],
+    coreMeasuredKeys: [...coreMeasuredKeys],
     tierThresholds,
     matrixThreshold,
     selectedChartMode,
@@ -3947,6 +3978,7 @@ function loadState() {
     if (s.rosterFullOnly    !== undefined) rosterFullOnly    = s.rosterFullOnly;
     if (s.compactRoster     !== undefined) compactRoster     = s.compactRoster;
     if (Array.isArray(s.disabledMetrics))  disabledMetrics   = new Set(s.disabledMetrics);
+    if (Array.isArray(s.coreMeasuredKeys)) coreMeasuredKeys  = new Set(s.coreMeasuredKeys);
     if (Array.isArray(s.tierThresholds) && s.tierThresholds.length === 4) tierThresholds = s.tierThresholds;
     if (typeof s.matrixThreshold === 'number') matrixThreshold = s.matrixThreshold;
     if (s.selectedChartMode) selectedChartMode = s.selectedChartMode;

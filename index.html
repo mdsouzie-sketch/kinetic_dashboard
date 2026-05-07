@@ -615,6 +615,11 @@
             style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(52,211,153,0.3);background:var(--bg2);color:var(--text3);cursor:pointer;">
             ● Full first
           </button>
+          <button onclick="toggleRosterFullOnly()" id="roster-fullonly-btn"
+            title="Hide athletes missing any core metric, and recompute Roster — (Measured) norms from only full-data athletes"
+            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(52,211,153,0.3);background:var(--bg2);color:var(--text3);cursor:pointer;">
+            ● Full only
+          </button>
           <button class="suppress-est-btn" onclick="toggleSuppressEstimated()"
             style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">
             Hide estimated from comparisons
@@ -622,6 +627,11 @@
           <button onclick="openNewAthletePanel()"
             style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(45,212,191,0.35);background:var(--bg2);color:var(--teal);cursor:pointer;">
             + New athlete
+          </button>
+          <button onclick="exportRosterCsv()"
+            title="Download current roster as CSV (respects Full only filter)"
+            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(240,192,64,0.35);background:var(--bg2);color:var(--gold);cursor:pointer;">
+            ↓ Export CSV
           </button>
         </div>
       </div>
@@ -822,8 +832,17 @@ function computeInternalNorms(sexKey) {
   return out;
 }
 
+// When true: roster table + Roster (Measured) norms restricted to full-data athletes.
+// Declared here (before computeMeasuredNorms / INITIAL_NORMS) to avoid TDZ.
+let rosterFullOnly = false;
+
 function computeMeasuredNorms(sexKey) {
-  const group = ATHLETE_DB.filter(a => a.sex === sexKey);
+  let group = ATHLETE_DB.filter(a => a.sex === sexKey);
+  // Full-only mode: derive comparison norms from athletes with all core metrics measured
+  if (rosterFullOnly) {
+    const full = group.filter(hasAllMeasured);
+    if (full.length >= 2) group = full;
+  }
   const out = {};
   METRICS.forEach(m => {
     const vals = group
@@ -2707,6 +2726,15 @@ function rosterSort(key) {
   renderRosterTable();
 }
 
+function toggleRosterFullOnly() {
+  rosterFullOnly = !rosterFullOnly;
+  // Recompute Roster — (Measured) norms so all comparison views use the new cohort
+  rebuildInitialNorms();
+  renderRosterTable();
+  if (currentAthlete) renderAll(false);
+  saveState();
+}
+
 function renderRosterTable() {
   const tbl = document.getElementById('roster-table');
 
@@ -2741,8 +2769,19 @@ function renderRosterTable() {
     fullBtn.style.color         = active ? 'var(--green)'          : 'var(--text3)';
   }
 
+  // Sync full-only button active state
+  const fullOnlyBtn = document.getElementById('roster-fullonly-btn');
+  if (fullOnlyBtn) {
+    fullOnlyBtn.style.background  = rosterFullOnly ? 'rgba(52,211,153,0.12)' : 'var(--bg2)';
+    fullOnlyBtn.style.borderColor = rosterFullOnly ? 'rgba(52,211,153,0.45)' : 'rgba(52,211,153,0.3)';
+    fullOnlyBtn.style.color       = rosterFullOnly ? 'var(--green)'          : 'var(--text3)';
+  }
+
+  // Source pool — restricted to full-data athletes when Full only is active
+  const pool = rosterFullOnly ? ATHLETE_DB.filter(hasAllMeasured) : ATHLETE_DB;
+
   // Sort roster — full athletes always float to top; secondary sort by active column
-  const sorted = [...ATHLETE_DB].sort((a, b) => {
+  const sorted = [...pool].sort((a, b) => {
     const af = hasAllMeasured(a) ? 0 : 1;
     const bf = hasAllMeasured(b) ? 0 : 1;
     if (af !== bf) return af - bf;
@@ -2820,6 +2859,54 @@ function loadAthleteFromRoster(name) {
   document.getElementById('athlete-select').value = name;
   onAthleteChange();
   switchTab('analytics');
+}
+
+function exportRosterCsv() {
+  const pool = rosterFullOnly ? ATHLETE_DB.filter(hasAllMeasured) : ATHLETE_DB;
+  const cols = METRICS.filter(m => !disabledMetrics.has(m.key));
+
+  const csvEscape = v => {
+    if (v == null) return '';
+    const s = String(v);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const header = [
+    'Name', 'Sex', 'Custom', 'CMJ Source', 'All Core Measured',
+    ...cols.map(c => `${c.label}${c.unit ? ' (' + c.unit + ')' : ''}`),
+    'Estimated Metrics',
+  ];
+
+  const rows = pool.map(a => {
+    const cmjSource = a.cmj == null ? '' : (a.cmjFD ? 'ForceDecks' : 'Sensor');
+    const estimated = cols.filter(c => a[c.key] != null && isEstimatedForAthlete(c.key, a)).map(c => c.key);
+    return [
+      a.name,
+      a.sex || '',
+      a.custom ? 'Y' : '',
+      cmjSource,
+      hasAllMeasured(a) ? 'Y' : '',
+      ...cols.map(c => {
+        const v = a[c.key];
+        if (typeof v !== 'number') return '';
+        const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' ? 1 : 2);
+        return v.toFixed(decimals);
+      }),
+      estimated.join(';'),
+    ].map(csvEscape).join(',');
+  });
+
+  const csv = [header.map(csvEscape).join(','), ...rows].join('\r\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `roster_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3301,6 +3388,7 @@ function saveState() {
       tab:              activeTab,
       suppressEstimated,
       measuredOnlyMode,
+      rosterFullOnly,
       disabledMetrics:  [...disabledMetrics],
       tierThresholds,
       matrixThreshold,
@@ -3325,6 +3413,7 @@ function loadState() {
     if (s.norm && norms[s.norm])           selectedNorm      = s.norm;
     if (s.suppressEstimated !== undefined) suppressEstimated = s.suppressEstimated;
     if (s.measuredOnlyMode  !== undefined) measuredOnlyMode  = s.measuredOnlyMode;
+    if (s.rosterFullOnly    !== undefined) rosterFullOnly    = s.rosterFullOnly;
     if (Array.isArray(s.disabledMetrics))  disabledMetrics   = new Set(s.disabledMetrics);
     if (Array.isArray(s.tierThresholds) && s.tierThresholds.length === 4) tierThresholds = s.tierThresholds;
     if (typeof s.matrixThreshold === 'number') matrixThreshold = s.matrixThreshold;
@@ -3564,26 +3653,43 @@ function showToast(msg) {
 
 // ── Build ATHLETE_DB from Supabase response ──
 function buildAthleteFromSupabase(row) {
-  const bestValues = {};
-  const bestSource = {};
+  // Track per-source best per metric so we can prefer FD even when its value
+  // is "lower" than non-FD readings. Shape: { metric: { source: bestVal } }.
+  const perSource = {};
 
   (row.sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {
       const key = m.metric;
       const val = parseFloat(m.value) || 0;
       if (!val) return;
-      const existing = bestValues[key];
-      if (existing === undefined) {
-        bestValues[key] = val;
-        bestSource[key] = m.source;
-      } else {
-        const better = INVERSE_METRICS.has(key) ? val < existing : val > existing;
-        if (better) {
-          bestValues[key] = val;
-          bestSource[key] = m.source;
-        }
+      const src = m.source || 'manual';
+      if (!perSource[key]) perSource[key] = {};
+      const cur = perSource[key][src];
+      if (cur === undefined || (INVERSE_METRICS.has(key) ? val < cur : val > cur)) {
+        perSource[key][src] = val;
       }
     });
+  });
+
+  // Resolve display value per metric: prefer FD when present, otherwise pick
+  // the best across remaining sources.
+  const bestValues = {};
+  const bestSource = {};
+  Object.keys(perSource).forEach(key => {
+    const sources = perSource[key];
+    if ('FD' in sources) {
+      bestValues[key] = sources['FD'];
+      bestSource[key] = 'FD';
+      return;
+    }
+    const inv = INVERSE_METRICS.has(key);
+    let bestVal = inv ? Infinity : -Infinity;
+    let bestSrc = null;
+    Object.entries(sources).forEach(([src, v]) => {
+      if (inv ? v < bestVal : v > bestVal) { bestVal = v; bestSrc = src; }
+    });
+    bestValues[key] = bestVal;
+    bestSource[key] = bestSrc;
   });
 
   const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
@@ -3828,6 +3934,9 @@ async function init() {
 
   // Restore saved state (overrides defaults above)
   loadState();
+
+  // Recompute roster norms in case loadState flipped rosterFullOnly
+  if (rosterFullOnly) rebuildInitialNorms();
 
   // Sync selectors to state (may have changed via loadState)
   document.getElementById('norm-select').value = selectedNorm;

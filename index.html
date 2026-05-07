@@ -316,9 +316,10 @@
           </div>
           <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:6px;">Sex</div>
           <div style="display:flex;gap:4px;">
-            <button id="lb-sex-all" onclick="lbSetSex('all')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:rgba(52,211,153,0.12);color:var(--green);cursor:pointer;">All</button>
-            <button id="lb-sex-m"   onclick="lbSetSex('M')"   class="pill-btn">Male</button>
-            <button id="lb-sex-f"   onclick="lbSetSex('F')"   class="pill-btn">Female</button>
+            <button id="lb-sex-all"   onclick="lbSetSex('all')"   class="pill-btn">All</button>
+            <button id="lb-sex-m"     onclick="lbSetSex('M')"     class="pill-btn">Male</button>
+            <button id="lb-sex-f"     onclick="lbSetSex('F')"     class="pill-btn">Female</button>
+            <button id="lb-sex-split" onclick="lbSetSex('split')" class="pill-btn" title="Show male and female leaderboards side by side">♂ + ♀</button>
           </div>
           <div style="display:flex;gap:4px;margin-left:6px;">
             <button id="lb-meas-btn" onclick="lbToggleMeasured()" class="pill-btn">Measured only</button>

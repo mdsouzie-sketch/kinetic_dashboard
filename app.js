@@ -2506,7 +2506,7 @@ let lbMeasuredOnly = false;
 
 function lbSetSex(sex) {
   lbSex = sex;
-  ['all','m','f'].forEach(s => {
+  ['all','m','f','split'].forEach(s => {
     const btn = document.getElementById('lb-sex-' + s);
     if (!btn) return;
     const active = s === sex.toLowerCase();
@@ -2554,18 +2554,48 @@ function _populateLbMetricSelect() {
   return sel.value || '__composite__';
 }
 
+function _syncLbSexButtons() {
+  ['all','m','f','split'].forEach(s => {
+    const btn = document.getElementById('lb-sex-' + s);
+    if (!btn) return;
+    const active = s === lbSex.toLowerCase();
+    btn.style.background  = active ? 'rgba(52,211,153,0.12)' : 'var(--bg2)';
+    btn.style.borderColor = active ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.13)';
+    btn.style.color       = active ? 'var(--green)'          : 'var(--text3)';
+  });
+}
+
 function renderLeaderboard() {
+  _syncLbSexButtons();
   const metKey = _populateLbMetricSelect();
   if (metKey === null) return;
-  if (metKey === '__composite__') return _renderLbComposite();
-  const metric = METRICS.find(m => m.key === metKey);
-  return _renderLbMetric(metric);
+  const target = document.getElementById('leaderboard-content');
+  if (!target) return;
+  const metric = metKey === '__composite__' ? null : METRICS.find(m => m.key === metKey);
+  const renderOne = sex => metric ? _renderLbMetric(metric, sex) : _renderLbComposite(sex);
+
+  if (lbSex === 'split') {
+    target.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:8px;font-family:'DM Sans',sans-serif;">♂ Male</div>
+          ${renderOne('M')}
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--purple);margin-bottom:8px;font-family:'DM Sans',sans-serif;">♀ Female</div>
+          ${renderOne('F')}
+        </div>
+      </div>`;
+    return;
+  }
+  target.innerHTML = renderOne(lbSex);
 }
 
 // ── Composite leaderboard ──
-function _renderLbComposite() {
+// Returns HTML; the orchestrator (renderLeaderboard) places it into the DOM.
+function _renderLbComposite(sex) {
   const entries = ATHLETE_DB
-    .filter(a => lbSex === 'all' || a.sex === lbSex)
+    .filter(a => sex === 'all' || a.sex === sex)
     .map(a => {
       const n = _lbNormFor(a.sex);
       const activeM = METRICS.filter(m => !disabledMetrics.has(m.key) && n[m.key]);
@@ -2583,10 +2613,13 @@ function _renderLbComposite() {
     const tier = getTier(score);
     const sc = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    const sexCell = sex === 'all'
+      ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>`
+      : '';
     return `<tr>
       <td style="padding:8px 10px 8px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;width:36px;">${medal || (i+1)}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">${escapeHtml(a.name)}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sc};background:${sc}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>
+      ${sexCell}
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;"><span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${score}</span><span style="font-size:9px;color:var(--text3);margin-left:3px;">pct</span></td>
       <td style="padding:8px 12px 8px 20px;border-bottom:1px solid var(--border);min-width:140px;"><div style="position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="position:absolute;left:0;top:0;height:100%;width:${score}%;background:${tier.color};border-radius:4px;transition:width .3s;"></div></div></td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">${cnt} metrics</span></td>
@@ -2594,31 +2627,33 @@ function _renderLbComposite() {
     </tr>`;
   }).join('');
 
-  document.getElementById('leaderboard-content').innerHTML = entries.length === 0
-    ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-    : `<table class="sticky-table tbl-base">
-        <thead><tr>
-          <th style="${thC}text-align:center;width:36px;">#</th>
-          <th style="${thC}text-align:left;">Athlete</th>
-          <th style="${thC}text-align:center;">Sex</th>
-          <th style="${thC}text-align:right;">Composite</th>
-          <th style="padding:6px 20px 10px;border-bottom:1px solid var(--border2);"></th>
-          <th style="${thC}text-align:center;">Metrics</th>
-          <th style="${thC}">Tier</th>
-        </tr></thead>
-        <tbody>${compRows}</tbody>
-      </table>
-      <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;">
-        ${entries.length} athlete${entries.length!==1?'s':''} · composite = avg percentile across all active metrics · sex-specific norms
-        ${lbMeasuredOnly ? ' · <span style="color:var(--green);">full athletes only</span>' : ''}
-      </div>`;
+  if (entries.length === 0) {
+    return `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`;
+  }
+  return `<table class="sticky-table tbl-base">
+      <thead><tr>
+        <th style="${thC}text-align:center;width:36px;">#</th>
+        <th style="${thC}text-align:left;">Athlete</th>
+        ${sex === 'all' ? `<th style="${thC}text-align:center;">Sex</th>` : ''}
+        <th style="${thC}text-align:right;">Composite</th>
+        <th style="padding:6px 20px 10px;border-bottom:1px solid var(--border2);"></th>
+        <th style="${thC}text-align:center;">Metrics</th>
+        <th style="${thC}">Tier</th>
+      </tr></thead>
+      <tbody>${compRows}</tbody>
+    </table>
+    <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;">
+      ${entries.length} athlete${entries.length!==1?'s':''} · composite = avg percentile across all active metrics · sex-specific norms
+      ${lbMeasuredOnly ? ' · <span style="color:var(--green);">full athletes only</span>' : ''}
+    </div>`;
 }
 
 // ── Single-metric leaderboard ──
-function _renderLbMetric(metric) {
+// Returns HTML; the orchestrator (renderLeaderboard) places it into the DOM.
+function _renderLbMetric(metric, sex) {
   const metKey = metric.key;
   let pool = ATHLETE_DB.filter(a => {
-    if (lbSex !== 'all' && a.sex !== lbSex) return false;
+    if (sex !== 'all' && a.sex !== sex) return false;
     if (lbMeasuredOnly && (!a.measured || !a.measured[metKey])) return false;
     return (a[metKey] || 0) > 0;
   });
@@ -2641,15 +2676,16 @@ function _renderLbMetric(metric) {
       : Math.round((val / best) * 100);
     const sexColor = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    const sexCell = sex === 'all'
+      ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sexColor};background:${sexColor}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>`
+      : '';
     return `<tr>
       <td style="padding:8px 10px 8px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;width:36px;">${medal || (i+1)}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">
         ${a.custom ? '<span style="color:var(--teal);margin-right:4px;">✦</span>' : ''}${escapeHtml(a.name)}
         ${est ? '<span style="color:var(--orange);font-size:9px;margin-left:3px;">★</span>' : ''}
       </td>
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;">
-        <span style="font-size:11px;font-family:'DM Mono',monospace;color:${sexColor};background:${sexColor}22;padding:2px 8px;border-radius:8px;">${a.sex}</span>
-      </td>
+      ${sexCell}
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
         <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${val.toFixed(decimals)}</span>
         <span style="font-size:9px;color:var(--text3);margin-left:3px;">${metric.unit}</span>
@@ -2668,25 +2704,26 @@ function _renderLbMetric(metric) {
     </tr>`;
   }).join('');
 
-  document.getElementById('leaderboard-content').innerHTML = pool.length === 0
-    ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-    : `<table class="sticky-table tbl-base">
-        <thead><tr>
-          <th class="tbl-th tbl-th-c" style="width:36px;">#</th>
-          <th class="tbl-th tbl-th-l">Athlete</th>
-          <th class="tbl-th tbl-th-c">Sex</th>
-          <th class="tbl-th tbl-th-r">Value</th>
-          <th style="padding:6px 20px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);"></th>
-          <th class="tbl-th tbl-th-c">Percentile</th>
-          <th style="padding:6px 10px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);">Tier</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;">
-        ${pool.length} athlete${pool.length!==1?'s':''} · ${metric.label} · sorted ${metric.inv?'low→high (faster = better)':'high→low'}
-        ${lbMeasuredOnly ? ' · <span style="color:var(--green);">measured only</span>' : ''}
-        · <span style="color:var(--text2);">percentiles are sex-specific</span> (♂ vs Roster Male Measured · ♀ vs Roster Female Measured)
-      </div>`;
+  if (pool.length === 0) {
+    return `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`;
+  }
+  return `<table class="sticky-table tbl-base">
+      <thead><tr>
+        <th class="tbl-th tbl-th-c" style="width:36px;">#</th>
+        <th class="tbl-th tbl-th-l">Athlete</th>
+        ${sex === 'all' ? '<th class="tbl-th tbl-th-c">Sex</th>' : ''}
+        <th class="tbl-th tbl-th-r">Value</th>
+        <th class="tbl-th"></th>
+        <th class="tbl-th tbl-th-c">Percentile</th>
+        <th class="tbl-th tbl-th-l">Tier</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;">
+      ${pool.length} athlete${pool.length!==1?'s':''} · ${metric.label} · sorted ${metric.inv?'low→high (faster = better)':'high→low'}
+      ${lbMeasuredOnly ? ' · <span style="color:var(--green);">measured only</span>' : ''}
+      · <span style="color:var(--text2);">percentiles are sex-specific</span>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════

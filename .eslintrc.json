@@ -1,0 +1,62 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "globals": {
+    "ATHLETE_DB": "writable",
+    "currentAthlete": "writable",
+    "athleteData": "writable",
+    "currentCoach": "writable",
+    "selectedNorm": "writable",
+    "norms": "writable",
+    "compareAthletes": "writable",
+    "disabledMetrics": "writable",
+    "coreMeasuredKeys": "writable",
+    "tierThresholds": "writable",
+    "matrixThreshold": "writable",
+    "selectedChartMode": "writable",
+    "selectedChartKeys": "writable",
+    "suppressEstimated": "writable",
+    "measuredOnlyMode": "writable",
+    "rosterFullOnly": "writable",
+    "compactRoster": "writable",
+    "historySmoothing": "writable",
+    "histAthlete": "writable",
+    "histMetric": "writable",
+    "histMode": "writable",
+    "histSex": "writable",
+    "testActiveGroup": "writable",
+    "testAthlete": "writable",
+    "testNorm": "writable",
+    "testSex": "writable",
+    "testCompare": "writable",
+    "testRankMetric": "writable",
+    "cardsAthleteLeft": "writable",
+    "cardsAthleteRight": "writable",
+    "cardsNormLeft": "writable",
+    "cardsNormRight": "writable",
+    "cardsPanelSexLeft": "writable",
+    "cardsPanelSexRight": "writable",
+    "activeTab": "writable",
+    "collapsedCards": "writable",
+    "rosterSortKey": "writable",
+    "rosterSortDir": "writable",
+    "rosterVisibleCols": "writable"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-undef": "warn",
+    "no-console": "off",
+    "no-empty": ["warn", { "allowEmptyCatch": true }],
+    "no-redeclare": "warn",
+    "no-unreachable": "warn",
+    "no-var": "warn",
+    "prefer-const": "warn",
+    "eqeqeq": ["warn", "smart"]
+  }
+}

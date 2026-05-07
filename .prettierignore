@@ -1,0 +1,7 @@
+# Existing files are excluded from the default prettier pass to avoid a
+# massive cosmetic-only diff. To format a specific file deliberately:
+#   npx prettier --write path/to/file
+# Then either remove its entry here or commit the formatted version.
+app.js
+app.css
+index.html

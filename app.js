@@ -72,19 +72,13 @@ const TEST_GROUPS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// NORMS — internal (computed from roster) + external NCAA
+// NORMS — internal (computed from measured roster only) + external NCAA
+//
+// Only athletes with a real measurement for a given metric contribute
+// to that metric's norm. Estimated/auto-derived values are not used —
+// untested athletes simply have no value, which the UI surfaces as
+// "Test required" rather than fabricating a number.
 // ═══════════════════════════════════════════════════════════════
-function computeInternalNorms(sexKey) {
-  const group = ATHLETE_DB.filter(a => a.sex === sexKey);
-  const out = {};
-  METRICS.forEach(m => {
-    const vals = group.map(a => a[m.key]).filter(v => v > 0);
-    const mean = vals.reduce((s,v)=>s+v,0)/vals.length;
-    const sd   = Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length) || 1;
-    out[m.key] = { m: parseFloat(mean.toFixed(3)), sd: parseFloat(sd.toFixed(3)) };
-  });
-  return out;
-}
 
 // When true: roster table + Roster (Measured) norms restricted to full-data athletes.
 // Declared here (before computeMeasuredNorms / INITIAL_NORMS) to avoid TDZ.
@@ -99,14 +93,16 @@ function computeMeasuredNorms(sexKey) {
   }
   const out = {};
   METRICS.forEach(m => {
+    // Only real measurements contribute to the norm. If fewer than 2 athletes
+    // have a measured value, leave the metric out of the norm map — comparisons
+    // for that metric will surface "Test required" instead of estimating.
     const vals = group
       .filter(a => a.measured && a.measured[m.key])
       .map(a => a[m.key])
       .filter(v => v > 0);
-    // fall back to full roster for this metric if no measured values exist
-    const src = vals.length >= 2 ? vals : group.map(a => a[m.key]).filter(v => v > 0);
-    const mean = src.reduce((s,v)=>s+v,0)/src.length;
-    const sd   = Math.sqrt(src.reduce((s,v)=>s+(v-mean)**2,0)/src.length) || 1;
+    if (vals.length < 2) return;
+    const mean = vals.reduce((s,v)=>s+v,0)/vals.length;
+    const sd   = Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length) || 1;
     out[m.key] = { m: parseFloat(mean.toFixed(3)), sd: parseFloat(sd.toFixed(3)) };
   });
   return out;
@@ -114,8 +110,6 @@ function computeMeasuredNorms(sexKey) {
 
 
 let INITIAL_NORMS = {
-  "Roster — Male":              computeInternalNorms('M'),
-  "Roster — Female":            computeInternalNorms('F'),
   "Roster — Male (Measured)":   computeMeasuredNorms('M'),
   "Roster — Female (Measured)": computeMeasuredNorms('F'),
   "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, eccBrakingRFD:{m:95,sd:30}, shuttle:{m:4.15,sd:0.10} },
@@ -661,7 +655,7 @@ function renderCompareTable() {
     const d = m.step < 0.1 ? 2 : 1;
     const curTier = getTier(calcPercentile(curVal, n[m.key], m.inv));
     const curEst = isEstimatedForAthlete(m.key, currentAthlete);
-    const estDot = curEst ? ' <span style="color:var(--orange);font-size:8px;">★</span>' : '';
+    const estDot = '';
 
     let cols = `<td style="padding:6px 8px 6px 0;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text3);font-family:'DM Sans',sans-serif;white-space:nowrap;">${m.label}${estDot}</td>`;
     const curDisplay = curVal > 0
@@ -675,7 +669,7 @@ function renderCompareTable() {
       const cmpSuppressed = suppressEstimated && cmpEst;
       const cmpVal = cmpSuppressed ? 0 : (a[m.key] || 0);
       const cmpTier = getTier(calcPercentile(cmpVal, n[m.key], m.inv));
-      const cmpEstDot = cmpEst && !cmpSuppressed ? ' <span style="color:var(--orange);font-size:8px;">★</span>' : '';
+      const cmpEstDot = '';
       const cmpDisplay = cmpVal > 0
         ? `<span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:${cmpTier.color};background:${cmpTier.bg};padding:2px 7px;border-radius:5px;">${cmpVal.toFixed(d)}</span><span style="font-size:8px;color:var(--text3);margin-left:2px;">${m.unit}</span>${cmpEstDot}`
         : `<span style="color:var(--text3);font-size:12px;opacity:${cmpSuppressed?'0.35':'1'};">—</span>`;
@@ -924,7 +918,7 @@ function renderSelectedChart() {
     .map(m => {
       const active = selectedChartKeys.has(m.key);
       const est = isEstimatedForAthlete(m.key, currentAthlete);
-      const estDot = est ? ' <span style="color:var(--orange);font-size:9px;">★</span>' : '';
+      const estDot = '';
       return `<button onclick="toggleSelectedMetric('${m.key}')"
         style="padding:4px 11px;border-radius:12px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;
                border:1px solid ${active ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.1)'};
@@ -938,7 +932,7 @@ function renderSelectedChart() {
   document.getElementById('selected-bar-chart').innerHTML = sorted.length === 0
     ? '<div style="color:var(--text3);font-size:12px;padding:16px 0;font-family:\'DM Mono\',monospace;">No metrics selected</div>'
     : sorted.map(r => {
-        const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
+        const estMark = '';
         const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
         const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
         const dec2 = r.step < 0.1 ? 2 : 1;
@@ -995,7 +989,7 @@ function renderBarChart(results) {
   const sorted = [...displayResults].sort((a,b)=>b.percentile-a.percentile);
 
   document.getElementById('bar-chart').innerHTML = sorted.map(r => {
-    const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:9px;margin-left:2px;">★</span>' : '';
+    const estMark = '';
     const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
     const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
     const dec = r.step < 0.1 ? 2 : 1;
@@ -1006,7 +1000,7 @@ function renderBarChart(results) {
         <div class="bar-name" title="${r.testName || r.label}" style="color:var(--text3);">${r.label}</div>
         <div class="bar-track" style="background:transparent;border:1px dashed var(--border2);"></div>
         <div class="bar-pct" style="color:var(--text3);">—</div>
-        <div class="bar-badge"><span class="tier-badge" style="background:var(--bg3);color:var(--text3);">Not measured</span></div>
+        <div class="bar-badge"><span class="tier-badge" style="background:var(--bg3);color:var(--text3);">Test required</span></div>
       </div>`;
     }
     return `<div class="bar-row has-tip" data-tip="${r.label}|${rawDisplay}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
@@ -2420,16 +2414,20 @@ function _buildRosterCell(a, k) {
     const col = a[k] === 'M' ? 'var(--blue)' : 'var(--purple)';
     return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${col};font-family:'DM Mono',monospace;text-align:center;">${a[k]}</td>`;
   }
-  // Numeric metric cell — value + optional CMJ-source dagger
-  const est = isEstimatedForAthlete(k, a);
-  const color = est ? (suppressEstimated ? 'var(--text3)' : 'var(--orange)') : 'var(--green)';
-  const opacity = est && suppressEstimated ? 'opacity:0.35;' : '';
+  // Numeric metric cell — value + optional CMJ-source dagger.
+  // Untested metrics (no measurement, val == 0) render as a muted "—" rather
+  // than a fake "0.00" or an orange estimated value.
+  const measured = !!(a.measured && a.measured[k]);
+  const hasValue = typeof a[k] === 'number' && a[k] > 0;
+  if (!hasValue || !measured) {
+    return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:var(--text3);font-family:'DM Mono',monospace;text-align:center;opacity:0.5;" title="Test required">—</td>`;
+  }
   const decimals = k === 'rsi' ? 2 : (k === 'cmj' || k === 'broad' || k === 'rfd' ? 1 : 2);
-  const display = typeof a[k] === 'number' ? a[k].toFixed(decimals) : (a[k] ?? '—');
-  const isCmjNonFD = k === 'cmj' && a[k] != null && !a.cmjFD;
-  const cellColor = isCmjNonFD ? 'var(--gold)' : color;
+  const display = a[k].toFixed(decimals);
+  const isCmjNonFD = k === 'cmj' && !a.cmjFD;
+  const cellColor = isCmjNonFD ? 'var(--gold)' : 'var(--green)';
   const cmjSuffix = isCmjNonFD ? '<sup style="font-size:8px;opacity:0.8;">†</sup>' : '';
-  return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
+  return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;">${display}${cmjSuffix}</td>`;
 }
 
 // Hover highlight on rows. Has to be wired post-render because the rows
@@ -2683,7 +2681,7 @@ function _renderLbMetric(metric, sex) {
       <td style="padding:8px 10px 8px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;width:36px;">${medal || (i+1)}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">
         ${a.custom ? '<span style="color:var(--teal);margin-right:4px;">✦</span>' : ''}${escapeHtml(a.name)}
-        ${est ? '<span style="color:var(--orange);font-size:9px;margin-left:3px;">★</span>' : ''}
+        ${est ? '' : ''}
       </td>
       ${sexCell}
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
@@ -2947,7 +2945,7 @@ function renderMetricsTable(results) {
   const sorted = [...display].sort((a,b) => b.percentile - a.percentile);
   const rows = sorted.map(r => {
     const d = r.step < 0.1 ? 2 : 1;
-    const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:8px;margin-left:2px;">★</span>' : '';
+    const estMark = '';
     // gap as % of target: positive = exceeding target, negative = below target.
     // Direction is normalized so positive always means "better" regardless of inverse metrics.
     const gapRaw = r.inv ? (r.target85 - r.val) : (r.val - r.target85);
@@ -3567,8 +3565,6 @@ function rebuildAthleteSelector() {
 
 // ── Rebuild norms after data loads ──
 function rebuildInitialNorms() {
-  INITIAL_NORMS["Roster — Male"]              = computeInternalNorms('M');
-  INITIAL_NORMS["Roster — Female"]            = computeInternalNorms('F');
   INITIAL_NORMS["Roster — Male (Measured)"]   = computeMeasuredNorms('M');
   INITIAL_NORMS["Roster — Female (Measured)"] = computeMeasuredNorms('F');
   norms = JSON.parse(JSON.stringify(INITIAL_NORMS));

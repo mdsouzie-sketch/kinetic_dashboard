@@ -395,8 +395,10 @@
     .metric-field input::-webkit-outer-spin-button,
     .metric-field input::-webkit-inner-spin-button { -webkit-appearance: none; }
     .metric-field input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(240,192,64,0.1); }
-    .metric-field.estimated label::after { content: ' ★'; color: var(--orange); opacity: 0.7; }
-    .metric-field.estimated input { border-color: rgba(251,146,60,0.25); color: var(--orange); }
+    /* `.estimated` modifier kept on the wrapper as a hook for future tweaks,
+       but no visual indicator — untested metrics surface as blank or via
+       explicit "Test required" labels in tables/charts, not via this style. */
+    .metric-field.estimated input { border-color: var(--border); color: var(--text2); }
     .metric-field .metric-sub { display: block; font-size: 10px; color: var(--text3); margin: -2px 0 4px; font-family: 'DM Sans', sans-serif; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* ── Measured / estimated toggle in edit panel ── */

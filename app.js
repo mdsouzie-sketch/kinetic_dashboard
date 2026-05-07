@@ -1,744 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kinetic Benchmark — Athletic Performance Profiler</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:        #080d14;
-      --bg2:       #0f1724;
-      --bg3:       #172032;
-      --border:    rgba(240,192,64,0.30);
-      --border2:   rgba(240,192,64,0.50);
-      --text:      #f0f4ff;
-      --text2:     #d8e8ff;
-      --text3:     #a0b8d8;
-      --gold:      #f0c040;
-      --gold-dim:  rgba(240,192,64,0.12);
-      --teal:      #2dd4bf;
-      --red:       #f87171;
-      --purple:    #a78bfa;
-      --blue:      #60a5fa;
-      --green:     #34d399;
-      --orange:    #fb923c;
-      --radius-md: 8px;
-      --radius-lg: 14px;
-    }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 14px 20px 60px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    /* Subtle grid background */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      background-image:
-        linear-gradient(rgba(240,192,64,0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(240,192,64,0.015) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-
-    .wrap { max-width: 1800px; margin: 0 auto; position: relative; z-index: 1; }
-
-    /* ── Header ── */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 10px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--gold-dim);
-      margin-bottom: 16px;
-    }
-    .header-brand { display: flex; align-items: center; gap: 12px; }
-    .header-icon {
-      width: 38px; height: 38px; border-radius: 9px;
-      background: linear-gradient(135deg, rgba(240,192,64,0.2), rgba(240,192,64,0.05));
-      border: 1px solid rgba(240,192,64,0.3);
-      display: flex; align-items: center; justify-content: center; font-size: 19px;
-      box-shadow: 0 0 16px rgba(240,192,64,0.1);
-    }
-    .header-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px; font-weight: 800; font-style: italic;
-      letter-spacing: 0.5px; text-transform: uppercase; line-height: 1;
-    }
-    .header-title span { color: var(--text3); font-style: normal; font-weight: 600; }
-    .header-sub { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.09em; font-family: 'DM Mono', monospace; }
-
-    /* ── Tabs ── */
-    .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: var(--radius-lg); border: 1px solid var(--border); }
-    .tab-btn {
-      padding: 6px 18px; border-radius: var(--radius-md); border: none;
-      font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-      cursor: pointer; background: transparent; color: var(--text3); transition: all 0.15s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .tab-btn.active { background: var(--gold); color: #0a0a0a; box-shadow: 0 2px 10px rgba(240,192,64,0.3); }
-    .tab-btn:not(.active):hover { color: var(--text); }
-
-    /* ── Cards ── */
-    .card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 14px 16px;
-    }
-    .card-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.09em; color: var(--text3); margin-bottom: 10px;
-      display: flex; align-items: center; gap: 6px;
-      font-family: 'DM Mono', monospace;
-      padding-left: 9px; border-left: 2px solid var(--gold);
-    }
-    .card-label::before { display: none; }
-    .card-chevron {
-      background: none; border: none; cursor: pointer; color: var(--text3);
-      font-size: 14px; padding: 2px 5px; border-radius: 4px; line-height: 1;
-      transition: transform 0.2s, color 0.15s; user-select: none; flex-shrink: 0;
-    }
-    .card-chevron:hover { color: var(--text2); }
-    .card-chevron.collapsed { transform: rotate(-90deg); }
-
-    /* ── Athlete selector bar ── */
-    .athlete-bar {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;
-    }
-    .select-wrap { position: relative; flex: 1; min-width: 200px; }
-    .select-wrap::after {
-      content: '▾'; position: absolute; right: 10px; top: 50%;
-      transform: translateY(-50%); font-size: 11px; color: var(--text3); pointer-events: none;
-    }
-    select {
-      width: 100%; appearance: none; -webkit-appearance: none;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius-md); padding: 7px 28px 7px 10px;
-      font-size: 13px; color: var(--text); cursor: pointer; outline: none;
-      transition: border-color 0.15s; font-family: 'DM Sans', sans-serif;
-    }
-    select:focus { border-color: var(--gold); }
-
-    .sex-badge {
-      padding: 7px 14px; border-radius: var(--radius-md);
-      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
-      border: 1px solid var(--border2); background: var(--bg2);
-      color: var(--text2); font-family: 'DM Mono', monospace;
-      white-space: nowrap; min-width: 66px; text-align: center;
-      cursor: pointer; transition: opacity 0.15s;
-    }
-    .sex-badge:hover { opacity: 0.75; }
-    .sex-badge.male   { border-color: rgba(96,165,250,0.4); color: var(--blue); background: rgba(96,165,250,0.07); }
-    .sex-badge.female { border-color: rgba(167,139,250,0.4); color: var(--purple); background: rgba(167,139,250,0.07); }
-
-    .btn {
-      display: flex; align-items: center; gap: 5px; padding: 7px 12px;
-      border-radius: var(--radius-md); border: 1px solid var(--border2);
-      background: var(--bg2); color: var(--text2); font-size: 12px;
-      cursor: pointer; transition: all 0.15s; white-space: nowrap;
-      font-family: 'DM Sans', sans-serif; font-weight: 600;
-    }
-    .btn:hover { background: var(--bg3); border-color: var(--gold); color: var(--gold); }
-    .btn:active { transform: scale(0.97); }
-
-    /* ── Summary stats ── */
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; }
-    .stat-card {
-      background: #111b2b; border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 18px 20px;
-      position: relative; overflow: hidden;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; text-align: center;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.3);
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .stat-card:hover { border-color: var(--border2); box-shadow: 0 6px 26px rgba(0,0,0,0.45); }
-    .stat-card::after {
-      content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-      background: var(--accent-color, var(--gold)); opacity: 0.6;
-    }
-    .stat-card .slabel {
-      font-size: 11px; color: var(--text3); font-weight: 500;
-      margin-bottom: 8px; font-family: 'DM Sans', sans-serif;
-    }
-    .stat-card .sval { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'Barlow Condensed', sans-serif; }
-    .stat-card .spct { font-size: 32px; font-weight: 900; font-family: 'Barlow Condensed', sans-serif; font-style: italic; line-height: 1; }
-    .stat-card .sname { font-size: 15px; font-weight: 600; margin-top: 4px; }
-    .stat-card .sdesc { font-size: 11px; color: var(--text3); margin-top: 5px; }
-
-    .tier-badge {
-      display: inline-block; font-size: 10px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 8px;
-      border-radius: 20px; font-family: 'DM Mono', monospace; white-space: nowrap;
-    }
-
-    /* ── Input grid ── */
-    .metric-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
-    @media (max-width: 1100px) { .metric-grid { grid-template-columns: repeat(4, 1fr); } }
-    @media (max-width: 700px)  { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
-    .metric-field label {
-      display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--text3); margin-bottom: 3px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      font-family: 'DM Mono', monospace;
-    }
-    .metric-field input {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 7px 6px; font-size: 14px; font-weight: 700;
-      color: var(--text); text-align: center; font-family: 'DM Mono', monospace;
-      outline: none; transition: border-color 0.15s; -moz-appearance: textfield;
-    }
-    .metric-field input::-webkit-outer-spin-button,
-    .metric-field input::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .metric-field input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(240,192,64,0.1); }
-    .metric-field.estimated label::after { content: ' ★'; color: var(--orange); opacity: 0.7; }
-    .metric-field.estimated input { border-color: rgba(251,146,60,0.25); color: var(--orange); }
-
-    /* ── Measured / estimated toggle in edit panel ── */
-    .meas-toggle {
-      width: 100%; margin-top: 4px; padding: 3px 6px; font-size: 10px; font-weight: 700;
-      font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
-      border-radius: var(--radius-md); border: 1px solid; cursor: pointer;
-      background: transparent; transition: all 0.15s;
-    }
-    .meas-toggle:hover { opacity: 0.8; }
-
-    /* ── Chart layout ── */
-    .chart-row { display: grid; grid-template-columns: 3fr 2fr; gap: 10px; margin-bottom: 10px; }
-    @media (max-width: 1000px) { .chart-row { grid-template-columns: 1fr; } }
-
-    /* ── Bar chart ── */
-    .bar-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
-    .bar-row:last-child { border-bottom: none; }
-    .bar-name { width: 115px; flex-shrink: 0; font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
-    .bar-track { flex: 1; height: 9px; background: var(--bg3); border-radius: 5px; position: relative; overflow: visible; }
-    .bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
-    .bar-target { position: absolute; top: -4px; width: 2px; height: 17px; border-radius: 1px; opacity: 0.75; }
-    .bar-pct { width: 34px; text-align: right; font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; flex-shrink: 0; }
-    .bar-badge { width: 80px; flex-shrink: 0; text-align: center; }
-
-    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-
-    /* ── Matrix ── */
-    .matrix-active-zone {
-      margin-top: 10px; border-radius: var(--radius-lg); padding: 10px 12px;
-      border: 1px solid var(--border); transition: all 0.3s;
-    }
-    .matrix-active-zone .maz-title { font-weight: 700; margin-bottom: 3px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; letter-spacing: 0.3px; font-size: 16px; }
-    .matrix-active-zone .maz-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; }
-    .matrix-active-zone .maz-rx    { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 7px; font-family: 'DM Mono', monospace; }
-
-    /* ── Coaching ── */
-    .coaching-cards { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-    .coaching-card { flex: 1; min-width: 200px; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 13px; }
-    .coaching-card .ctype { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctitle { font-size: 16px; font-weight: 700; margin-bottom: 5px; font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
-    .coaching-card .ctext { font-size: 12px; color: var(--text2); line-height: 1.6; }
-    .coaching-card .cmethods { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-    .coaching-card .cmethod-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-family: 'DM Mono', monospace; }
-    .coaching-card .ctarget { font-size: 11px; color: var(--text3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; font-family: 'DM Mono', monospace; }
-    .coaching-below { font-size: 12px; color: var(--text3); margin-bottom: 5px; font-family: 'DM Mono', monospace; }
-
-    /* ── Comparison panel ── */
-    .compare-strip {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 11px 14px; margin-bottom: 10px;
-    }
-    .compare-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
-    .compare-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text3); font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 6px; }
-    .compare-title::before { content:''; width:5px; height:5px; border-radius:2px; background:var(--teal); opacity:0.6; flex-shrink:0; }
-    .compare-scroll { display: flex; gap: 6px; flex-wrap: wrap; }
-    .athlete-chip {
-      display: flex; align-items: center; gap: 6px; padding: 7px 13px;
-      border-radius: 20px; border: 1px solid var(--border2); background: var(--bg3);
-      font-size: 12px; cursor: pointer; transition: all 0.18s; white-space: nowrap;
-      font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--text2);
-    }
-    .athlete-chip:hover { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.06); }
-    .athlete-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(45,212,191,0.10); font-weight: 700; box-shadow: 0 0 10px rgba(45,212,191,0.2), inset 0 0 8px rgba(45,212,191,0.05); }
-    .athlete-chip .chip-sex { font-size: 10px; font-family: 'DM Mono', monospace; opacity: 0.7; }
-
-    /* ── Norms table ── */
-    .norms-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 7px 0; border-bottom: 1px solid var(--border); }
-    .norms-row:last-child { border-bottom: none; }
-    .norms-name { flex: 1; min-width: 120px; font-size: 13px; }
-    .norms-field { display: flex; align-items: center; gap: 5px; }
-    .norms-field span { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 700; font-family: 'DM Mono', monospace; }
-    .norms-field input { width: 72px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 4px 7px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--text); text-align: center; outline: none; }
-    .norms-field input:focus { border-color: var(--gold); }
-    .norms-unit { font-size: 11px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
-
-    /* ── Estimated data notice ── */
-    .est-notice {
-      display: flex; align-items: center; gap: 7px; padding: 7px 11px;
-      background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.2);
-      border-radius: var(--radius-md); font-size: 11px; color: var(--orange);
-      margin-bottom: 10px; font-family: 'DM Mono', monospace;
-    }
-
-    .gap-14 { margin-bottom: 10px; }
-
-    /* ── Report modal ── */
-    .report-overlay {
-      position: fixed; inset: 0; z-index: 1000;
-      background: rgba(0,0,0,0.82); backdrop-filter: blur(5px);
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .report-modal {
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius-lg); max-width: 680px; width: 100%;
-      max-height: 90vh; overflow-y: auto; padding: 22px;
-    }
-    .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 16px; }
-    .report-name { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; font-style: italic; text-transform: uppercase; line-height: 1.1; }
-    .report-meta { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
-    .report-composite { text-align: center; flex-shrink: 0; }
-    .report-composite .rc-score { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 800; line-height: 1; }
-    .report-composite .rc-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-top: 4px; }
-    .report-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 16px 0 8px; border-top: 1px solid var(--border); padding-top: 12px; }
-    .report-metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
-    .report-metric-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg3); border-radius: var(--radius-md); }
-    .report-metric-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'DM Mono', monospace; color: var(--text3); flex: 1; }
-    .report-metric-val { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; }
-    .report-metric-pct { font-size: 12px; font-family: 'DM Mono', monospace; min-width: 30px; text-align: right; }
-    .report-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
-
-    /* ── Export PDF modal ── */
-    .export-overlay {
-      position: fixed; inset: 0; z-index: 1001;
-      background: rgba(0,0,0,0.88); backdrop-filter: blur(6px);
-      display: flex; align-items: flex-start; justify-content: center;
-      padding: 20px; overflow-y: auto;
-    }
-    .export-modal {
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius-lg); max-width: 760px; width: 100%;
-      padding: 22px; margin: 0 auto;
-    }
-    .export-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 5px; }
-    .export-check-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; background: var(--bg3); border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text2); user-select: none; transition: background 0.1s; }
-    .export-check-item:hover { background: rgba(255,255,255,0.05); }
-    .export-check-item input[type=checkbox] { cursor: pointer; accent-color: var(--gold); }
-    .export-sec-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-family: 'DM Mono', monospace; margin: 12px 0 6px; grid-column: 1/-1; }
-    #export-print-area { display: none; }
-    .print-mode-seg { display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border2); }
-    .print-mode-btn { padding: 5px 14px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; background: var(--bg3); color: var(--text3); border: none; transition: all 0.15s; white-space: nowrap; }
-    .print-mode-btn.active { background: rgba(255,255,255,0.1); color: var(--text); }
-    .print-mode-btn:hover:not(.active) { color: var(--text2); }
-
-    /* ── Flags tab ── */
-    .flag-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin: 0 0 10px; }
-    .flag-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 5px; flex-wrap: wrap; }
-    .flag-row:hover { border-color: var(--border2); }
-    .flag-name { font-size: 14px; font-weight: 600; min-width: 150px; }
-    .flag-chips { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-    .flag-chip { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-    .flag-load-btn { font-size: 11px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; white-space: nowrap; }
-    .flag-load-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-    /* ── Tab fade-in animation ── */
-    @keyframes tabFadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .tab-fade-in { animation: tabFadeIn 0.14s ease; }
-
-    /* ── Card collapse body transition ── */
-    .card-collapse-body {
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      will-change: opacity, transform;
-    }
-    .card-collapse-body.collapsing {
-      opacity: 0; transform: translateY(-4px); pointer-events: none;
-    }
-
-    /* ── Roster / Leaderboard sticky header ── */
-    .sticky-table-wrap { overflow: auto; max-height: 72vh; }
-    .sticky-table-wrap::-webkit-scrollbar { width: 5px; height: 5px; }
-    .sticky-table-wrap::-webkit-scrollbar-track { background: transparent; }
-    .sticky-table-wrap::-webkit-scrollbar-thumb { background: rgba(240,192,64,0.18); border-radius: 10px; }
-    .sticky-table-wrap::-webkit-scrollbar-thumb:hover { background: rgba(240,192,64,0.35); }
-    .sticky-table-wrap { scrollbar-width: thin; scrollbar-color: rgba(240,192,64,0.18) transparent; }
-    .sticky-table thead th {
-      position: sticky; top: 0; background: var(--bg2); z-index: 3;
-      box-shadow: 0 1px 0 var(--border);
-    }
-
-    /* ── Bar click detail card ── */
-    #bar-tooltip {
-      position: fixed; z-index: 9000; pointer-events: auto;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: 10px; padding: 12px 16px; font-family: 'DM Mono', monospace;
-      font-size: 12px; color: var(--text); min-width: 220px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-      opacity: 0; transform: translateY(4px);
-      transition: opacity 0.15s, transform 0.15s; white-space: nowrap;
-      pointer-events: none;
-    }
-    #bar-tooltip.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .bar-row.has-tip { cursor: pointer; }
-    .bar-row.has-tip:hover { background: rgba(255,255,255,0.03); border-radius: 4px; }
-
-    @media print {
-      body > * { display: none !important; }
-      /* Report modal — dark (default) */
-      .report-overlay { position: static !important; background: none !important; backdrop-filter: none !important; padding: 0 !important; display: block !important; }
-      .report-modal { max-height: none; border: none; max-width: 100%; }
-      .report-actions { display: none !important; }
-      #report-controls-bar { display: none !important; }
-      /* Report modal — light mode */
-      body.print-light-mode .report-modal { --bg: #fff; --bg2: #f5f6fa; --bg3: #eef0f5; --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18); --text: #1a1a2e; --text2: #444466; --text3: #7777a0; background: #f5f6fa; color: #1a1a2e; }
-      /* Export PDF mode */
-      body.export-print .report-overlay { display: none !important; }
-      body.export-print #export-print-area { display: block !important; position: fixed; inset: 0; z-index: 99999; padding: 28px 36px; font-family: 'DM Sans', sans-serif; }
-      /* Export PDF — light mode */
-      body.export-print.print-light-mode #export-print-area { --bg: #fff; --bg2: #f5f6fa; --bg3: #eef0f5; --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18); --text: #1a1a2e; --text2: #444466; --text3: #7777a0; color: #1a1a2e; background: white; }
-    }
-  </style>
-</head>
-<body>
-<div id="loading-overlay" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity 0.4s ease;">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:20px;width:320px;">
-    <div style="text-align:center;">
-      <div style="font-size:11px;letter-spacing:0.25em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:6px;">ATHLETIC PERFORMANCE</div>
-      <div style="font-size:42px;font-weight:900;color:var(--gold);font-family:'Barlow Condensed','DM Mono',monospace;letter-spacing:0.05em;line-height:1;">KINETIC</div>
-      <div style="font-size:13px;letter-spacing:0.18em;color:var(--text2);font-family:'DM Mono',monospace;margin-top:4px;">BENCHMARK</div>
-    </div>
-    <div style="width:100%;">
-      <div style="width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;">
-        <div id="loading-bar" style="height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width 0.35s ease;"></div>
-      </div>
-      <div id="loading-status" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:10px;text-align:center;min-height:16px;">Connecting to database...</div>
-    </div>
-  </div>
-</div>
-<div class="wrap">
-
-  <div class="header">
-    <div class="header-brand">
-      <div class="header-icon">⚡</div>
-      <div>
-        <div class="header-title">Kinetic <span>Benchmark</span></div>
-        <div class="header-sub">Athletic performance profiler</div>
-      </div>
-    </div>
-    <div class="tabs">
-      <button class="tab-btn active" id="tab-analytics" onclick="switchTab('analytics')">Analytics</button>
-      <button class="tab-btn" id="tab-roster" onclick="switchTab('roster')">Roster</button>
-      <button class="tab-btn" id="tab-leaderboard" onclick="switchTab('leaderboard')">Leaderboard</button>
-      <button class="tab-btn" id="tab-coaches" onclick="switchTab('coaches')">Coaches</button>
-      <button class="tab-btn" id="tab-flags" onclick="switchTab('flags')">Flags</button>
-      <button class="tab-btn" id="tab-cards" onclick="switchTab('cards')">Cards</button>
-      <button class="tab-btn" id="tab-norms" onclick="switchTab('norms')">Norms</button>
-      <button class="tab-btn" id="tab-tests"   onclick="switchTab('tests')">Tests</button>
-      <button class="tab-btn" id="tab-settings" onclick="switchTab('settings')">Settings</button>
-    </div>
-    <button onclick="openExportPDF()" style="font-size:11px;font-family:'DM Mono',monospace;padding:6px 13px;border-radius:8px;border:1px solid rgba(240,192,64,0.3);background:rgba(240,192,64,0.07);color:var(--gold);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background 0.15s;" onmouseover="this.style.background='rgba(240,192,64,0.13)'" onmouseout="this.style.background='rgba(240,192,64,0.07)'">⬇ Export PDF</button>
-  </div>
-
-  <!-- ═══════════════════════ ANALYTICS PANE ═══════════════════════ -->
-  <div id="pane-analytics">
-
-    <div class="athlete-bar">
-      <div id="athlete-avatar" style="width:34px;height:34px;border-radius:50%;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.04em;flex-shrink:0;transition:all 0.2s;color:var(--text3);">—</div>
-      <div class="select-wrap">
-        <select id="athlete-select" onchange="onAthleteChange()"></select>
-      </div>
-      <div class="sex-badge" id="sex-badge" onclick="toggleSexNorm()" title="Click to toggle male/female norms">—</div>
-      <div class="select-wrap" style="max-width:230px;">
-        <select id="norm-select" onchange="onNormChange()"></select>
-      </div>
-      <button class="btn" onclick="resetNorms()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        Reset norms
-      </button>
-      <button class="btn" id="btn-add-athlete" onclick="toggleAddPanel(false)">＋ New athlete</button>
-      <button class="btn" id="btn-edit-athlete" onclick="toggleAddPanel(true)">✏ Edit athlete</button>
-      <button class="btn" onclick="openReport()">&#x2B21; Report</button>
-      <button class="btn" id="btn-history" onclick="openHistoryModal()">&#128200; History</button>
-    </div>
-
-    <!-- ── Add / edit athlete panel ── -->
-    <div id="add-athlete-panel" class="card gap-14" style="display:none;margin-bottom:14px;">
-      <div id="panel-inner"></div>
-    </div>
-
-    <!-- ── Comparison strip ── -->
-    <div class="compare-strip" id="compare-strip" style="margin-bottom:14px;">
-      <div class="compare-header">
-        <div class="compare-title">Compare with</div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div class="select-wrap" style="min-width:180px;max-width:220px;">
-            <select id="compare-select" style="font-size:12px;padding:6px 28px 6px 10px;"></select>
-          </div>
-          <button class="btn" onclick="addComparePick()" style="padding:7px 12px;">Add</button>
-          <button class="suppress-est-btn" onclick="toggleSuppressEstimated()"
-            style="font-size:11px;font-family:'DM Mono',monospace;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">
-            Measured only
-          </button>
-          <button class="card-chevron" data-collapse="cbody-compare" onclick="toggleCardCollapse('cbody-compare')">▾</button>
-        </div>
-      </div>
-      <div id="cbody-compare">
-        <div class="compare-scroll" id="compare-chips">
-          <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">Select an athlete above to compare percentiles on the bar chart</span>
-        </div>
-        <div id="compare-table" style="display:none;margin-top:14px;"></div>
-      </div>
-    </div>
-
-    <div class="est-notice" id="est-notice" style="display:none;">
-      ★ Fields marked with ★ are estimated from normative distributions — replace with real measured data when available.
-    </div>
-
-    <div class="summary-grid">
-      <!-- Composite score -->
-      <div class="stat-card" style="--accent-color:var(--gold);">
-        <div class="slabel">Composite score</div>
-        <div style="display:flex;align-items:center;gap:14px;justify-content:center;margin:4px 0 6px;">
-          <span class="sval" id="composite-score" style="font-size:52px;">--</span>
-          <div style="text-align:left;">
-            <span id="composite-tier" class="tier-badge" style="font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;">--</span>
-            <div style="font-size:10px;color:var(--text3);margin-top:5px;font-family:'DM Sans',sans-serif;">avg percentile</div>
-          </div>
-        </div>
-      </div>
-      <!-- Top metric -->
-      <div class="stat-card" style="--accent-color:var(--green);">
-        <div class="slabel">Strongest metric</div>
-        <div class="spct" id="top-percentile" style="color:var(--green);">--</div>
-        <div class="sname" id="top-metric">--</div>
-      </div>
-      <!-- Priority gap -->
-      <div class="stat-card" style="--accent-color:var(--red);">
-        <div class="slabel">Priority gap</div>
-        <div class="spct" id="low-percentile" style="color:var(--red);">--</div>
-        <div class="sname" id="low-metric">--</div>
-      </div>
-      <!-- Readiness zone -->
-      <div class="stat-card" style="--accent-color:var(--purple);">
-        <div class="slabel">Readiness zone</div>
-        <div class="sname" style="font-size:17px;margin-bottom:8px;" id="fv-profile-label">--</div>
-        <div id="fv-profile-desc" style="width:100%;"></div>
-      </div>
-    </div>
-
-    <div class="card gap-14">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="card-label" style="margin-bottom:0;">Athlete measurements</div>
-        <button class="card-chevron" data-collapse="cbody-inputs" onclick="toggleCardCollapse('cbody-inputs')">▾</button>
-      </div>
-      <div id="cbody-inputs">
-        <div class="metric-grid" id="input-grid"></div>
-      </div>
-    </div>
-
-    <div class="chart-row">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-          <div class="card-label" style="margin-bottom:0;">Percentile rankings vs selected norm</div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <button id="measured-only-btn" onclick="toggleMeasuredOnly()" style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Measured only</button>
-            <button class="card-chevron" data-collapse="cbody-barchart" onclick="toggleCardCollapse('cbody-barchart')">▾</button>
-          </div>
-        </div>
-        <div id="cbody-barchart">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">Bar = athlete &nbsp;·&nbsp; line = 85th percentile target</div>
-          <div id="bar-chart"></div>
-          <div class="legend" id="tier-legend"></div>
-          <div id="metrics-breakdown-table"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
-          <div class="card-label" style="margin-bottom:0;">Neuromuscular readiness matrix</div>
-          <button class="card-chevron" data-collapse="cbody-matrix" onclick="toggleCardCollapse('cbody-matrix')">▾</button>
-        </div>
-        <div id="cbody-matrix">
-          <div id="matrix-gauges" style="margin-top:12px;"></div>
-          <div class="matrix-active-zone" id="matrix-zone-card" style="margin-top:12px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-        <div class="card-label" style="margin-bottom:0;">Custom metric view</div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button id="chart-mode-all"      onclick="setChartMode('all')"      style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">All</button>
-          <button id="chart-mode-measured" onclick="setChartMode('measured')" style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Measured only</button>
-          <button id="chart-mode-none"     onclick="setChartMode('none')"     style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Clear</button>
-          <button class="card-chevron" data-collapse="cbody-custom" onclick="toggleCardCollapse('cbody-custom')">▾</button>
-        </div>
-      </div>
-      <div id="cbody-custom">
-        <div id="selected-chart-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">Bar = athlete &nbsp;·&nbsp; line = 85th percentile target</div>
-        <div id="selected-bar-chart"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="card-label" style="margin-bottom:0;">Training intervention recommendations</div>
-        <button class="card-chevron" data-collapse="cbody-coaching" onclick="toggleCardCollapse('cbody-coaching')">▾</button>
-      </div>
-      <div id="cbody-coaching">
-        <div id="coaching-content"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══════════════════════ ROSTER PANE ═══════════════════════ -->
-  <div id="pane-roster" style="display:none;">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;">
-        <div class="card-label" style="margin-bottom:0;">Full roster — best scores</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button onclick="rosterSort('_full')" id="roster-full-btn"
-            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(52,211,153,0.3);background:var(--bg2);color:var(--text3);cursor:pointer;">
-            ● Full first
-          </button>
-          <button class="suppress-est-btn" onclick="toggleSuppressEstimated()"
-            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">
-            Hide estimated from comparisons
-          </button>
-          <button onclick="openNewAthletePanel()"
-            style="font-size:11px;font-family:'DM Mono',monospace;padding:4px 12px;border-radius:12px;border:1px solid rgba(45,212,191,0.35);background:var(--bg2);color:var(--teal);cursor:pointer;">
-            + New athlete
-          </button>
-        </div>
-      </div>
-      <div id="new-athlete-panel" style="display:none;margin-bottom:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;">New athlete</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-          <div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">Name</div>
-            <input id="new-ath-name" type="text" placeholder="Full name" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:200px;" />
-          </div>
-          <div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">Sex</div>
-            <div style="display:flex;gap:4px;">
-              <button id="new-ath-m" onclick="setNewAthSex('M')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid rgba(96,165,250,0.45);background:rgba(96,165,250,0.15);color:var(--blue);cursor:pointer;">Male</button>
-              <button id="new-ath-f" onclick="setNewAthSex('F')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);cursor:pointer;">Female</button>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;">CMJ source</div>
-            <button id="new-ath-cmjfd" onclick="toggleNewAthCmjFD()" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.13);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .15s;">~ Standard sensor</button>
-          </div>
-          <button class="btn" onclick="submitNewAthlete()" style="align-self:flex-end;">Add athlete</button>
-          <button class="btn" onclick="document.getElementById('new-athlete-panel').style.display='none'" style="align-self:flex-end;">Cancel</button>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
-        Click any row to load athlete into analytics view. ★ = estimated metric. <span style="color:var(--green);font-weight:600;">Green name</span> = core metrics measured (power, CMJ, RSI, broad jump, 0-10, Fly10, 5-10-5). <span style="color:var(--gold);font-weight:600;">†</span> on CMJ = sensor-measured but not Force Deck (amber).
-      </div>
-      <div id="roster-col-toggles" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
-      <div class="sticky-table-wrap">
-        <table id="roster-table" class="sticky-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;"></table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════ NORMS PANE ═══════════════════════ -->
-  <!-- ═══════════════════════ LEADERBOARD PANE ═══════════════════════ -->
-  <div id="pane-leaderboard" style="display:none;">
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-        <div class="card-label" style="margin-bottom:0;">Metric leaderboard</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">Metric</div>
-          <div class="select-wrap" style="min-width:160px;max-width:200px;">
-            <select id="lb-metric-select" onchange="renderLeaderboard()" style="font-size:12px;padding:6px 28px 6px 10px;"></select>
-          </div>
-          <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:6px;">Sex</div>
-          <div style="display:flex;gap:4px;">
-            <button id="lb-sex-all" onclick="lbSetSex('all')" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:rgba(52,211,153,0.12);color:var(--green);cursor:pointer;">All</button>
-            <button id="lb-sex-m"   onclick="lbSetSex('M')"   style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Male</button>
-            <button id="lb-sex-f"   onclick="lbSetSex('F')"   style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Female</button>
-          </div>
-          <div style="display:flex;gap:4px;margin-left:6px;">
-            <button id="lb-meas-btn" onclick="lbToggleMeasured()" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.13);background:var(--bg2);color:var(--text3);cursor:pointer;">Measured only</button>
-          </div>
-        </div>
-      </div>
-      <div class="sticky-table-wrap" id="leaderboard-scroll">
-        <div id="leaderboard-content"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════ COACHES PANE ═══════════════════════ -->
-  <div id="pane-coaches" style="display:none;">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
-      <button id="coaches-meas-btn" onclick="coachesToggleMeasured()" style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 12px;border-radius:8px;border:1px solid rgba(52,211,153,0.45);background:rgba(52,211,153,0.12);color:var(--green);cursor:pointer;">Measured only</button>
-    </div>
-    <div id="coaches-content" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;"></div>
-    <style>
-      @media (max-width:900px) { #coaches-content { grid-template-columns:1fr; } }
-    </style>
-  </div>
-
-  <!-- ═══════════════════════ FLAGS PANE ═══════════════════════ -->
-  <div id="pane-flags" style="display:none;"></div>
-
-  <!-- ═══════════════════════ CARDS PANE ═══════════════════════ -->
-  <div id="pane-cards" style="display:none;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
-      <div id="cards-panel-M"></div>
-      <div id="cards-panel-F"></div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════ TESTS PANE ═══════════════════════ -->
-  <div id="pane-tests" style="display:none;">
-    <div id="test-group-btns" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div>
-    <div class="athlete-bar" style="margin-bottom:14px;">
-      <div class="select-wrap">
-        <select id="test-athlete-select" onchange="onTestAthleteChange()"></select>
-      </div>
-      <div class="sex-badge male" id="test-sex-badge" onclick="toggleTestSex()" style="cursor:pointer;" title="Click to switch sex filter">♂ Male</div>
-      <div class="select-wrap" style="max-width:230px;">
-        <select id="test-norm-select" onchange="onTestNormChange()"></select>
-      </div>
-      <div class="select-wrap" style="max-width:220px;">
-        <select id="test-compare-select"></select>
-      </div>
-      <button class="btn" onclick="addTestCompare()">+ Compare</button>
-    </div>
-    <div id="tests-content"></div>
-  </div>
-
-  <!-- ═══════════════════════ SETTINGS PANE ═══════════════════════ -->
-  <div id="pane-settings" style="display:none;"></div>
-
-  <div id="pane-norms" style="display:none;">
-    <div class="card">
-      <div class="card-label">Population norms — <span id="norms-sport-label" style="color:var(--text);font-weight:700;text-transform:none;font-family:'DM Sans',sans-serif;"></span></div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;font-family:'DM Mono',monospace;">Edit mean and SD. Changes apply immediately.</div>
-      <div id="norms-table"></div>
-    </div>
-  </div>
-
-</div>
-
-<script>
 // ═══════════════════════════════════════════════════════════════
 // ATHLETE DATA — from ForceDecks master sheet
 // ═══════════════════════════════════════════════════════════════
@@ -746,11 +5,9 @@ const SUPABASE_URL = 'https://pournuabsdndozpouuke.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw';
 const SUPABASE_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
 let ATHLETE_DB = [];
-const ATHLETE_DB_FALLBACK = [{"name":"Aaron Wortel","sex":"M","cmj":13.7,"power":54.1,"rfd":21.7,"rsi":1.62,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.04,"broad":100.08,"shuttle":4.48,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":4130,"isosqt_pvfbm":45.01,"isosqt_ttpf":7.258,"isosqt_rfd200":4955,"isosqt_rfd100":3530,"isosqt_rfd200bw":53.9996,"isosqt_rfd100bw":38.4699,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abby Lisak","sex":"F","cmj":8.4,"power":36.6,"rfd":8.0,"rsi":0.94,"rsiMeasured":false,"sprint10":1.85,"sprintFly":1.24,"broad":64.75,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Abigail Burris","sex":"F","cmj":12.2,"power":44.0,"rfd":57.1,"rsi":2.06,"rsiMeasured":true,"sprint10":1.701,"sprintFly":1.27,"broad":84.0,"shuttle":5.04,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.3,"cmjFD":true,"rsiFD":true},{"name":"Acey Edlund","sex":"M","cmj":14.40321266,"power":0,"rfd":0,"rsi":1.5562301116666666,"rsiMeasured":true,"sprint10":1.68,"sprintFly":0,"sprint1020":1.22,"broad":92.0,"shuttle":5.04,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Addison Erro","sex":"F","cmj":10.7,"power":43.6,"rfd":37.0,"rsi":1.25,"rsiMeasured":true,"sprint10":1.94,"sprintFly":1.36,"broad":73.95,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1186,"isosqt_pvfbm":26.73,"isosqt_ttpf":6.693,"isosqt_rfd200":1710,"isosqt_rfd100":1787,"isosqt_rfd200bw":38.5482,"isosqt_rfd100bw":40.284,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Raphael","sex":"F","cmj":12.1,"power":46.7,"rfd":2.9,"rsi":2.0,"rsiMeasured":true,"sprint10":1.75,"sprintFly":1.29,"broad":74.63,"shuttle":4.65,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1769,"isosqt_pvfbm":30.96,"isosqt_ttpf":1.475,"isosqt_rfd200":2972,"isosqt_rfd100":2807,"isosqt_rfd200bw":52.0035,"isosqt_rfd100bw":49.1164,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Addison Taufa","sex":"F","cmj":13.1,"power":48.7,"rfd":36.6,"rsi":1.25,"rsiMeasured":false,"sprint10":1.9,"sprintFly":1.24,"broad":75.79,"shuttle":4.53,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Addy Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.027322785,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Ahnie  Murilo","sex":"M","cmj":6.6498662,"power":0,"rfd":0,"rsi":0.7177781433333333,"rsiMeasured":true,"sprint10":2.3,"sprintFly":0,"sprint1020":1.76,"broad":48.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aiden Abelardo","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":1.26,"sprint1020":1.3,"broad":108.0,"shuttle":4.5,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Aj Gonzales","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.11084248,"rsiMeasured":true,"sprint10":1.82,"sprintFly":1.3,"sprint1020":1.33,"broad":90.0,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Alexia Rosas","sex":"F","cmj":9.7,"power":39.3,"rfd":21.2,"rsi":1.48,"rsiMeasured":true,"sprint10":1.92,"sprintFly":1.39,"broad":93.14,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2550,"isosqt_pvfbm":39.41,"isosqt_ttpf":5.084,"isosqt_rfd200":1920,"isosqt_rfd100":2157,"isosqt_rfd200bw":29.6708,"isosqt_rfd100bw":33.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Alexis Hastert","sex":"F","cmj":8.8,"power":43.8,"rfd":111.9,"rsi":0.9824612199999999,"rsiMeasured":true,"sprint10":1.4,"sprintFly":1.38,"broad":76.0,"shuttle":5.17,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Allison Keusch","sex":"F","cmj":10.2,"power":42.3,"rfd":23.6,"rsi":1.33,"rsiMeasured":true,"sprint10":1.79,"sprintFly":1.28,"broad":77.0,"shuttle":5.09,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2407,"isosqt_pvfbm":31.03,"isosqt_ttpf":1.592,"isosqt_rfd200":3160,"isosqt_rfd100":4540,"isosqt_rfd200bw":40.7479,"isosqt_rfd100bw":58.5429,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Anthony Tatar","sex":"M","cmj":7.6,"power":33.4,"rfd":11.8,"rsi":1.19,"rsiMeasured":false,"sprint10":1.51,"sprintFly":0.98,"broad":95.13,"shuttle":4.32,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ariannah Turrubiartes","sex":"F","cmj":7.0,"power":41.3,"rfd":193.5,"rsi":1.75,"rsiMeasured":true,"sprint10":2.197,"sprintFly":1.23,"broad":76.0,"shuttle":4.94,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Audrey Pearl","sex":"F","cmj":9.4,"power":39.5,"rfd":12.4,"rsi":1.19,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.29,"broad":69.01,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Brayden Dent","sex":"M","cmj":17.5,"power":64.0,"rfd":49.9,"rsi":3.03,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.04,"broad":103.0,"shuttle":4.2,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.17,"cmjFD":true,"rsiFD":true},{"name":"Buck Buckner","sex":"M","cmj":13.7,"power":53.9,"rfd":37.4,"rsi":1.71,"rsiMeasured":false,"sprint10":1.58,"sprintFly":0.96,"broad":97.54,"shuttle":4.37,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Caden dearth","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3036522483333333,"rsiMeasured":true,"sprint10":0,"sprintFly":1.14,"sprint1020":1.23,"broad":107.0,"shuttle":4.6,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caden Morente","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.24,"broad":113.0,"shuttle":4.48,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Caleb Peters","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":0,"sprint1020":1.2,"broad":111.0,"shuttle":4.64,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Callie Angulo","sex":"F","cmj":12.7,"power":50.7,"rfd":46.1,"rsi":1.4466108683333332,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.3,"broad":95.0,"shuttle":4.85,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Carter Garcia","sex":"M","cmj":13.3,"power":55.4,"rfd":55.4,"rsi":1.91,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.06,"broad":96.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3071,"isosqt_pvfbm":44.67,"isosqt_ttpf":5.314,"isosqt_rfd200":3529,"isosqt_rfd100":2730,"isosqt_rfd200bw":51.3309,"isosqt_rfd100bw":39.7091,"sprint1020":1.25,"cmjFD":true,"rsiFD":true},{"name":"Carter Schmidt","sex":"M","cmj":12.0,"power":44.1,"rfd":1.0,"rsi":1.107489358,"rsiMeasured":true,"sprint10":1.71,"sprintFly":1.38,"broad":98.0,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.39,"cmjFD":true,"rsiFD":false},{"name":"Catherine Coleman","sex":"M","cmj":14.64679209,"power":0,"rfd":0,"rsi":1.6966706366666664,"rsiMeasured":true,"sprint10":1.88,"sprintFly":0,"sprint1020":1.38,"broad":88.5,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Charlottes Shelton","sex":"F","cmj":11.0,"power":48.7,"rfd":77.9,"rsi":1.15,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.29,"broad":60.35,"shuttle":4.54,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Chloe Jensen","sex":"F","cmj":10.6,"power":45.3,"rfd":32.9,"rsi":1.14,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.24,"broad":78.04,"shuttle":4.47,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ciera Walters","sex":"F","cmj":9.9,"power":44.8,"rfd":45.7,"rsi":0.9327213200000001,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.3,"broad":74.0,"shuttle":4.91,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Cohen Mugford","sex":"M","cmj":14.7,"power":55.7,"rfd":35.0,"rsi":2.39,"rsiMeasured":true,"sprint10":1.63,"sprintFly":1.06,"broad":108.61,"shuttle":4.49,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Connor Bishop","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.1854744416666667,"rsiMeasured":true,"sprint10":0,"sprintFly":1.17,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Eddie Lucero","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.556025785,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.22,"sprint1020":1.29,"broad":90.0,"shuttle":4.44,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Edward Patolo","sex":"M","cmj":12.3,"power":46.1,"rfd":22.3,"rsi":1.83,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.27,"broad":93.86,"shuttle":4.22,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":3242,"isosqt_pvfbm":39.59,"isosqt_ttpf":5.674,"isosqt_rfd200":4127,"isosqt_rfd100":3643,"isosqt_rfd200bw":50.3969,"isosqt_rfd100bw":44.4865,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Elizabeth Burnett","sex":"F","cmj":10.3,"power":41.8,"rfd":20.4,"rsi":1.17,"rsiMeasured":false,"sprint10":1.78,"sprintFly":1.18,"broad":84.35,"shuttle":5.05,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Ella Chadwick","sex":"F","cmj":13.1,"power":49.7,"rfd":109.2,"rsi":1.6,"rsiMeasured":true,"sprint10":1.28,"sprintFly":1.21,"broad":88.0,"shuttle":4.552,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Ellie Yoder","sex":"M","cmj":8.8,"power":39.9,"rfd":48.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.62,"sprintFly":1.03,"broad":82.57,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emily Lew","sex":"F","cmj":12.4,"power":48.3,"rfd":11.0,"rsi":1.2,"rsiMeasured":false,"sprint10":1.6,"sprintFly":1.28,"broad":82.72,"shuttle":4.99,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Emma Royko Emma Royko","sex":"F","cmj":12.5,"power":51.1,"rfd":1.5,"rsi":1.25,"rsiMeasured":false,"sprint10":1.84,"sprintFly":1.27,"broad":86.89,"shuttle":4.9,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Gabby Nevarez","sex":"M","cmj":15.17253277,"power":0,"rfd":0,"rsi":1.3482094433333334,"rsiMeasured":true,"sprint10":1.69,"sprintFly":1.23,"sprint1020":1.254,"broad":79.0,"shuttle":4.92,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Gabriela Nevarez","sex":"F","cmj":14.7,"power":54.4,"rfd":27.1,"rsi":1.81,"rsiMeasured":true,"sprint10":1.85,"sprintFly":1.35,"broad":60.03,"shuttle":4.55,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Hank Brown","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0338272716666665,"rsiMeasured":true,"sprint10":0,"sprintFly":1.3,"sprint1020":1.24,"broad":94.0,"shuttle":0.473,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Isabella Esparza","sex":"F","cmj":10.4,"power":46.9,"rfd":64.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.33,"broad":82.35,"shuttle":4.72,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Isabella Velasco","sex":"F","cmj":7.9,"power":34.9,"rfd":19.7,"rsi":1.27,"rsiMeasured":false,"sprint10":1.77,"sprintFly":1.24,"broad":89.71,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jack Dellinger","sex":"M","cmj":15.7,"power":62.2,"rfd":168.6,"rsi":2.27,"rsiMeasured":true,"sprint10":1.51,"sprintFly":1.09,"broad":108.35,"shuttle":4.4,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Jack Johnson","sex":"M","cmj":13.6,"power":58.3,"rfd":47.5,"rsi":1.6252911333333333,"rsiMeasured":true,"sprint10":1.64,"sprintFly":1.21,"broad":86.26,"shuttle":4.93,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Jasmine Lee","sex":"M","cmj":11.88736293,"power":0,"rfd":0,"rsi":1.1703213566666666,"rsiMeasured":true,"sprint10":0,"sprintFly":1.31,"sprint1020":1.36,"broad":77.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Jordyn Raphael","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.8610560466666667,"rsiMeasured":true,"sprint10":0,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Justian Richardson","sex":"M","cmj":25.4,"power":89.4,"rfd":45.7,"rsi":2.86,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.03,"broad":123.0,"shuttle":4.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":3046,"isosqt_pvfbm":39.97,"isosqt_ttpf":6.808,"isosqt_rfd200":2995,"isosqt_rfd100":1980,"isosqt_rfd200bw":39.3045,"isosqt_rfd100bw":25.9843,"sprint1020":1.116,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennel","sex":"M","cmj":11.1,"power":45.2,"rfd":55.8,"rsi":1.36,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.06,"broad":80.0,"shuttle":5.26,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Kai Fennell","sex":"M","cmj":14.20353537,"power":0,"rfd":0,"rsi":1.1530390716666667,"rsiMeasured":true,"sprint10":1.781,"sprintFly":0,"sprint1020":1.333,"broad":80.0,"shuttle":5.265,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kaimana Coleman","sex":"F","cmj":14.3,"power":55.0,"rfd":36.8,"rsi":2.84,"rsiMeasured":true,"sprint10":2.0,"sprintFly":1.33,"broad":77.57,"shuttle":4.63,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2134,"isosqt_pvfbm":32.09,"isosqt_ttpf":4.978,"isosqt_rfd200":1715,"isosqt_rfd100":1520,"isosqt_rfd200bw":25.7895,"isosqt_rfd100bw":22.8571,"sprint1020":1.27,"cmjFD":true,"rsiFD":true},{"name":"Kam Labauve","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.31741451,"rsiMeasured":true,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.71,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Kassidy King","sex":"F","cmj":15.4,"power":58.7,"rfd":62.3,"rsi":1.97,"rsiMeasured":true,"sprint10":1.7,"sprintFly":1.17,"broad":77.76,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2382,"isosqt_pvfbm":35.03,"isosqt_ttpf":8.11,"isosqt_rfd200":1645,"isosqt_rfd100":1420,"isosqt_rfd200bw":24.1912,"isosqt_rfd100bw":20.8824,"sprint1020":1.21,"cmjFD":true,"rsiFD":true},{"name":"Katie Hemerick","sex":"F","cmj":8.5,"power":39.8,"rfd":74.2,"rsi":1.1261566266666667,"rsiMeasured":true,"sprint10":1.76,"sprintFly":1.32,"broad":78.5,"shuttle":4.86,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.41,"cmjFD":true,"rsiFD":false},{"name":"KJ Mendiola","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.45064522,"rsiMeasured":true,"sprint10":0,"sprintFly":1.34,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Landon Simantel","sex":"M","cmj":14.0,"power":58.8,"rfd":47.1,"rsi":1.91,"rsiMeasured":true,"sprint10":1.603,"sprintFly":1.06,"broad":91.63,"shuttle":4.42,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Lillian Ford","sex":"M","cmj":14.345268,"power":0,"rfd":0,"rsi":1.4334087916666667,"rsiMeasured":true,"sprint10":1.83,"sprintFly":0,"sprint1020":0,"broad":88.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Lily Barstad","sex":"F","cmj":10.7,"power":41.5,"rfd":32.6,"rsi":1.65,"rsiMeasured":true,"sprint10":1.84,"sprintFly":1.3,"broad":81.0,"shuttle":5.11,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.35,"cmjFD":true,"rsiFD":true},{"name":"Lola Carson","sex":"F","cmj":14.4,"power":52.2,"rfd":39.0,"rsi":2.24,"rsiMeasured":true,"sprint10":1.66,"sprintFly":1.2,"broad":67.75,"shuttle":4.52,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2218,"isosqt_pvfbm":41.07,"isosqt_ttpf":7.926,"isosqt_rfd200":2610,"isosqt_rfd100":2070,"isosqt_rfd200bw":48.3333,"isosqt_rfd100bw":38.3333,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Lola Coker","sex":"F","cmj":9.0,"power":42.9,"rfd":61.2,"rsi":1.24,"rsiMeasured":false,"sprint10":1.83,"sprintFly":1.3,"broad":58.1,"shuttle":4.67,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.37,"cmjFD":true,"rsiFD":false},{"name":"Lucas Black","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.3789838966666668,"rsiMeasured":true,"sprint10":1.72,"sprintFly":1.23,"sprint1020":0,"broad":88.0,"shuttle":4.84,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Maddie Waldron","sex":"F","cmj":12.2,"power":47.8,"rfd":11.8,"rsi":1.83,"rsiMeasured":true,"sprint10":1.774,"sprintFly":1.37,"broad":85.5,"shuttle":4.83,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2196,"isosqt_pvfbm":37.2,"isosqt_ttpf":5.878,"isosqt_rfd200":2645,"isosqt_rfd100":2900,"isosqt_rfd200bw":44.8077,"isosqt_rfd100bw":49.1276,"sprint1020":1.33,"cmjFD":true,"rsiFD":true},{"name":"Maizie Smith","sex":"M","cmj":9.93423732,"power":0,"rfd":0,"rsi":1.1464099916666666,"rsiMeasured":true,"sprint10":1.9,"sprintFly":1.36,"sprint1020":0,"broad":73.0,"shuttle":5.05,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":false,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Malia Jones","sex":"F","cmj":14.1,"power":52.5,"rfd":38.3,"rsi":1.79,"rsiMeasured":true,"sprint10":1.48,"sprintFly":1.14,"broad":85.0,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.18,"cmjFD":true,"rsiFD":true},{"name":"Malia Lyons","sex":"F","cmj":10.7,"power":46.4,"rfd":35.7,"rsi":1.23,"rsiMeasured":true,"sprint10":1.35,"sprintFly":1.33,"broad":82.0,"shuttle":4.81,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.32,"cmjFD":true,"rsiFD":true},{"name":"Marissa Chapman","sex":"F","cmj":6.1,"power":30.5,"rfd":13.9,"rsi":1.1,"rsiMeasured":true,"sprint10":2.12,"sprintFly":1.7,"broad":70.7,"shuttle":4.66,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":1746,"isosqt_pvfbm":25.57,"isosqt_ttpf":11.31,"isosqt_rfd200":1512,"isosqt_rfd100":1922,"isosqt_rfd200bw":22.1441,"isosqt_rfd100bw":28.1488,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Maximus Marchi","sex":"M","cmj":11.45543357,"power":0,"rfd":0,"rsi":1.3713687733333335,"rsiMeasured":true,"sprint10":1.81,"sprintFly":1.26,"sprint1020":1.29,"broad":78.0,"shuttle":4.97,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mckayla Zuber","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0.782006585,"rsiMeasured":true,"sprint10":1.77,"sprintFly":2.741,"sprint1020":1.33,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mia Reynoso","sex":"F","cmj":9.4,"power":48.9,"rfd":152.9,"rsi":2.01,"rsiMeasured":true,"sprint10":1.77,"sprintFly":1.26,"broad":71.48,"shuttle":4.76,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Miles Stroika","sex":"M","cmj":17.17763894,"power":0,"rfd":0,"rsi":1.165359695,"rsiMeasured":true,"sprint10":1.72,"sprintFly":0,"sprint1020":1.28,"broad":91.5,"shuttle":4.7,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Mimi Botticelli","sex":"F","cmj":6.6,"power":32.4,"rfd":45.6,"rsi":1.25,"rsiMeasured":true,"sprint10":1.83,"sprintFly":1.44,"broad":72.69,"shuttle":4.87,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":false},"isosqt_pvf":2086,"isosqt_pvfbm":28.77,"isosqt_ttpf":4.015,"isosqt_rfd200":1083,"isosqt_rfd100":800,"isosqt_rfd200bw":14.9379,"isosqt_rfd100bw":11.0345,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Mya Gonzalez","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.6162357433333332,"rsiMeasured":true,"sprint10":1.78,"sprintFly":0,"sprint1020":1.3,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Nicolas Countreman","sex":"M","cmj":10.7,"power":47.5,"rfd":30.4,"rsi":1.33,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.21,"broad":96.0,"shuttle":5.02,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.36,"cmjFD":true,"rsiFD":true},{"name":"Peter Graves","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":0,"sprintFly":1.21,"sprint1020":0,"broad":0,"shuttle":4.73,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":false,"sprintFly":true,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Peyton Cantu","sex":"M","cmj":14.30319979,"power":0,"rfd":0,"rsi":1.2227774516666667,"rsiMeasured":true,"sprint10":1.61,"sprintFly":1.3,"sprint1020":1.36,"broad":81.0,"shuttle":4.74,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Riley McGee","sex":"F","cmj":11.6,"power":46.0,"rfd":22.4,"rsi":2.0,"rsiMeasured":true,"sprint10":1.78,"sprintFly":1.23,"broad":77.81,"shuttle":4.6,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":true,"isosqt_pvfbm":true,"isosqt_ttpf":true,"isosqt_rfd200":true,"isosqt_rfd100":true,"isosqt_rfd200bw":true,"isosqt_rfd100bw":true,"sprint1020":true},"isosqt_pvf":2728,"isosqt_pvfbm":43.58,"isosqt_ttpf":7.71,"isosqt_rfd200":2300,"isosqt_rfd100":2250,"isosqt_rfd200bw":36.7471,"isosqt_rfd100bw":35.9482,"sprint1020":1.31,"cmjFD":true,"rsiFD":true},{"name":"Robert Ghazaryan","sex":"M","cmj":14.07814152,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.7,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Rowan Nishimoto","sex":"M","cmj":15.5,"power":68.1,"rfd":129.4,"rsi":1.979208146666667,"rsiMeasured":true,"sprint10":1.564,"sprintFly":1.1,"broad":101.0,"shuttle":4.34,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.2,"cmjFD":true,"rsiFD":false},{"name":"Ryan Chenoweth","sex":"M","cmj":15.22127983,"power":0,"rfd":0,"rsi":1.1876013933333334,"rsiMeasured":true,"sprint10":1.56,"sprintFly":1.14,"sprint1020":1.16,"broad":92.0,"shuttle":4.62,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sam McCoy","sex":"M","cmj":16.8,"power":60.1,"rfd":36.5,"rsi":2.06,"rsiMeasured":true,"sprint10":1.58,"sprintFly":1.019,"broad":102.0,"shuttle":3.7,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.16,"cmjFD":true,"rsiFD":true},{"name":"Sam Shelton","sex":"M","cmj":11.2,"power":51.1,"rfd":41.2,"rsi":1.3,"rsiMeasured":false,"sprint10":1.51,"sprintFly":1.06,"broad":110.45,"shuttle":3.92,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Serenity Humphrey","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.992,"sprintFly":0,"sprint1020":0,"broad":67.0,"shuttle":0,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":true,"shuttle":false,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Skylar Gosselin","sex":"M","cmj":10.14997734,"power":0,"rfd":0,"rsi":1.2727755966666667,"rsiMeasured":true,"sprint10":1.86,"sprintFly":0,"sprint1020":1.51,"broad":78.0,"shuttle":5.448,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":false,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sofia Andrade The Andrades","sex":"F","cmj":10.9,"power":43.2,"rfd":29.5,"rsi":1.2,"rsiMeasured":false,"sprint10":1.79,"sprintFly":1.28,"broad":78.91,"shuttle":5.01,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Sophia Covarrubias","sex":"M","cmj":13.4646096,"power":0,"rfd":0,"rsi":0,"rsiMeasured":false,"sprint10":1.86,"sprintFly":0,"sprint1020":0,"broad":0,"shuttle":4.8,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":false,"sprint10":true,"sprintFly":false,"sprint1020":false,"broad":false,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Reilly","sex":"M","cmj":0,"power":0,"rfd":0,"rsi":1.0107670033333334,"rsiMeasured":true,"sprint10":1.91,"sprintFly":1.37,"sprint1020":1.37,"broad":87.0,"shuttle":5.07,"measured":{"cmj":true,"power":false,"rfd":false,"rsi":true,"sprint10":true,"sprintFly":true,"sprint1020":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"cmjFD":false,"rsiFD":false},{"name":"Sophia Sophia","sex":"F","cmj":11.5,"power":43.2,"rfd":9.9,"rsi":1.05,"rsiMeasured":false,"sprint10":1.8,"sprintFly":1.28,"broad":64.71,"shuttle":4.84,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Travis Perry","sex":"M","cmj":18.2,"power":62.0,"rfd":1.8,"rsi":1.66,"rsiMeasured":true,"sprint10":1.59,"sprintFly":1.07,"broad":112.5,"shuttle":4.23,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":true},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":1.14,"cmjFD":true,"rsiFD":true},{"name":"Tristan Richey","sex":"M","cmj":7.3,"power":36.2,"rfd":48.3,"rsi":1.34,"rsiMeasured":false,"sprint10":1.57,"sprintFly":1.43,"broad":116.44,"shuttle":4.24,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Vai Escamilla","sex":"F","cmj":8.6,"power":38.2,"rfd":18.8,"rsi":1.07,"rsiMeasured":false,"sprint10":1.73,"sprintFly":1.29,"broad":96.51,"shuttle":4.82,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false},{"name":"Violet Todd","sex":"F","cmj":8.9,"power":40.0,"rfd":29.8,"rsi":1.27,"rsiMeasured":true,"sprint10":1.84,"sprintFly":1.43,"broad":68.04,"shuttle":5.0,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":true},{"name":"Wesley Richey","sex":"F","cmj":15.0,"power":56.7,"rfd":17.2,"rsi":1.35,"rsiMeasured":false,"sprint10":1.82,"sprintFly":1.28,"broad":69.43,"shuttle":4.97,"measured":{"cmj":true,"power":true,"rfd":true,"rsi":true,"sprint10":true,"sprintFly":true,"broad":true,"shuttle":true,"isosqt_pvf":false,"isosqt_pvfbm":false,"isosqt_ttpf":false,"isosqt_rfd200":false,"isosqt_rfd100":false,"isosqt_rfd200bw":false,"isosqt_rfd100bw":false,"sprint1020":false},"isosqt_pvf":0,"isosqt_pvfbm":0,"isosqt_ttpf":0,"isosqt_rfd200":0,"isosqt_rfd100":0,"isosqt_rfd200bw":0,"isosqt_rfd100bw":0,"sprint1020":0,"cmjFD":true,"rsiFD":false}];
-
 
 // ForceDeck-measured keys (always real for every athlete — legacy fallback)
-const REAL_KEYS = new Set(['cmj','power','rfd']);
+const REAL_KEYS = new Set(['cmj','power','rfd','eccBrakingRFD']);
 function isEstimatedForAthlete(key, athlete) {
   if (athlete.measured) return !athlete.measured[key];
   if (key === 'rsi') return !athlete.rsiMeasured;
@@ -777,41 +34,31 @@ function toggleCoreMetric(key) {
   else coreMeasuredKeys.add(key);
   renderSettings();
   renderRosterTable();
+  renderAll(false);
+  saveState();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // METRICS CONFIG
 // ═══════════════════════════════════════════════════════════════
 const METRICS = [
-  { key:'power',     label:'Peak power',         inv:false, unit:'W/kg', step:0.1  },
-  { key:'rsi',       label:'Reactive strength',  inv:false, unit:'idx',  step:0.01 },
-  { key:'rfd',       label:'Rate of force dev',  inv:false, unit:'N/s',  step:1    },
-  { key:'cmj',       label:'Vertical jump',      inv:false, unit:'in',   step:0.1  },
-  { key:'sprint10',  label:'10yd start',         inv:true,  unit:'s',    step:0.01 },
-  { key:'sprintFly', label:'Fly 10yd (20–30)',   inv:true,  unit:'s',    step:0.01 },
-  { key:'sprint1020', label:'10-20 transition',  inv:true,  unit:'s',    step:0.01 },
-  { key:'broad',     label:'Broad jump',         inv:false, unit:'in',   step:0.1  },
-  { key:'shuttle',   label:'Pro agility',        inv:true,  unit:'s',    step:0.01 },
+  { key:'power',         label:'Power',            testName:'Peak power',              inv:false, unit:'W/kg',   step:0.1  },
+  { key:'rsi',           label:'Reactivity',       testName:'Drop jump RSI',           inv:false, unit:'idx',    step:0.01 },
+  { key:'rfd',           label:'Explosiveness',    testName:'Concentric RFD',          inv:false, unit:'N/s',    step:1    },
+  { key:'eccBrakingRFD', label:'Braking force',    testName:'Eccentric braking RFD',   inv:false, unit:'N/s/kg', step:1    },
+  { key:'cmj',           label:'Vertical jump',    testName:'Countermovement jump',    inv:false, unit:'in',     step:0.1  },
+  { key:'sprint10',      label:'Acceleration',     testName:'10-yard sprint',          inv:true,  unit:'s',      step:0.01 },
+  { key:'sprintFly',     label:'Top speed',        testName:'Fly 10 (20–30y)',         inv:true,  unit:'s',      step:0.01 },
+  { key:'sprint1020',    label:'Transition speed', testName:'10–20y split',            inv:true,  unit:'s',      step:0.01 },
+  { key:'broad',         label:'Broad jump',       testName:'Standing broad jump',     inv:false, unit:'in',     step:0.1  },
+  { key:'shuttle',       label:'Agility',          testName:'Pro agility (5-10-5)',    inv:true,  unit:'s',      step:0.01 },
 ];
-const ISOSQT_METRICS = [
-  { key:'isosqt_pvf',    label:'Peak Force',          inv:false, unit:'N',    step:1    },
-  { key:'isosqt_pvfbm',  label:'Peak Force / BM',     inv:false, unit:'N/kg', step:0.01 },
-  { key:'isosqt_ttpf',   label:'Time to Peak Force',  inv:true,  unit:'s',    step:0.001},
-  { key:'isosqt_rfd200', label:'RFD 200ms (ISO)',      inv:false, unit:'N/s',  step:1    },
-  { key:'isosqt_rfd100',   label:'RFD 100ms (ISO)',      inv:false, unit:'N/s',    step:1    },
-  { key:'isosqt_rfd200bw', label:'RFD 200ms / BM (ISO)', inv:false, unit:'N/s/kg', step:0.01 },
-  { key:'isosqt_rfd100bw', label:'RFD 100ms / BM (ISO)', inv:false, unit:'N/s/kg', step:0.01 },
-];
-METRICS.push(...ISOSQT_METRICS);
+
 const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
 
 const TEST_GROUPS = [
-  { key:'isosqt', label:'Isometric Squat', shortLabel:'ISOSQT',
-    metrics:['isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'],
-    defaultNorm: sex => `ISOSQT — ${sex==='M'?'Male':'Female'}`,
-    hasData: a => (a.isosqt_pvf||0) > 0 },
   { key:'cmj', label:'CMJ & Force', shortLabel:'CMJ',
-    metrics:['cmj','rfd','power'],
+    metrics:['cmj','rfd','eccBrakingRFD','power'],
     defaultNorm: sex => `Roster — ${sex==='M'?'Male':'Female'} (Measured)`,
     hasData: a => (a.cmj||0) > 0 || (a.rfd||0) > 0 },
   { key:'sprint', label:'Sprint', shortLabel:'Sprint',
@@ -839,8 +86,17 @@ function computeInternalNorms(sexKey) {
   return out;
 }
 
+// When true: roster table + Roster (Measured) norms restricted to full-data athletes.
+// Declared here (before computeMeasuredNorms / INITIAL_NORMS) to avoid TDZ.
+let rosterFullOnly = false;
+
 function computeMeasuredNorms(sexKey) {
-  const group = ATHLETE_DB.filter(a => a.sex === sexKey);
+  let group = ATHLETE_DB.filter(a => a.sex === sexKey);
+  // Full-only mode: derive comparison norms from athletes with all core metrics measured
+  if (rosterFullOnly) {
+    const full = group.filter(hasAllMeasured);
+    if (full.length >= 2) group = full;
+  }
   const out = {};
   METRICS.forEach(m => {
     const vals = group
@@ -856,31 +112,19 @@ function computeMeasuredNorms(sexKey) {
   return out;
 }
 
-function computeISQNorms(sex) {
-  const group = ATHLETE_DB.filter(a => a.sex === sex && (a.isosqt_pvf||0) > 0);
-  const out = {};
-  ISOSQT_METRICS.forEach(m => {
-    const vals = group.map(a => a[m.key]).filter(v => v > 0);
-    if (!vals.length) { out[m.key] = {m:0, sd:1}; return; }
-    const mean = vals.reduce((s,v)=>s+v,0)/vals.length;
-    const sd   = Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/vals.length) || 1;
-    out[m.key] = { m: parseFloat(mean.toFixed(3)), sd: parseFloat(sd.toFixed(3)) };
-  });
-  return out;
-}
+
 let INITIAL_NORMS = {
   "Roster — Male":              computeInternalNorms('M'),
   "Roster — Female":            computeInternalNorms('F'),
   "Roster — Male (Measured)":   computeMeasuredNorms('M'),
   "Roster — Female (Measured)": computeMeasuredNorms('F'),
-  "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, shuttle:{m:4.15,sd:0.10} },
-  "Male NCAA D2":   { power:{m:66.5,sd:4.8}, sprint10:{m:1.51,sd:0.04}, sprintFly:{m:1.04,sd:0.03}, rsi:{m:1.48,sd:0.18}, cmj:{m:10.2,sd:1.8}, broad:{m:99,sd:9.0},  rfd:{m:210,sd:22.0}, shuttle:{m:4.32,sd:0.12} },
-  "Male NCAA D3":   { power:{m:58.2,sd:5.5}, sprint10:{m:1.58,sd:0.06}, sprintFly:{m:1.12,sd:0.04}, rsi:{m:1.30,sd:0.20}, cmj:{m:9.2,sd:2.0},  broad:{m:90,sd:10.0}, rfd:{m:185,sd:25.0}, shuttle:{m:4.48,sd:0.15} },
-  "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, shuttle:{m:4.62,sd:0.12} },
-  "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, shuttle:{m:4.80,sd:0.15} },
-  "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, shuttle:{m:5.05,sd:0.20} },
-  "ISOSQT — Male":   computeISQNorms('M'),
-  "ISOSQT — Female": computeISQNorms('F'),
+  "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, eccBrakingRFD:{m:95,sd:30}, shuttle:{m:4.15,sd:0.10} },
+  "Male NCAA D2":   { power:{m:66.5,sd:4.8}, sprint10:{m:1.51,sd:0.04}, sprintFly:{m:1.04,sd:0.03}, rsi:{m:1.48,sd:0.18}, cmj:{m:10.2,sd:1.8}, broad:{m:99,sd:9.0},  rfd:{m:210,sd:22.0}, eccBrakingRFD:{m:80,sd:28}, shuttle:{m:4.32,sd:0.12} },
+  "Male NCAA D3":   { power:{m:58.2,sd:5.5}, sprint10:{m:1.58,sd:0.06}, sprintFly:{m:1.12,sd:0.04}, rsi:{m:1.30,sd:0.20}, cmj:{m:9.2,sd:2.0},  broad:{m:90,sd:10.0}, rfd:{m:185,sd:25.0}, eccBrakingRFD:{m:65,sd:25}, shuttle:{m:4.48,sd:0.15} },
+  "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, eccBrakingRFD:{m:75,sd:28}, shuttle:{m:4.62,sd:0.12} },
+  "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, eccBrakingRFD:{m:60,sd:25}, shuttle:{m:4.80,sd:0.15} },
+  "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, eccBrakingRFD:{m:50,sd:22}, shuttle:{m:5.05,sd:0.20} },
+
 };
 
 let norms = JSON.parse(JSON.stringify(INITIAL_NORMS));
@@ -900,7 +144,7 @@ let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
 let rosterSortKey = 'name';
 let rosterSortDir = 1; // 1 = asc (A→Z / low→high), -1 = desc (Z→A / high→low)
-let rosterVisibleCols = new Set(['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle']);
+let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle']);
 let collapsedCards = new Set();
 let suppressEstimated = true;
 let selectedChartMode = 'measured'; // 'all' | 'measured' | 'none' | 'custom'
@@ -911,7 +155,7 @@ let cardsNormRight = 'Roster — Female (Measured)';
 let cardsPanelSexLeft  = 'M';
 let cardsPanelSexRight = 'F';
 let activeTab       = 'analytics';
-let testActiveGroup = 'isosqt';
+let testActiveGroup = 'cmj';
 let testSex         = 'M';
 let testAthlete     = null;
 let testNorm        = null;
@@ -921,6 +165,8 @@ const TEST_COMPARE_COLORS = ['#f97316','#a78bfa','#34d399','#fb7185'];
 let disabledMetrics = new Set();
 let tierThresholds  = [90, 70, 40, 15]; // Elite, Advanced, Developed, Sub-optimal
 let matrixThreshold = 50;
+let compactRoster   = false;
+let historySmoothing = false;
 
 // ═══════════════════════════════════════════════════════════════
 // TIER / MATH HELPERS
@@ -944,10 +190,25 @@ const COACHING_LIB = {
   sprintFly: { title:'Maximum velocity development',   text:'Top-end speed is underexpressed. Prioritize high-velocity running volume, elastic stiffness development, and reducing ground contact time at speed.',          methods:['High-velocity running','Elastic stiffness loading','Sprint mechanics','Speed endurance'] },
   rsi:       { title:'Reactive strength & SSC efficiency', text:'Tendon-muscle stiffness and SSC efficiency are limiting power output. Emphasize short-contact plyometrics with strict constraints on amortization time.',   methods:['Short-contact plyometrics','SSC efficiency work','Stiffness-based loading','Tendon conditioning'] },
   rfd:       { title:'Rate of force development',      text:'Early-phase explosive force is the primary deficit. Target neural drive through intent-based training and rapid concentric acceleration.',                        methods:['Ballistic intent training','Neural drive emphasis','Contrast loading','Early-phase RFD'] },
+  eccBrakingRFD: { title:'Eccentric braking capacity', text:'Eccentric braking RFD reflects how quickly the athlete absorbs and reverses force at jump landing — a key driver of SSC efficiency. Target heavy eccentrics, accentuated-eccentric jumps, and tempo squats.', methods:['Heavy eccentric loading','Accentuated-eccentric jumps','Tempo squat work','Drop-landing absorption'] },
   sprint10:  { title:'Acceleration mechanics',         text:'Force application in initial acceleration is below norms. Prioritize horizontal force production and drive phase positional strength.',                          methods:['Resisted acceleration','Horizontal force emphasis','Drive phase mechanics','Positional strength'] },
   cmj:       { title:'Vertical power expression',      text:'CMJ height indicates a deficit in vertical power. Develop reactive power through SSC alongside eccentric loading to build the force foundation.',               methods:['Loaded jump training','SSC power development','Eccentric loading','Concentric intent'] },
   broad:     { title:'Horizontal power output',        text:'Horizontal power and projection mechanics underperforming. Develop unilateral hip extension strength and horizontal momentum generation.',                      methods:['Unilateral hip extension','Horizontal intent loading','Projection mechanics','Single-leg power'] },
   power:     { title:'Maximal strength foundation',    text:'Absolute force capacity is limiting downstream power expression. Primary intervention: raise the maximal strength ceiling through progressive bilateral overload.', methods:['Maximal strength emphasis','Progressive overload','Bilateral compound loading','Strength-first periodization'] },
+};
+
+// Plain-English one-liners used in the athlete dossier (parent/athlete-facing copy).
+const METRIC_EXPLAINER = {
+  power:         'Explosive force generated relative to body weight.',
+  rsi:           'How efficiently you absorb and rebound from the ground — a measure of springiness.',
+  rfd:           'How quickly you produce force at the start of an explosive movement.',
+  eccBrakingRFD: 'How efficiently you decelerate before reversing direction.',
+  cmj:           'Vertical jump height from a still position.',
+  sprint10:      'How fast you reach top speed in the first 10 yards.',
+  sprintFly:     'Peak running speed once already in motion.',
+  sprint1020:    'How smoothly you transition from acceleration to maximum velocity.',
+  broad:         'Horizontal jump distance from a standing start.',
+  shuttle:       'How quickly you change direction over short distances.',
 };
 
 function getTier(p) {
@@ -969,10 +230,9 @@ function calcPercentile(value, norm, inv) {
 }
 
 function getResults() {
-  const n     = norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${currentAthlete.sex==='M'?'Male':'Female'}`] || {};
+  const n = norms[selectedNorm];
   return METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athleteData[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, currentAthlete);
     const val = suppressed ? 0 : (athleteData[m.key] || 0);
@@ -986,9 +246,8 @@ function getResults() {
 
 function getResultsFor(athlete, normKey) {
   const n     = norms[normKey] || norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${athlete.sex==='M'?'Male':'Female'}`] || {};
   return METRICS.filter(m => !disabledMetrics.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athlete[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, athlete);
     const val = suppressed ? 0 : (athlete[m.key] || 0);
@@ -1081,11 +340,13 @@ function toggleAddPanel(wantEdit) {
 }
 
 function renderAthletePanel() {
-  const LBL = 'display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;font-family:\'DM Mono\',monospace;';
+  const LBL = 'display:block;font-size:11px;font-weight:500;color:var(--text3);margin-bottom:4px;font-family:\'DM Sans\',sans-serif;';
   const nameRow = editMode
-    ? `<div>
-        <div style="${LBL}">Editing</div>
-        <div style="font-size:16px;font-weight:700;font-family:'Barlow Condensed',sans-serif;font-style:italic;letter-spacing:.3px;">${currentAthlete.name}</div>
+    ? `<div style="flex:1;min-width:160px;">
+        <label style="${LBL}">Athlete name</label>
+        <input id="new-name" type="text" value="${(currentAthlete.name || '').replace(/"/g,'&quot;')}"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor=''" />
        </div>`
     : `<div style="flex:1;min-width:160px;">
         <label style="${LBL}">Athlete name</label>
@@ -1098,8 +359,10 @@ function renderAthletePanel() {
     const isMeas = !!newMeasured[m.key];
     const val = editMode ? (currentAthlete[m.key] ?? '') : '';
     const gc = 'var(--green)', oc = 'var(--orange)';
+    const sub = m.testName ? `<span class="metric-sub">${m.testName}</span>` : '';
     return `<div class="metric-field">
-      <label>${m.label} <span style="color:var(--text3);font-size:9px;">(${m.unit})</span></label>
+      <label title="${m.testName || m.label}">${m.label} <span style="color:var(--text3);font-size:10px;">(${m.unit})</span></label>
+      ${sub}
       <input id="new-inp-${m.key}" type="number" step="${m.step}" value="${val}" placeholder="—"
         style="-moz-appearance:textfield;-webkit-appearance:none;"
         oninput="this.style.borderColor=this.value?'var(--teal)':'';" />
@@ -1124,7 +387,7 @@ function renderAthletePanel() {
     </div>
     <div class="metric-grid">${metricCells}</div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-family:'DM Mono',monospace;">CMJ source</span>
+      <span style="font-size:11px;font-weight:500;color:var(--text3);font-family:'DM Sans',sans-serif;">CMJ source</span>
       <button id="panel-cmjfd-btn" onclick="togglePanelCmjFD()"
         style="font-size:11px;font-family:'DM Mono',monospace;padding:5px 14px;border-radius:8px;border:1px solid ${newCmjFD?'rgba(52,211,153,.4)':'rgba(255,255,255,.13)'};background:${newCmjFD?'rgba(52,211,153,.08)':'var(--bg2)'};color:${newCmjFD?'var(--green)':'var(--text3)'};cursor:pointer;transition:all .15s;">
         ${newCmjFD?'✓ Force Deck':'~ Standard sensor'}
@@ -1160,6 +423,13 @@ function togglePanelCmjFD() {
 
 function saveAthletePanel() {
   if (editMode) {
+    const newName = (document.getElementById('new-name').value || '').trim();
+    if (!newName) { alert('Name cannot be empty.'); return; }
+    const oldName = currentAthlete.name;
+    const nameChanged = newName !== oldName;
+    if (nameChanged && ATHLETE_DB.some(a => a !== currentAthlete && a.name === newName)) {
+      alert('Another athlete already has that name.'); return;
+    }
     METRICS.forEach(m => {
       const raw = document.getElementById('new-inp-'+m.key).value;
       const val = parseFloat(raw);
@@ -1167,17 +437,23 @@ function saveAthletePanel() {
       if (!currentAthlete.measured) currentAthlete.measured = {};
       currentAthlete.measured[m.key] = !!newMeasured[m.key];
     });
+    currentAthlete.name = newName;
     currentAthlete.sex = newAthleteSex;
     currentAthlete.cmjFD = newCmjFD;
     athleteData = {...currentAthlete};
-    selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-    document.getElementById('norm-select').value = selectedNorm;
+    if (nameChanged) {
+      rebuildAthleteSelect();
+      const sel = document.getElementById('athlete-select');
+      if (sel) sel.value = newName;
+    }
+    rebuildNormSelect();
     const sb = document.getElementById('sex-badge');
     sb.textContent = currentAthlete.sex==='M'?'♂ Male':'♀ Female';
     sb.className = 'sex-badge '+(currentAthlete.sex==='M'?'male':'female');
     closeAthletePanel();
     renderAll(true);
     if (currentAthlete._supabase_id) {
+      renameAthleteInSupabase(currentAthlete._supabase_id, newName, currentAthlete.sex);
       const mm = {};
       METRICS.forEach(m => { if (currentAthlete[m.key]) mm[m.key] = { value: currentAthlete[m.key], source: currentAthlete.measured && currentAthlete.measured[m.key] ? 'manual' : 'estimated' }; });
       saveSessionToSupabase(currentAthlete, mm);
@@ -1202,11 +478,36 @@ function saveAthletePanel() {
   }
 }
 
-function deleteAthlete(name) {
+async function deleteAthlete(name) {
   if (ATHLETE_DB.length <= 1) { alert('Cannot delete the last athlete.'); return; }
-  if (!confirm(`Remove "${name}" from the roster?`)) return;
   const idx = ATHLETE_DB.findIndex(a=>a.name===name);
   if (idx < 0) return;
+  const athlete = ATHLETE_DB[idx];
+  const sessionCount = (athlete._sessions || []).length;
+  const detail = sessionCount > 0
+    ? ` This will also delete ${sessionCount} session${sessionCount===1?'':'s'} of measurement history.`
+    : '';
+  if (!confirm(`Permanently delete "${name}" from the database?${detail} This cannot be undone.`)) return;
+
+  // Delete from Supabase first if the athlete has a server-side row
+  if (athlete._supabase_id) {
+    try {
+      // Sessions cascade to measurements (matches the existing session-delete pattern)
+      await fetch(SUPABASE_URL + '/rest/v1/sessions?athlete_id=eq.' + athlete._supabase_id, {
+        method: 'DELETE', headers: SUPABASE_HEADERS,
+      });
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/athletes?id=eq.' + athlete._supabase_id, {
+        method: 'DELETE', headers: SUPABASE_HEADERS,
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    } catch(e) {
+      console.error('Supabase athlete delete error:', e);
+      alert(`Failed to delete "${name}" from the database. Athlete remains in roster. See console for details.`);
+      return;
+    }
+  }
+
+  // Local state
   ATHLETE_DB.splice(idx, 1);
   compareAthletes = compareAthletes.filter(c=>c.name!==name);
   if (currentAthlete.name === name) {
@@ -1214,15 +515,17 @@ function deleteAthlete(name) {
     athleteData = {...currentAthlete};
     rebuildAthleteSelect();
     document.getElementById('athlete-select').value = currentAthlete.name;
-    selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-    document.getElementById('norm-select').value = selectedNorm;
+    rebuildNormSelect();
     renderCompareStrip();
     renderAll(true);
   } else {
     rebuildAthleteSelect();
     renderCompareStrip();
   }
+  // Recompute roster norms since the cohort changed
+  rebuildInitialNorms();
   renderRosterTable();
+  if (typeof showToast === 'function') showToast('Deleted ' + name);
 }
 
 function rebuildAthleteSelect() {
@@ -1235,6 +538,26 @@ function rebuildAthleteSelect() {
     if (hasAllMeasured(a)) o.style.color = '#34d399';
     asel.appendChild(o);
   });
+}
+
+function rebuildNormSelect() {
+  const sex = currentAthlete ? currentAthlete.sex : 'F';
+  const word = sex === 'M' ? 'Male' : 'Female';
+  const nsel = document.getElementById('norm-select');
+  if (!nsel) return;
+  const cur = nsel.value;
+  nsel.innerHTML = '';
+  Object.keys(INITIAL_NORMS)
+    .filter(k => k.includes(word))
+    .forEach(k => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = k;
+      nsel.appendChild(o);
+    });
+  // Keep current selection if still valid, otherwise default to roster norm
+  nsel.value = nsel.querySelector(`option[value="${CSS.escape(cur)}"]`) ? cur
+    : `Roster — ${word} (Measured)`;
+  selectedNorm = nsel.value;
 }
 
 function addComparePick() {
@@ -1258,7 +581,7 @@ function renderCompareStrip() {
   const sel = document.getElementById('compare-select');
   sel.innerHTML = '<option value="">— pick athlete —</option>';
   ATHLETE_DB
-    .filter(a=>a.name!==currentAthlete.name && !compareAthletes.find(c=>c.name===a.name))
+    .filter(a=>a.name!==currentAthlete.name && a.sex===currentAthlete.sex && !compareAthletes.find(c=>c.name===a.name))
     .sort((a,b)=>a.name.localeCompare(b.name))
     .forEach(a=>{
       const o = document.createElement('option');
@@ -1293,9 +616,9 @@ function renderCompareTable() {
   const nameCell = (a, color) =>
     `<th style="padding:6px 8px;font-size:11px;font-family:'DM Mono',monospace;font-weight:700;text-align:right;border-bottom:2px solid ${color};color:${color};white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${a.name.split(' ')[0]}<br><span style="font-weight:400;opacity:.7;font-size:9px;">${a.name.split(' ').slice(1).join(' ')}</span></th>`;
   const diffHead = (color) =>
-    `<th style="padding:6px 8px;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;text-align:right;border-bottom:2px solid ${color};color:${color};opacity:.7;">Diff</th>`;
+    `<th style="padding:6px 8px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;text-align:right;border-bottom:2px solid ${color};color:${color};opacity:.7;">Diff</th>`;
 
-  let headCols = `<th style="padding:6px 8px 6px 0;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);border-bottom:2px solid var(--border2);text-align:left;">Metric</th>`;
+  let headCols = `<th style="padding:6px 8px 6px 0;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;color:var(--text3);border-bottom:2px solid var(--border2);text-align:left;">Metric</th>`;
   headCols += `<th style="padding:6px 8px;font-size:11px;font-family:'DM Mono',monospace;font-weight:700;text-align:right;border-bottom:2px solid rgba(255,255,255,0.25);color:var(--text1);white-space:nowrap;">${currentAthlete.name.split(' ')[0]}<br><span style="font-weight:400;opacity:.7;font-size:9px;">${currentAthlete.name.split(' ').slice(1).join(' ')}</span></th>`;
   cmpAthletes.forEach((a, i) => {
     const col = compareAthletes[i].color;
@@ -1309,7 +632,7 @@ function renderCompareTable() {
     const curEst = isEstimatedForAthlete(m.key, currentAthlete);
     const estDot = curEst ? ' <span style="color:var(--orange);font-size:8px;">★</span>' : '';
 
-    let cols = `<td style="padding:6px 8px 6px 0;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;">${m.label}${estDot}</td>`;
+    let cols = `<td style="padding:6px 8px 6px 0;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text3);font-family:'DM Sans',sans-serif;white-space:nowrap;">${m.label}${estDot}</td>`;
     const curDisplay = curVal > 0
       ? `<span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:${curTier.color};background:${curTier.bg};padding:2px 7px;border-radius:5px;">${curVal.toFixed(d)}</span><span style="font-size:8px;color:var(--text3);margin-left:2px;">${m.unit}</span>`
       : `<span style="color:var(--text3);font-size:12px;">—</span>`;
@@ -1348,7 +671,7 @@ function renderCompareTable() {
     <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;letter-spacing:.04em;">
       ATHLETE COMPARISON &nbsp;·&nbsp; Diff = current vs compared &nbsp;·&nbsp; <span style="color:#34d399;">green = current leads</span> &nbsp;·&nbsp; <span style="color:#f87171;">red = compared leads</span>
     </div>
-    <div style="overflow-x:auto;">
+    <div class="tbl-scroll">
       <table style="width:100%;border-collapse:collapse;min-width:360px;">
         <thead><tr>${headCols}</tr></thead>
         <tbody>${rows}</tbody>
@@ -1361,17 +684,18 @@ function renderCompareTable() {
 // ═══════════════════════════════════════════════════════════════
 function switchTab(tab) {
   activeTab = tab;
-  ['analytics','roster','leaderboard','coaches','flags','cards','tests','norms','settings'].forEach(t => {
+  ['analytics','roster','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
     const pane = document.getElementById('pane-'+t);
+    const btn  = document.getElementById('tab-'+t);
+    if (!pane || !btn) return;
     pane.style.display = t===tab ? '' : 'none';
     if (t === tab) {
       pane.classList.remove('tab-fade-in');
-      void pane.offsetWidth; // force reflow
+      void pane.offsetWidth;
       pane.classList.add('tab-fade-in');
     }
-    document.getElementById('tab-'+t).className = 'tab-btn'+(t===tab?' active':'');
+    btn.className = 'tab-btn'+(t===tab?' active':'');
   });
-  if (tab==='norms')       renderNormsTable();
   if (tab==='roster')      renderRosterTable();
   if (tab==='leaderboard') renderLeaderboard();
   if (tab==='coaches')     renderCoachesPage();
@@ -1379,6 +703,7 @@ function switchTab(tab) {
   if (tab==='cards')       renderCardsTab();
   if (tab==='settings')    renderSettings();
   if (tab==='tests')       renderTestsTab();
+  if (tab==='history')     renderHistoryTab();
   saveState();
 }
 
@@ -1395,16 +720,24 @@ function updateAthleteAvatar(athlete) {
   el.style.color = col;
   el.style.borderColor = col;
   el.style.background = athlete.sex === 'M' ? 'rgba(96,165,250,0.10)' : 'rgba(167,139,250,0.10)';
+
+  // Athlete-header name display
+  const nameEl = document.getElementById('athlete-name');
+  if (nameEl) nameEl.textContent = athlete.name;
+}
+
+function updateNormDisplay() {
+  const el = document.getElementById('norm-display');
+  if (el) el.textContent = selectedNorm || '—';
 }
 
 function onAthleteChange() {
   const name = document.getElementById('athlete-select').value;
   currentAthlete = ATHLETE_DB.find(a=>a.name===name);
   athleteData = {...currentAthlete};
-  compareAthletes = compareAthletes.filter(c=>c.name!==name);
+  compareAthletes = compareAthletes.filter(c=>c.name!==name && ATHLETE_DB.find(a=>a.name===c.name)?.sex===currentAthlete.sex);
   compareAthletes.forEach((c,i)=>c.color=COMPARE_COLORS[i]);
-  selectedNorm = `Roster — ${currentAthlete.sex==='M'?'Male':'Female'} (Measured)`;
-  document.getElementById('norm-select').value = selectedNorm;
+  rebuildNormSelect();
   updateAthleteAvatar(currentAthlete);
   renderCompareStrip();
   renderAll(true);
@@ -1431,8 +764,10 @@ function renderInputGrid() {
     .filter(m => !disabledMetrics.has(m.key))
     .map(m => {
       const isEst = isEstimated(m.key);
+      const sub = m.testName ? `<span class="metric-sub">${m.testName}</span>` : '';
       return `<div class="metric-field ${isEst?'estimated':''}">
-        <label>${m.label} <span style="color:var(--text3);font-size:9px;">(${m.unit})</span></label>
+        <label title="${m.testName || m.label}">${m.label} <span style="color:var(--text3);font-size:10px;">(${m.unit})</span></label>
+        ${sub}
         <input id="inp-${m.key}" type="number" step="${m.step}" value="${athleteData[m.key]}" oninput="onInput('${m.key}',this.value)" />
       </div>`;
     }).join('');
@@ -1450,14 +785,25 @@ function renderSummaryCards(results, matrix) {
   tb.textContent = tier.label;
   tb.style.cssText = `background:${tier.bg};color:${tier.color};font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:none;padding:3px 10px;border-radius:20px;`;
 
-  const sorted = [...results].sort((a,b)=>b.percentile-a.percentile);
+  // Strongest / Priority cards only consider measured metrics with real data —
+  // estimated and missing metrics shouldn't claim the spotlight.
+  const measuredOnly = results.filter(r => !r.suppressed && r.val > 0 && !isEstimated(r.key));
+  const sorted = [...measuredOnly].sort((a,b)=>b.percentile-a.percentile);
   const top = sorted[0], low = sorted[sorted.length-1];
-  const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
 
-  document.getElementById('top-percentile').textContent = ordinal(top.percentile);
-  document.getElementById('top-metric').textContent     = top.label;
-  document.getElementById('low-percentile').textContent = ordinal(low.percentile);
-  document.getElementById('low-metric').textContent     = low.label;
+  const fmtVal = r => {
+    if (!r || r.val == null || r.val <= 0) return '—';
+    const d = r.step < 0.1 ? 2 : 1;
+    const num = r.val.toFixed(d);
+    return r.unit
+      ? `${num}<span style="font-size:0.42em;opacity:0.6;font-weight:600;font-style:normal;margin-left:5px;">${r.unit}</span>`
+      : num;
+  };
+
+  document.getElementById('top-percentile').innerHTML = top ? fmtVal(top) : '—';
+  document.getElementById('top-metric').textContent   = top ? top.label : 'No measured metrics';
+  document.getElementById('low-percentile').innerHTML = low ? fmtVal(low) : '—';
+  document.getElementById('low-metric').textContent   = low ? low.label : 'No measured metrics';
 
   const q = matrix.quadrant;
   const lbl = document.getElementById('fv-profile-label');
@@ -1567,7 +913,7 @@ function renderSelectedChart() {
         const dec2 = r.step < 0.1 ? 2 : 1;
         const rawD2 = r.val > 0 ? `${r.val.toFixed(dec2)} ${r.unit}` : 'no data';
         return `<div class="bar-row has-tip" data-tip="${r.label}|${rawD2}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
-          <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
+          <div class="bar-name" title="${r.testName || r.label}">${r.label}${estMark}${cmjMark}</div>
           <div class="bar-track">
             <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
             <div class="bar-target" style="left:85%;background:${targetLineColor(r.percentile)};"></div>
@@ -1622,10 +968,22 @@ function renderBarChart(results) {
     const isCmjNonFD = r.key==='cmj' && currentAthlete && !currentAthlete.cmjFD;
     const cmjMark = isCmjNonFD ? '<span style="color:var(--gold);font-size:9px;margin-left:2px;" title="Non-Force-Deck CMJ">†</span>' : '';
     const dec = r.step < 0.1 ? 2 : 1;
-    const rawDisplay = r.val > 0 ? `${r.val.toFixed(dec)} ${r.unit}` : 'no data';
+    const hasData = r.val > 0;
+    const rawDisplay = hasData ? `${r.val.toFixed(dec)} ${r.unit}` : 'no data';
+    if (!hasData) {
+      return `<div class="bar-row has-tip" style="opacity:0.55;" data-tip="${r.label}|no data|—|85th: ${r.target85} ${r.unit}">
+        <div class="bar-name" title="${r.testName || r.label}" style="color:var(--text3);">${r.label}</div>
+        <div class="bar-track" style="background:transparent;border:1px dashed var(--border2);"></div>
+        <div class="bar-pct" style="color:var(--text3);">—</div>
+        <div class="bar-badge"><span class="tier-badge" style="background:var(--bg3);color:var(--text3);">Not measured</span></div>
+      </div>`;
+    }
     return `<div class="bar-row has-tip" data-tip="${r.label}|${rawDisplay}|${r.percentile}th pct|85th: ${r.target85} ${r.unit}">
-      <div class="bar-name">${r.label}${estMark}${cmjMark}</div>
+      <div class="bar-name" title="${r.testName || r.label}">${r.label}${estMark}${cmjMark}</div>
       <div class="bar-track">
+        <div class="bar-marker" style="left:25%;"></div>
+        <div class="bar-marker" style="left:50%;"></div>
+        <div class="bar-marker" style="left:75%;"></div>
         <div class="bar-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
         <div class="bar-target" style="left:85%;background:${targetLineColor(r.percentile)};"></div>
       </div>
@@ -1653,7 +1011,7 @@ function renderMatrix(matrix) {
     return `
       <div style="margin-bottom:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;">${label}</div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:0;font-family:'DM Sans',sans-serif;color:var(--text2);">${label}</div>
           <div style="display:flex;align-items:center;gap:9px;">
             <span style="font-size:26px;font-weight:900;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${tier.color};line-height:1;">${score}<span style="font-size:11px;opacity:0.55;font-style:normal;font-weight:600;">th</span></span>
             <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
@@ -1712,7 +1070,7 @@ function buildReportCardHTML(athlete, normKey) {
   const coachingRecs = sortedR.slice(0,2).map(r => {
     const c = COACHING_LIB[r.key] || {title:r.label, text:'Continued development indicated.', methods:[]};
     return `<div style="padding:9px 11px;background:var(--bg3);border-radius:var(--radius-md);margin-bottom:6px;border:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--orange);margin-bottom:3px;">${c.title}</div>
+      <div style="font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--orange);margin-bottom:4px;">${c.title}</div>
       <div style="font-size:11px;color:var(--text2);line-height:1.55;">${c.text}</div>
       <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${c.methods.map(m=>`<span class="tier-badge" style="background:rgba(251,146,60,0.1);color:var(--orange);font-size:9px;">${m}</span>`).join('')}</div>
     </div>`;
@@ -1736,83 +1094,251 @@ function buildReportCardHTML(athlete, normKey) {
     <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid ${q.border};">
       <div style="font-size:15px;font-weight:800;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${q.color};margin-bottom:3px;">${q.title}</div>
       <div style="font-size:11px;color:var(--text2);line-height:1.55;">${q.desc}</div>
-      <div style="font-size:9px;color:${q.color};margin-top:7px;font-family:'DM Mono',monospace;font-weight:700;text-transform:uppercase;">Focus → <span style="opacity:0.75;font-weight:500;text-transform:none;">${q.rx}</span></div>
+      <div style="font-size:11px;color:${q.color};margin-top:7px;font-family:'DM Sans',sans-serif;font-weight:600;">Focus → <span style="opacity:0.75;font-weight:500;text-transform:none;">${q.rx}</span></div>
     </div>
     ${coachingRecs.length ? `<div class="report-section-title">Training priorities</div>${coachingRecs}` : ''}
   `;
 }
 
-let reportIncludedKeys = new Set();
-let reportPrintMode = 'dark';
+// ═══════════════════════════════════════════════════════════════
+// ATHLETE DOSSIER (printable, parent/athlete-facing)
+// ═══════════════════════════════════════════════════════════════
+let dossierIncludeDetail = true;
+let dossierPrintMode = 'light';
 
-function openReport() {
-  const activeMetrics  = METRICS.filter(m => !disabledMetrics.has(m.key));
-  reportIncludedKeys   = new Set(activeMetrics.map(m => m.key));
-  const stdMetrics     = activeMetrics.filter(m => !m.key.startsWith('isosqt_'));
-  const isosqtMetrics  = activeMetrics.filter(m =>  m.key.startsWith('isosqt_'));
-  let checksHTML = stdMetrics.map(m =>
-    `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onReportMetricToggle(this)">${m.label}</label>`
-  ).join('');
-  if (isosqtMetrics.length) {
-    checksHTML += `<div class="export-sec-lbl">ISOSQT</div>`;
-    checksHTML += isosqtMetrics.map(m =>
-      `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onReportMetricToggle(this)">${m.label}</label>`
-    ).join('');
-  }
-  document.getElementById('report-modal-content').innerHTML = `
-    <div id="report-controls-bar">
-      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-        Metrics
-        <button onclick="reportToggleAll(true)"  style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;">All</button>
-        <button onclick="reportToggleAll(false)" style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;">None</button>
+function buildDossierHTML(athlete, normKey, opts) {
+  opts = opts || {};
+  const includeDetail = opts.includeDetail !== false;
+  const results = getResultsFor(athlete, normKey).filter(r => !disabledMetrics.has(r.key));
+  const measured = results.filter(r => !r.suppressed && r.val > 0 && !isEstimatedForAthlete(r.key, athlete));
+  const matrix = computeMatrixProfile(results);
+  const q = matrix.quadrant;
+  const avg = measured.length
+    ? Math.round(measured.reduce((a,r)=>a+r.percentile,0)/measured.length)
+    : 0;
+  const avgTier = getTier(avg);
+
+  // Avatar initials
+  const parts = athlete.name.trim().split(/\s+/);
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length-1][0] : parts[0].slice(0,2)).toUpperCase();
+  const sexCol = athlete.sex === 'M' ? '#60a5fa' : '#a78bfa';
+  const sexLabel = athlete.sex === 'M' ? 'Male' : 'Female';
+
+  // Metrics meeting target vs not
+  const metAbove = measured.filter(r => r.meetingTarget).length;
+
+  // Strengths / priorities (from measured only)
+  const sortedDesc = [...measured].sort((a,b)=>b.percentile-a.percentile);
+  const sortedAsc  = [...measured].sort((a,b)=>a.percentile-b.percentile);
+  const strengths  = sortedDesc.slice(0, 2);
+  const priorities = sortedAsc.filter(r => !strengths.find(s => s.key === r.key)).slice(0, 2);
+
+  const fmtVal = r => {
+    const d = r.step < 0.1 ? 2 : 1;
+    return r.val > 0 ? `${r.val.toFixed(d)} ${r.unit}` : '—';
+  };
+  const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+
+  // Performance rail — all measured, sorted by percentile descending
+  const railRows = [...measured].sort((a,b)=>b.percentile-a.percentile).map(r => `
+    <div class="dossier-rail-row">
+      <div class="dossier-rail-name" title="${r.testName || r.label}">${r.label}</div>
+      <div class="dossier-rail-track">
+        <div class="dossier-rail-marker" style="left:25%;"></div>
+        <div class="dossier-rail-marker" style="left:50%;"></div>
+        <div class="dossier-rail-marker" style="left:75%;"></div>
+        <div class="dossier-rail-fill" style="width:${r.percentile}%;background:${r.tier.color};"></div>
+        <div class="dossier-rail-target" style="left:85%;background:${r.tier.color};opacity:0.4;"></div>
       </div>
-      <div id="report-metric-checks" class="export-checks" style="margin-bottom:16px;">${checksHTML}</div>
-    </div>
-    <div id="report-card-preview"></div>
-    <div class="report-actions" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div class="print-mode-seg">
-        <button id="rpt-mode-dark"  class="print-mode-btn active" onclick="setReportPrintMode('dark')">◑ Dark</button>
-        <button id="rpt-mode-light" class="print-mode-btn"        onclick="setReportPrintMode('light')">◯ Light</button>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" onclick="printReport()">Print / Save PDF</button>
-        <button class="btn" onclick="closeReport()">Close</button>
+      <div class="dossier-rail-pct" style="color:${r.tier.color};">${ordinal(r.percentile)}</div>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:12px;">No measured metrics on file.</div>';
+
+  // Callout (strength/priority) row
+  const callout = (r, color) => `
+    <div class="dossier-callout" style="border-left-color:${color};">
+      <div style="flex:1;">
+        <div class="dossier-callout-name">${r.label}
+          <span style="font-size:11px;font-weight:500;color:var(--text3);margin-left:6px;">${r.testName || ''}</span>
+        </div>
+        <div class="dossier-callout-stats">
+          <b>${fmtVal(r)}</b> · ${ordinal(r.percentile)} percentile · <b style="color:${r.tier.color};">${r.tier.label}</b>
+        </div>
+        <div class="dossier-callout-explainer">${METRIC_EXPLAINER[r.key] || ''}</div>
       </div>
     </div>`;
-  updateReportPreview();
-  document.getElementById('report-overlay').style.display = 'flex';
+
+  // Detail table rows (compact 4-col: Metric, Current, 85th, Gap)
+  const detailRows = results.map(r => {
+    if (r.suppressed || r.val <= 0) {
+      return `<tr>
+        <td>${r.label}</td>
+        <td style="color:var(--text3);">—</td>
+        <td style="color:var(--text3);">${r.target85 ? r.target85 : '—'}</td>
+        <td style="color:var(--text3);">—</td>
+      </tr>`;
+    }
+    const d = r.step < 0.1 ? 2 : 1;
+    const gapRaw = r.inv ? (r.target85 - r.val) : (r.val - r.target85);
+    const gapPct = (gapRaw / r.target85) * 100;
+    const gapStr = (gapPct >= 0 ? '+' : '') + gapPct.toFixed(1) + '%';
+    const gapColor = r.meetingTarget ? 'var(--green)' : 'var(--orange)';
+    return `<tr>
+      <td><b>${r.label}</b></td>
+      <td style="color:${r.tier.color};font-weight:600;">${r.val.toFixed(d)}</td>
+      <td>${r.target85}</td>
+      <td style="color:${gapColor};font-weight:600;">${gapStr}</td>
+    </tr>`;
+  }).join('');
+
+  // Training focus — top 2 priority areas (lowest percentile measured)
+  const rxCards = priorities.map(r => {
+    const c = COACHING_LIB[r.key] || { title: r.label, text: 'Continued development indicated.', methods: [] };
+    return `<div class="dossier-rx-card" style="border-left-color:${r.tier.color};">
+      <div class="dossier-rx-title" style="color:${r.tier.color};">${c.title}</div>
+      <div class="dossier-rx-text">${c.text}</div>
+      <div class="dossier-rx-methods">${(c.methods || []).map(m => `<span class="dossier-rx-tag">${m}</span>`).join('')}</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);font-size:12px;">No priority areas identified — keep doing what you\'re doing!</div>';
+
+  // Generated date
+  const today = new Date().toISOString().slice(0, 10);
+  const coachLine = currentCoach && COACHES[currentCoach]
+    ? `Generated by ${COACHES[currentCoach].displayName} · ${today}`
+    : `Generated ${today}`;
+
+  // ── Compose: single-page compact layout ──
+  const heroAndReadiness = `
+    <div class="dossier-grid-2col">
+      <div class="dossier-hero" style="margin:0;">
+        <div>
+          <div class="dossier-hero-label">Composite score</div>
+          <div class="dossier-hero-score" style="color:${avgTier.color};">${avg || '—'}<span style="font-size:0.4em;opacity:0.55;font-weight:600;font-style:normal;margin-left:6px;">th</span></div>
+          <div style="margin-top:6px;"><span class="tier-badge" style="background:${avgTier.bg};color:${avgTier.color};font-size:12px;padding:3px 11px;">${avgTier.label}</span></div>
+        </div>
+        <div class="dossier-hero-summary">
+          ${measured.length
+            ? `<b>${metAbove} of ${measured.length}</b> measured metrics meet or exceed the 85th-percentile target.`
+            : 'No measured metrics on file yet.'}
+        </div>
+      </div>
+      <div class="dossier-zone" style="background:${q.bg};border-color:${q.border};">
+        <div class="dossier-zone-title" style="color:${q.color};">${q.title}</div>
+        <div class="dossier-zone-desc">${q.desc}</div>
+        <div class="dossier-zone-rx" style="color:${q.color};">Focus → <span style="opacity:0.8;font-weight:400;color:var(--text2);">${q.rx}</span></div>
+      </div>
+    </div>`;
+
+  const strengthsAndPriorities = `
+    <div class="dossier-grid-2col">
+      <div>
+        <div class="dossier-row-title"><span class="num">▲</span>Strengths</div>
+        ${strengths.length ? strengths.map(r => callout(r, r.tier.color)).join('') : '<div style="color:var(--text3);font-size:12px;">No measured metrics yet.</div>'}
+      </div>
+      <div>
+        <div class="dossier-row-title"><span class="num">▼</span>Priority areas</div>
+        ${priorities.length ? priorities.map(r => callout(r, r.tier.color)).join('') : '<div style="color:var(--text3);font-size:12px;">No priorities — keep going.</div>'}
+      </div>
+    </div>`;
+
+  const railSection = `
+    <div class="dossier-section">
+      <div class="dossier-row-title">Performance profile</div>
+      ${railRows}
+    </div>`;
+
+  const focusAndDetail = !includeDetail ? '' : `
+    <div class="dossier-grid-2col">
+      <div>
+        <div class="dossier-row-title">Training focus</div>
+        ${rxCards}
+      </div>
+      <div>
+        <div class="dossier-row-title">Detailed metrics</div>
+        <table class="dossier-detail-table">
+          <thead><tr>
+            <th>Metric</th><th>Current</th><th>85th</th><th>Gap</th>
+          </tr></thead>
+          <tbody>${detailRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  const header = `
+    <div class="dossier-header">
+      <div class="dossier-avatar" style="color:${sexCol};border-color:${sexCol};background:${sexCol}1a;">${initials}</div>
+      <div style="flex:1;">
+        <div class="dossier-header-brand">Kinetic Benchmark · Athlete Performance Report</div>
+        <div class="dossier-header-name">${athlete.name}</div>
+        <div class="dossier-header-meta">${sexLabel} · vs ${normKey}</div>
+      </div>
+    </div>`;
+
+  const footer = `
+    <div class="dossier-footer">
+      <span>${coachLine}</span>
+      <span>Norms based on internal roster · ${ATHLETE_DB.length} athletes</span>
+    </div>`;
+
+  return `<div class="dossier">${header}${heroAndReadiness}${strengthsAndPriorities}${railSection}${focusAndDetail}${footer}</div>`;
 }
 
-function updateReportPreview() {
-  document.getElementById('report-card-preview').innerHTML = buildExportCardHTML(currentAthlete, selectedNorm, reportIncludedKeys);
+function openDossier() {
+  const overlay = document.getElementById('dossier-overlay');
+  if (!overlay) return;
+  // Populate athlete + norm pickers
+  const athSel = document.getElementById('dossier-athlete-select');
+  const sorted = [...ATHLETE_DB].sort((a,b)=>a.name.localeCompare(b.name));
+  athSel.innerHTML = sorted.map(a => `<option value="${a.name}"${a.name===currentAthlete.name?' selected':''}>${a.name} (${a.sex})</option>`).join('');
+  const normSel = document.getElementById('dossier-norm-select');
+  normSel.innerHTML = Object.keys(norms).map(k => `<option value="${k}"${k===selectedNorm?' selected':''}>${k}</option>`).join('');
+  overlay.style.display = 'flex';
+  updateDossierPreview();
 }
-function onReportMetricToggle(cb) {
-  if (cb.checked) reportIncludedKeys.add(cb.value);
-  else reportIncludedKeys.delete(cb.value);
-  updateReportPreview();
+
+function closeDossier() {
+  document.getElementById('dossier-overlay').style.display = 'none';
 }
-function reportToggleAll(state) {
-  document.querySelectorAll('#report-metric-checks input[type=checkbox]').forEach(cb => {
-    cb.checked = state;
-    if (state) reportIncludedKeys.add(cb.value);
-    else reportIncludedKeys.delete(cb.value);
-  });
-  updateReportPreview();
+
+function updateDossierPreview() {
+  const athName = document.getElementById('dossier-athlete-select').value;
+  const normKey = document.getElementById('dossier-norm-select').value;
+  const athlete = ATHLETE_DB.find(a => a.name === athName) || currentAthlete;
+  document.getElementById('dossier-preview').innerHTML =
+    buildDossierHTML(athlete, normKey, { includeDetail: dossierIncludeDetail });
 }
-function setReportPrintMode(mode) {
-  reportPrintMode = mode;
-  document.getElementById('rpt-mode-dark').classList.toggle('active', mode === 'dark');
-  document.getElementById('rpt-mode-light').classList.toggle('active', mode === 'light');
+
+function toggleDossierDetail() {
+  dossierIncludeDetail = !dossierIncludeDetail;
+  const btn = document.getElementById('dossier-detail-btn');
+  if (btn) {
+    btn.textContent = dossierIncludeDetail ? '✓ Include training plan' : '＋ Include training plan';
+    btn.style.borderColor = dossierIncludeDetail ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.13)';
+    btn.style.color       = dossierIncludeDetail ? 'var(--green)'          : 'var(--text3)';
+    btn.style.background  = dossierIncludeDetail ? 'rgba(52,211,153,0.10)' : 'var(--bg2)';
+  }
+  updateDossierPreview();
 }
-function printReport() {
-  if (reportPrintMode === 'light') document.body.classList.add('print-light-mode');
+
+function setDossierPrintMode(mode) {
+  dossierPrintMode = mode;
+  document.getElementById('dossier-mode-dark').classList.toggle('active', mode === 'dark');
+  document.getElementById('dossier-mode-light').classList.toggle('active', mode === 'light');
+}
+
+function printDossier() {
+  const html = document.getElementById('dossier-preview').innerHTML;
+  const printArea = document.getElementById('export-print-area');
+  printArea.innerHTML = html;
+  document.body.classList.add('export-print');
+  if (dossierPrintMode === 'light') document.body.classList.add('print-light-mode');
   window.addEventListener('afterprint', function cleanup() {
-    document.body.classList.remove('print-light-mode');
+    document.body.classList.remove('export-print', 'print-light-mode');
+    printArea.innerHTML = '';
     window.removeEventListener('afterprint', cleanup);
   });
   window.print();
 }
-function closeReport() { document.getElementById('report-overlay').style.display = 'none'; }
+
 // ═══════════════════════════════════════════════════════════════
 // EXPORT PDF
 // ═══════════════════════════════════════════════════════════════
@@ -1821,9 +1347,8 @@ let exportPrintMode = 'dark';
 
 function getResultsForExport(athlete, normKey, includeSet) {
   const n     = norms[normKey] || norms[selectedNorm];
-  const isqFb = norms[`ISOSQT — ${athlete.sex==='M'?'Male':'Female'}`] || {};
   return METRICS.filter(m => includeSet.has(m.key)).map(m => {
-    const nd = n[m.key] || (m.key.startsWith('isosqt_') ? isqFb[m.key] : null);
+    const nd = n[m.key];
     if (!nd) return {...m, val:athlete[m.key]||0, percentile:1, tier:getTier(1), target85:0, meetingTarget:false, suppressed:true};
     const suppressed = suppressEstimated && isEstimatedForAthlete(m.key, athlete);
     const val = suppressed ? 0 : (athlete[m.key] || 0);
@@ -1877,7 +1402,7 @@ function buildExportCardHTML(athlete, normKey, includeSet) {
   const coachingRecs = sortedR.slice(0,2).map(r => {
     const c = COACHING_LIB[r.key] || {title:r.label, text:'Continued development indicated.', methods:[]};
     return `<div style="padding:9px 11px;background:var(--bg3);border-radius:var(--radius-md);margin-bottom:6px;border:1px solid var(--border);">
-      <div style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--orange);margin-bottom:3px;">${c.title}</div>
+      <div style="font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--orange);margin-bottom:4px;">${c.title}</div>
       <div style="font-size:11px;color:var(--text2);line-height:1.55;">${c.text}</div>
       <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${c.methods.map(m=>`<span class="tier-badge" style="background:rgba(251,146,60,0.1);color:var(--orange);font-size:9px;">${m}</span>`).join('')}</div>
     </div>`;
@@ -1900,7 +1425,7 @@ function buildExportCardHTML(athlete, normKey, includeSet) {
     <div style="padding:10px 12px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid ${q.border};">
       <div style="font-size:15px;font-weight:800;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${q.color};margin-bottom:3px;">${q.title}</div>
       <div style="font-size:11px;color:var(--text2);line-height:1.55;">${q.desc}</div>
-      <div style="font-size:9px;color:${q.color};margin-top:7px;font-family:'DM Mono',monospace;font-weight:700;text-transform:uppercase;">Focus → <span style="opacity:0.75;font-weight:500;text-transform:none;">${q.rx}</span></div>
+      <div style="font-size:11px;color:${q.color};margin-top:7px;font-family:'DM Sans',sans-serif;font-weight:600;">Focus → <span style="opacity:0.75;font-weight:500;text-transform:none;">${q.rx}</span></div>
     </div>
     ${coachingRecs.length ? `<div class="report-section-title">Training priorities</div>${coachingRecs}` : ''}
   `;
@@ -1918,13 +1443,7 @@ function openExportPDF() {
   // Build metric checkboxes: only metrics not globally disabled
   const activeMetrics  = METRICS.filter(m => !disabledMetrics.has(m.key));
   exportIncludedKeys   = new Set(activeMetrics.map(m => m.key));
-  const stdMetrics     = activeMetrics.filter(m => !m.key.startsWith('isosqt_'));
-  const isosqtMetrics  = activeMetrics.filter(m =>  m.key.startsWith('isosqt_'));
-  let checksHTML = stdMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
-  if (isosqtMetrics.length) {
-    checksHTML += `<div class="export-sec-lbl">ISOSQT</div>`;
-    checksHTML += isosqtMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
-  }
+  let checksHTML = activeMetrics.map(m => `<label class="export-check-item"><input type="checkbox" value="${m.key}" checked onchange="onExportMetricToggle(this)">${m.label}</label>`).join('');
   document.getElementById('export-metric-checks').innerHTML = checksHTML;
   overlay.style.display = 'flex';
   updateExportPreview();
@@ -1991,10 +1510,11 @@ function renderCardsTab() {
     const sexColor = sex==='M' ? 'var(--blue)' : 'var(--purple)';
     const sexLabel = sex==='M' ? '♂ Male' : '♀ Female';
     const athOpts  = pool.map(a=>`<option value="${a.name}"${a.name===curName?' selected':''}>${hasAllMeasured(a)?'● ':''} ${a.name}</option>`).join('');
-    const normOpts = Object.keys(INITIAL_NORMS).map(k=>`<option value="${k}"${k===normKey?' selected':''}>${k}</option>`).join('');
+    const normWord = sex === 'M' ? 'Male' : 'Female';
+    const normOpts = Object.keys(INITIAL_NORMS).filter(k=>k.includes(normWord)).map(k=>`<option value="${k}"${k===normKey?' selected':''}>${k}</option>`).join('');
     return `<div class="report-modal" style="max-width:none;max-height:none;overflow:visible;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:12px;">
-        <span onclick="toggleCardPanelSex('${panelSlot}')" title="Click to toggle male/female" style="font-size:10px;font-weight:700;font-family:'DM Mono',monospace;color:${sexColor};text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;padding:3px 8px;border:1px solid ${sexColor};border-radius:6px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">${sexLabel}</span>
+        <span onclick="toggleCardPanelSex('${panelSlot}')" title="Click to toggle male/female" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:${sexColor};cursor:pointer;padding:3px 9px;border:1px solid ${sexColor};border-radius:6px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">${sexLabel}</span>
         <div class="select-wrap" style="flex:1;min-width:140px;"><select onchange="onCardAthleteChange('${panelSlot}',this.value)">${athOpts}</select></div>
         <div class="select-wrap" style="max-width:210px;"><select onchange="onCardNormChange('${panelSlot}',this.value)">${normOpts}</select></div>
       </div>
@@ -2136,10 +1656,10 @@ function renderTestsTab() {
     `<option value="${a.name}"${a.name===testAthlete?' selected':''}>${a.name}</option>`
   ).join('');
 
-  // Norm select — sex-filtered, ISOSQT norms only when on ISOSQT group
+  // Norm select — sex-filtered
   const nsel = document.getElementById('test-norm-select');
   nsel.innerHTML = Object.keys(INITIAL_NORMS)
-    .filter(k => k.includes(sexWord) && (testActiveGroup === 'isosqt' || !k.startsWith('ISOSQT')))
+    .filter(k => k.includes(sexWord))
     .map(k => `<option value="${k}"${k===testNorm?' selected':''}>${k}</option>`)
     .join('');
   nsel.value = testNorm;
@@ -2275,7 +1795,7 @@ function renderTestsContent() {
           <div class="card-label" style="margin-bottom:8px;">${group.label} Composite</div>
           <div style="font-size:52px;font-weight:900;font-family:'Barlow Condensed',sans-serif;font-style:italic;color:${avgTier.color};line-height:1;">${avgPct}</div>
           <div style="margin-top:6px;"><span class="tier-badge" style="background:${avgTier.bg};color:${avgTier.color};font-size:11px;">${avgTier.label}</span></div>
-          <div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px;text-transform:uppercase;letter-spacing:0.05em;">${athlete.name}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:'DM Sans',sans-serif;margin-top:8px;">${athlete.name}</div>
         </div>
         <div class="card">
           <div class="card-label" style="margin-bottom:10px;">Roster Rankings</div>
@@ -2288,15 +1808,15 @@ function renderTestsContent() {
         <div class="card-label" style="margin:0;">Full Roster Ranking</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">${metTabs}</div>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;">
+      <div class="tbl-scroll">
+        <table class="tbl-base">
           <thead><tr>
-            <th style="padding:6px 10px 10px 6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">#</th>
-            <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:left;">Athlete</th>
-            <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">Sex</th>
-            <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:right;">${rankM ? rankM.label : ''} (${rankM ? rankM.unit : ''})</th>
-            <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">Pct</th>
-            <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);">Tier</th>
+            <th style="padding:6px 10px 10px 6px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);text-align:center;">#</th>
+            <th class="tbl-th tbl-th-l">Athlete</th>
+            <th class="tbl-th tbl-th-c">Sex</th>
+            <th class="tbl-th tbl-th-r">${rankM ? rankM.label : ''} (${rankM ? rankM.unit : ''})</th>
+            <th class="tbl-th tbl-th-c">Pct</th>
+            <th style="padding:6px 10px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);">Tier</th>
           </tr></thead>
           <tbody>${rankTableRows}</tbody>
         </table>
@@ -2312,6 +1832,251 @@ function toggleSexNorm() {
     : `Roster — Male${measured ? ' (Measured)' : ''}`;
   document.getElementById('norm-select').value = selectedNorm;
   renderAll(true);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HISTORY TAB
+// ═══════════════════════════════════════════════════════════════
+let histMode = 'individual';
+let histAthlete = (typeof currentAthlete !== 'undefined' && currentAthlete) ? currentAthlete.name : '';
+let histMetric = 'cmj';
+let histSex = 'F';
+
+const HIST_METRICS = [
+  { key:'cmj',       label:'CMJ',     unit:'in',     inv:false },
+  { key:'power',     label:'Power',   unit:'W/kg',   inv:false },
+  { key:'rfd',       label:'RFD',     unit:'N/s/kg', inv:false },
+  { key:'eccBrakingRFD', label:'Ecc Brk', unit:'N/s/kg', inv:false },
+  { key:'rsi',       label:'RSI',     unit:'',       inv:false },
+  { key:'sprint10',  label:'0-10',    unit:'s',      inv:true  },
+  { key:'sprintFly', label:'Fly 10',  unit:'s',      inv:true  },
+  { key:'sprint1020',label:'10-20',   unit:'s',      inv:true  },
+  { key:'broad',     label:'Broad',   unit:'in',     inv:false },
+  { key:'shuttle',   label:'Shuttle', unit:'s',      inv:true  },
+];
+
+function renderHistoryTab() {
+  if (!histAthlete && ATHLETE_DB.length) histAthlete = ATHLETE_DB[0].name;
+  const pane = document.getElementById('pane-history');
+
+  const btnBase = 'font-size:11px;font-family:\'DM Mono\',monospace;padding:5px 16px;border-radius:20px;border:1px solid;cursor:pointer;transition:all .15s;';
+  const modeInd = histMode==='individual';
+
+  // Metric pill buttons
+  const metricPills = HIST_METRICS.map(m => {
+    const active = m.key === histMetric;
+    return `<button onclick="histSetMetric('${m.key}')" style="${btnBase}background:${active?'rgba(240,192,64,0.15)':'var(--bg2)'};border-color:${active?'rgba(240,192,64,0.5)':'rgba(255,255,255,0.13)'};color:${active?'var(--gold)':'var(--text3)'};">${m.label}</button>`;
+  }).join('');
+
+  // Athlete selector for individual mode — show ALL athletes (sex filter only applies to team view)
+  const athPool = [...ATHLETE_DB].sort((a,b)=>a.name.localeCompare(b.name));
+  if (!histAthlete || !athPool.find(a=>a.name===histAthlete)) histAthlete = athPool.length ? athPool[0].name : '';
+  const athOptions = athPool.map(a => `<option value="${a.name.replace(/"/g,'&quot;')}"${a.name===histAthlete?' selected':''}>${a.name} (${a.sex})</option>`).join('');
+
+  // Sex toggle for team mode
+  const sexM = `<button onclick="histSetSex('M')" style="${btnBase}background:${histSex==='M'?'rgba(96,165,250,0.15)':'var(--bg2)'};border-color:${histSex==='M'?'rgba(96,165,250,0.45)':'rgba(255,255,255,0.13)'};color:${histSex==='M'?'var(--blue)':'var(--text3)'};">♂ Male</button>`;
+  const sexF = `<button onclick="histSetSex('F')" style="${btnBase}background:${histSex==='F'?'rgba(167,139,250,0.15)':'var(--bg2)'};border-color:${histSex==='F'?'rgba(167,139,250,0.45)':'rgba(255,255,255,0.13)'};color:${histSex==='F'?'var(--purple)':'var(--text3)'};">♀ Female</button>`;
+
+  pane.innerHTML = `
+  <div class="card gap-14">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div class="card-label" style="margin-bottom:0;">Performance History</div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="histSetMode('individual')" style="${btnBase}background:${modeInd?'rgba(52,211,153,0.15)':'var(--bg2)'};border-color:${modeInd?'rgba(52,211,153,0.45)':'rgba(255,255,255,0.13)'};color:${modeInd?'var(--teal)':'var(--text3)'};">Individual</button>
+        <button onclick="histSetMode('team')" style="${btnBase}background:${!modeInd?'rgba(52,211,153,0.15)':'var(--bg2)'};border-color:${!modeInd?'rgba(52,211,153,0.45)':'rgba(255,255,255,0.13)'};color:${!modeInd?'var(--teal)':'var(--text3)'};">Team</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      ${modeInd
+        ? `<div class="select-wrap" style="min-width:200px;"><select onchange="histAthlete=this.value;renderHistChart()" style="font-size:12px;padding:6px 28px 6px 10px;">${athOptions}</select></div>`
+        : `<div style="display:flex;gap:6px;">${sexM}${sexF}</div>`
+      }
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">${metricPills}</div>
+
+    <div id="hist-chart-area" style="width:100%;"></div>
+  </div>`;
+
+  renderHistChart();
+}
+
+function histSetMode(m) { histMode = m; renderHistoryTab(); }
+function histSetMetric(m) { histMetric = m; renderHistoryTab(); }
+function histSetSex(s) {
+  histSex = s;
+  const pool = ATHLETE_DB.filter(a => a.sex === s);
+  histAthlete = pool.length ? pool[0].name : '';
+  renderHistoryTab();
+}
+
+function renderHistChart() {
+  const area = document.getElementById('hist-chart-area');
+  if (!area) return;
+
+  const metaM = HIST_METRICS.find(m => m.key === histMetric) || HIST_METRICS[0];
+  let series = []; // [{label, color, points:[{date,val}]}]
+
+  if (histMode === 'individual') {
+    const ath = ATHLETE_DB.find(a => a.name === histAthlete);
+    if (!ath || !ath._sessions || ath._sessions.length === 0) {
+      area.innerHTML = '<div style="color:var(--text3);font-family:\'DM Mono\',monospace;font-size:12px;padding:24px 0;text-align:center;">No session data for this athlete.</div>';
+      return;
+    }
+    const pts = [];
+    ath._sessions.forEach(s => {
+      const meas = (s.measurements || []).find(m => m.metric === histMetric);
+      if (meas && parseFloat(meas.value)) pts.push({ date: s.session_date, val: parseFloat(meas.value) });
+    });
+    pts.sort((a, b) => a.date.localeCompare(b.date));
+    const col = ath.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
+    series = [{ label: ath.name, color: col, points: pts }];
+
+  } else {
+    // Team mode: one line per date showing mean value for the selected sex
+    const pool = ATHLETE_DB.filter(a => a.sex === histSex);
+    const byDate = {}; // date -> [val]
+    pool.forEach(ath => {
+      (ath._sessions || []).forEach(s => {
+        const meas = (s.measurements || []).find(m => m.metric === histMetric);
+        if (meas && parseFloat(meas.value)) {
+          if (!byDate[s.session_date]) byDate[s.session_date] = [];
+          byDate[s.session_date].push(parseFloat(meas.value));
+        }
+      });
+    });
+    const pts = Object.entries(byDate)
+      .map(([date, vals]) => ({ date, val: vals.reduce((a,b)=>a+b,0)/vals.length, n: vals.length }))
+      .sort((a,b) => a.date.localeCompare(b.date));
+
+    if (pts.length === 0) {
+      area.innerHTML = '<div style="color:var(--text3);font-family:\'DM Mono\',monospace;font-size:12px;padding:24px 0;text-align:center;">No data for this metric and sex.</div>';
+      return;
+    }
+    const col = histSex === 'M' ? 'var(--blue)' : 'var(--purple)';
+    series = [{ label: `${histSex==='M'?'Male':'Female'} avg (n=?)`, color: col, points: pts, teamMode: true }];
+  }
+
+  area.innerHTML = buildHistSVG(series, metaM);
+}
+
+function catmullRomPath(pts) {
+  if (pts.length < 2) return pts.length === 1 ? `M${pts[0].x},${pts[0].y}` : '';
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i - 1, 0)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(i + 2, pts.length - 1)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function buildHistSVG(series, metaM) {
+  const W = 760, H = 300;
+  const ML = 54, MR = 20, MT = 20, MB = 50;
+  const cw = W - ML - MR, ch = H - MT - MB;
+
+  // Collect all points
+  const allPts = series.flatMap(s => s.points);
+  if (allPts.length === 0) return '<div style="color:var(--text3);padding:20px;text-align:center;">No data points.</div>';
+
+  const allDates = [...new Set(allPts.map(p => p.date))].sort();
+  const allVals  = allPts.map(p => p.val);
+  let vMin = Math.min(...allVals), vMax = Math.max(...allVals);
+  if (vMin === vMax) { vMin -= 1; vMax += 1; }
+  const pad = (vMax - vMin) * 0.12;
+  vMin = Math.max(0, vMin - pad);
+  vMax = vMax + pad;
+
+  const xScale = d => ML + (allDates.indexOf(d) / Math.max(allDates.length - 1, 1)) * cw;
+  const yScale = v => MT + ch - ((v - vMin) / (vMax - vMin)) * ch;
+
+  // Y-axis gridlines + labels
+  let grid = '', yLabels = '';
+  const nGrid = 5;
+  for (let i = 0; i <= nGrid; i++) {
+    const v = vMin + (vMax - vMin) * (i / nGrid);
+    const y = yScale(v);
+    grid += `<line x1="${ML}" x2="${ML+cw}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    yLabels += `<text x="${ML-6}" y="${y+4}" text-anchor="end" fill="rgba(255,255,255,0.4)" font-size="9" font-family="DM Mono,monospace">${v.toFixed(metaM.unit==='s'?2:1)}</text>`;
+  }
+
+  // X-axis date labels (show at most 8 evenly spaced)
+  let xLabels = '';
+  const step = Math.max(1, Math.ceil(allDates.length / 8));
+  allDates.forEach((d, i) => {
+    if (i % step !== 0 && i !== allDates.length - 1) return;
+    const x = xScale(d);
+    const label = d.slice(5); // MM-DD
+    xLabels += `<text x="${x}" y="${H-MB+16}" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="9" font-family="DM Mono,monospace">${label}</text>`;
+    xLabels += `<line x1="${x}" x2="${x}" y1="${MT}" y2="${H-MB}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+  });
+
+  // Series lines + dots
+  let linesHTML = '', dotsHTML = '', tooltipDefs = '';
+  series.forEach(s => {
+    if (s.points.length === 0) return;
+    const sorted = [...s.points].sort((a,b) => a.date.localeCompare(b.date));
+
+    // Best value
+    const best = metaM.inv
+      ? sorted.reduce((a,b) => b.val < a.val ? b : a)
+      : sorted.reduce((a,b) => b.val > a.val ? b : a);
+
+    // Path
+    const pts = sorted.map(p => ({ x: xScale(p.date), y: yScale(p.val) }));
+    const pathD = historySmoothing
+      ? catmullRomPath(pts)
+      : pts.map((p, i) => (i===0?'M':'L') + `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    linesHTML += `<path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
+
+    // Dots + tooltips
+    sorted.forEach(p => {
+      const x = xScale(p.date), y = yScale(p.val);
+      const isBest = Math.abs(p.val - best.val) < 0.001 && p.date === best.date;
+      const r = isBest ? 6 : 4;
+      const fill = isBest ? 'var(--green)' : s.color;
+      const unit = metaM.unit ? ' ' + metaM.unit : '';
+      const nLabel = p.n ? ` (n=${p.n})` : '';
+      const tip = `${p.date}: ${p.val.toFixed(metaM.unit==='s'?2:1)}${unit}${nLabel}${isBest?' ★ PR':''}`;
+      dotsHTML += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}" stroke="rgba(0,0,0,0.4)" stroke-width="1" opacity="0.95"><title>${tip}</title></circle>`;
+    });
+  });
+
+  // Axis labels
+  const yAxisLabel = `<text x="${ML-38}" y="${MT+ch/2}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9" font-family="DM Mono,monospace" transform="rotate(-90,${ML-38},${MT+ch/2})">${metaM.label}${metaM.unit?' ('+metaM.unit+')':''}</text>`;
+  const title = histMode==='team'
+    ? `${histSex==='M'?'Male':'Female'} — ${metaM.label} avg per test date`
+    : `${histAthlete} — ${metaM.label} over time`;
+  const titleEl = `<text x="${ML + cw/2}" y="${MT - 5}" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11" font-family="DM Sans,sans-serif" font-weight="600">${title}</text>`;
+
+  // Improvement arrow
+  let improvHTML = '';
+  if (series.length === 1 && series[0].points.length >= 2) {
+    const s = series[0], sorted = [...s.points].sort((a,b) => a.date.localeCompare(b.date));
+    const first = sorted[0].val, last = sorted[sorted.length-1].val;
+    const diff = last - first;
+    const improved = metaM.inv ? diff < 0 : diff > 0;
+    const arrow = improved ? '▲' : (diff === 0 ? '—' : '▼');
+    const col = improved ? '#34d399' : (diff === 0 ? 'rgba(255,255,255,0.4)' : '#f87171');
+    const pct = Math.abs(diff / first * 100).toFixed(1);
+    improvHTML = `<text x="${ML+cw}" y="${MT+14}" text-anchor="end" fill="${col}" font-size="10" font-family="DM Mono,monospace">${arrow} ${pct}% from first test</text>`;
+  }
+
+  return `<div class="tbl-scroll">
+<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;max-height:320px;">
+  ${grid}${xLabels}${yLabels}${yAxisLabel}${titleEl}${improvHTML}
+  <line x1="${ML}" x2="${ML}" y1="${MT}" y2="${H-MB}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <line x1="${ML}" x2="${ML+cw}" y1="${H-MB}" y2="${H-MB}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  ${linesHTML}${dotsHTML}
+</svg></div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2375,6 +2140,12 @@ function loadAthleteFromFlags(name) {
 // RENDER — coaching
 // ═══════════════════════════════════════════════════════════════
 function renderCoaching(results) {
+  const el = document.getElementById('coaching-content');
+  if (!el) return;
+  if (!results || results.length === 0) {
+    el.innerHTML = `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">No metrics enabled.</div>`;
+    return;
+  }
   const sorted=[...results].sort((a,b)=>a.percentile-b.percentile);
   const primary=sorted[0], secondary=sorted[1];
   const metBelow=results.filter(r=>!r.meetingTarget).length;
@@ -2390,9 +2161,9 @@ function renderCoaching(results) {
       <div class="ctarget">Current: <b style="color:${r.tier.color};">${r.percentile}th pct</b> &nbsp;·&nbsp; Target: 85th (${r.target85} ${r.unit})</div>
     </div>`;
   }
-  document.getElementById('coaching-content').innerHTML=
+  el.innerHTML=
     `<div class="coaching-below">${metBelow} of ${results.length} metrics below 85th percentile target &nbsp;·&nbsp; vs <b style="color:var(--text2);">${selectedNorm}</b></div>
-     <div class="coaching-cards">${makeCard(primary,true)}${makeCard(secondary,false)}</div>`;
+     <div class="coaching-cards">${makeCard(primary,true)}${secondary?makeCard(secondary,false):''}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2469,25 +2240,27 @@ function rosterSort(key) {
   renderRosterTable();
 }
 
+function toggleRosterFullOnly() {
+  rosterFullOnly = !rosterFullOnly;
+  // Recompute Roster — (Measured) norms so all comparison views use the new cohort
+  rebuildInitialNorms();
+  renderRosterTable();
+  if (currentAthlete) renderAll(false);
+  saveState();
+}
+
 function renderRosterTable() {
   const tbl = document.getElementById('roster-table');
 
-  const ALL_METRIC_COLS = [
-    {key:'cmj',       label:'CMJ (in)'},
-    {key:'power',     label:'Power (W/kg)'},
-    {key:'rfd',       label:'RFD (N/s)'},
-    {key:'rsi',       label:'RSI'},
-    {key:'sprint10',  label:'10yd (s)'},
-    {key:'sprintFly', label:'Fly10 (s)'},
-    {key:'sprint1020',label:'10-20 (s)'},
-    {key:'broad',     label:'Broad (in)'},
-    {key:'shuttle',   label:'Shuttle (s)'},
-  ];
+  const ALL_METRIC_COLS = METRICS.map(m => ({key: m.key, label: m.label + (m.unit ? ' (' + m.unit + ')' : '')}));
+  // Remove disabled metrics from visible set
+  ALL_METRIC_COLS.forEach(c => { if (disabledMetrics.has(c.key)) rosterVisibleCols.delete(c.key); });
+  const activeCols = ALL_METRIC_COLS.filter(c => !disabledMetrics.has(c.key));
 
   // Render column toggle pills
   const togglesEl = document.getElementById('roster-col-toggles');
   if (togglesEl) {
-    togglesEl.innerHTML = ALL_METRIC_COLS.map(c => {
+    togglesEl.innerHTML = activeCols.map(c => {
       const on = rosterVisibleCols.has(c.key);
       return `<button onclick="toggleRosterCol('${c.key}')"
         style="font-size:10px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:10px;cursor:pointer;transition:all 0.15s;
@@ -2497,7 +2270,7 @@ function renderRosterTable() {
     }).join('');
   }
 
-  const visibleMetrics = ALL_METRIC_COLS.filter(c => rosterVisibleCols.has(c.key));
+  const visibleMetrics = activeCols.filter(c => rosterVisibleCols.has(c.key));
   const colLabels = ['Name', 'Sex', ...visibleMetrics.map(c => c.label), ''];
   const keys      = ['name', 'sex', ...visibleMetrics.map(c => c.key), '_del'];
 
@@ -2510,8 +2283,19 @@ function renderRosterTable() {
     fullBtn.style.color         = active ? 'var(--green)'          : 'var(--text3)';
   }
 
+  // Sync full-only button active state
+  const fullOnlyBtn = document.getElementById('roster-fullonly-btn');
+  if (fullOnlyBtn) {
+    fullOnlyBtn.style.background  = rosterFullOnly ? 'rgba(52,211,153,0.12)' : 'var(--bg2)';
+    fullOnlyBtn.style.borderColor = rosterFullOnly ? 'rgba(52,211,153,0.45)' : 'rgba(52,211,153,0.3)';
+    fullOnlyBtn.style.color       = rosterFullOnly ? 'var(--green)'          : 'var(--text3)';
+  }
+
+  // Source pool — restricted to full-data athletes when Full only is active
+  const pool = rosterFullOnly ? ATHLETE_DB.filter(hasAllMeasured) : ATHLETE_DB;
+
   // Sort roster — full athletes always float to top; secondary sort by active column
-  const sorted = [...ATHLETE_DB].sort((a, b) => {
+  const sorted = [...pool].sort((a, b) => {
     const af = hasAllMeasured(a) ? 0 : 1;
     const bf = hasAllMeasured(b) ? 0 : 1;
     if (af !== bf) return af - bf;
@@ -2523,7 +2307,7 @@ function renderRosterTable() {
     return String(av).localeCompare(String(bv)) * rosterSortDir;
   });
 
-  const thBase = 'padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);white-space:nowrap;font-family:\'DM Mono\',monospace;';
+  const thBase = 'padding:9px 10px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;font-family:\'DM Sans\',sans-serif;';
   const headerCells = colLabels.map((h, i) => {
     const k = keys[i];
     const isNumeric = k !== 'name' && k !== 'sex' && k !== '_del';
@@ -2539,7 +2323,7 @@ function renderRosterTable() {
   const legendSpan = colLabels.length - 2; // all cols except Name+Sex
   tbl.innerHTML = `<thead>
     <tr>${headerCells}</tr>
-    <tr><td colspan="2" style="padding:4px 10px 8px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border);">
+    <tr><td colspan="2" style="padding:4px 10px 8px;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border);">
       <span style="color:var(--green);font-weight:700;">■</span> measured &nbsp;&nbsp;
       <span style="color:var(--orange);font-weight:700;">■</span> estimated &nbsp;&nbsp;
       <span style="color:var(--gold);font-weight:700;">†</span> CMJ (non-FD sensor)
@@ -2556,15 +2340,16 @@ function renderRosterTable() {
             onmouseout="this.style.borderColor='rgba(248,113,113,0.3)';this.style.color='rgba(248,113,113,0.5)';">✕</button>
         </td>`;
       }
+      const rp = compactRoster ? '3px 8px' : '7px 10px';
       if (k==='name') {
         const nameColor = hasAllMeasured(a) ? 'color:var(--green);' : '';
         const tier = getAthleteOverallTier(a);
         const dot = tier ? `<span style="color:${tier.color};font-size:9px;margin-right:5px;">●</span>` : '';
-        return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);font-weight:600;${nameColor}">${dot}${a.custom?'<span style="color:var(--teal);">✦</span> ':''}${a[k]}</td>`;
+        return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);font-weight:600;${nameColor}">${dot}${a.custom?'<span style="color:var(--teal);">✦</span> ':''}${a[k]}</td>`;
       }
       if (k==='sex') {
         const col = a[k]==='M'?'var(--blue)':'var(--purple)';
-        return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${col};font-family:'DM Mono',monospace;text-align:center;">${a[k]}</td>`;
+        return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${col};font-family:'DM Mono',monospace;text-align:center;">${a[k]}</td>`;
       }
       const est = isEstimatedForAthlete(k,a);
       const color = est ? (suppressEstimated ? 'var(--text3)' : 'var(--orange)') : 'var(--green)';
@@ -2574,7 +2359,7 @@ function renderRosterTable() {
       const isCmjNonFD = k==='cmj' && a[k]!=null && !a.cmjFD;
       const cellColor = isCmjNonFD ? 'var(--gold)' : color;
       const cmjSuffix = isCmjNonFD ? '<sup style="font-size:8px;opacity:0.8;">†</sup>' : '';
-      return `<td style="padding:7px 10px;font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
+      return `<td style="padding:${rp};font-size:12px;border-bottom:1px solid var(--border);color:${cellColor};font-family:'DM Mono',monospace;text-align:center;font-weight:600;${opacity}">${display}${cmjSuffix}</td>`;
     }).join('')}
   </tr>`).join('')}</tbody>`;
 
@@ -2588,6 +2373,54 @@ function loadAthleteFromRoster(name) {
   document.getElementById('athlete-select').value = name;
   onAthleteChange();
   switchTab('analytics');
+}
+
+function exportRosterCsv() {
+  const pool = rosterFullOnly ? ATHLETE_DB.filter(hasAllMeasured) : ATHLETE_DB;
+  const cols = METRICS.filter(m => !disabledMetrics.has(m.key));
+
+  const csvEscape = v => {
+    if (v == null) return '';
+    const s = String(v);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const header = [
+    'Name', 'Sex', 'Custom', 'CMJ Source', 'All Core Measured',
+    ...cols.map(c => `${c.label}${c.unit ? ' (' + c.unit + ')' : ''}`),
+    'Estimated Metrics',
+  ];
+
+  const rows = pool.map(a => {
+    const cmjSource = a.cmj == null ? '' : (a.cmjFD ? 'ForceDecks' : 'Sensor');
+    const estimated = cols.filter(c => a[c.key] != null && isEstimatedForAthlete(c.key, a)).map(c => c.key);
+    return [
+      a.name,
+      a.sex || '',
+      a.custom ? 'Y' : '',
+      cmjSource,
+      hasAllMeasured(a) ? 'Y' : '',
+      ...cols.map(c => {
+        const v = a[c.key];
+        if (typeof v !== 'number') return '';
+        const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' ? 1 : 2);
+        return v.toFixed(decimals);
+      }),
+      estimated.join(';'),
+    ].map(csvEscape).join(',');
+  });
+
+  const csv = [header.map(csvEscape).join(','), ...rows].join('\r\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `roster_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2662,7 +2495,7 @@ function renderLeaderboard() {
       .filter(x => x.score !== null && (!lbMeasuredOnly || hasAllMeasured(x.a)))
       .sort((x, y) => y.score - x.score);
 
-    const thC = `padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);`;
+    const thC = `padding:6px 10px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);`;
     const compRows = entries.map(({a, score, cnt}, i) => {
       const tier = getTier(score);
       const sc = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
@@ -2680,7 +2513,7 @@ function renderLeaderboard() {
 
     document.getElementById('leaderboard-content').innerHTML = entries.length === 0
       ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-      : `<table class="sticky-table" style="width:100%;border-collapse:collapse;">
+      : `<table class="sticky-table" class="tbl-base">
           <thead><tr>
             <th style="${thC}text-align:center;width:36px;">#</th>
             <th style="${thC}text-align:left;">Athlete</th>
@@ -2759,15 +2592,15 @@ function renderLeaderboard() {
 
   document.getElementById('leaderboard-content').innerHTML = pool.length === 0
     ? `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`
-    : `<table class="sticky-table" style="width:100%;border-collapse:collapse;">
+    : `<table class="sticky-table" class="tbl-base">
         <thead><tr>
-          <th style="padding:6px 10px 10px 6px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">#</th>
-          <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:left;">Athlete</th>
-          <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">Sex</th>
-          <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:right;">Value</th>
-          <th style="padding:6px 20px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);"></th>
-          <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);text-align:center;">Percentile</th>
-          <th style="padding:6px 10px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border2);">Tier</th>
+          <th style="padding:6px 10px 10px 6px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);text-align:center;">#</th>
+          <th class="tbl-th tbl-th-l">Athlete</th>
+          <th class="tbl-th tbl-th-c">Sex</th>
+          <th class="tbl-th tbl-th-r">Value</th>
+          <th style="padding:6px 20px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);"></th>
+          <th class="tbl-th tbl-th-c">Percentile</th>
+          <th style="padding:6px 10px 10px;font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);">Tier</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -2803,12 +2636,13 @@ function renderCoachesPage() {
     const sel = document.getElementById(`coaches-norm-${sex}`);
     if (!sel || sel.options.length > 0) return;
     const defaultNorm = `Roster — ${sex==='M'?'Male':'Female'} (Measured)`;
-    Object.keys(INITIAL_NORMS).forEach(s => {
+    const sexWord = sex === 'M' ? 'Male' : 'Female';
+    Object.keys(INITIAL_NORMS).filter(s => s.includes(sexWord)).forEach(s => {
       const o = document.createElement('option');
       o.value = s; o.textContent = s;
       sel.appendChild(o);
     });
-    sel.value = INITIAL_NORMS[defaultNorm] ? defaultNorm : Object.keys(INITIAL_NORMS)[0];
+    sel.value = INITIAL_NORMS[defaultNorm] ? defaultNorm : Object.keys(INITIAL_NORMS).find(k=>k.includes(sexWord));
   });
 }
 
@@ -2823,7 +2657,7 @@ function coachesRebuildPanel(sex) {
   const newSel = document.getElementById(`coaches-norm-${sex}`);
   if (newSel && newSel.options.length === 0) {
     const defaultNorm = `Roster — ${sexLabel} (Measured)`;
-    Object.keys(INITIAL_NORMS).forEach(s => {
+    Object.keys(INITIAL_NORMS).filter(s => s.includes(sexLabel)).forEach(s => {
       const o = document.createElement('option'); o.value = s; o.textContent = s; newSel.appendChild(o);
     });
     newSel.value = normKey;
@@ -2885,7 +2719,7 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
     { label:'Top strength', val: strengths[0]?.label||'—',  sub: strengths[0]  ? strengths[0].avgPct+'th avg'  : '' },
     { label:'Priority area',val: weaknesses[0]?.label||'—', sub: weaknesses[0] ? weaknesses[0].avgPct+'th avg' : '' },
   ].map(c => `<div style="background:${sexBg};border:1px solid ${sexColor}33;border-radius:10px;padding:12px 14px;text-align:center;">
-    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:${sexColor};font-family:'DM Mono',monospace;font-weight:700;margin-bottom:4px;">${c.label}</div>
+    <div style="font-size:11px;color:${sexColor};font-family:'DM Sans',sans-serif;font-weight:600;margin-bottom:4px;">${c.label}</div>
     <div style="font-size:16px;font-weight:800;color:var(--text1);">${c.val}</div>
     <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;">${c.sub}</div>
   </div>`).join('');
@@ -2902,7 +2736,7 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
 
   const barRows = sorted.map(ms =>
     `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <div style="width:110px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;">${ms.label}</div>
+      <div style="width:110px;font-size:12px;font-weight:500;color:var(--text3);font-family:'DM Sans',sans-serif;flex-shrink:0;">${ms.label}</div>
       <div style="flex:1;position:relative;height:14px;background:var(--bg3);border-radius:4px;overflow:hidden;">
         <div style="position:absolute;left:0;top:0;height:100%;width:${ms.avgPct}%;background:${ms.tier.color};border-radius:4px;opacity:0.85;"></div>
         <div style="position:absolute;left:85%;top:0;width:2px;height:100%;background:rgba(255,255,255,0.2);"></div>
@@ -2923,6 +2757,7 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
     cmj:       { title:'Vertical jump',        tip:'Prioritise reactive plyometrics — depth jumps, continuous hurdle hops, and loaded jump squats to drive CMJ height.' },
     power:     { title:'Peak power',           tip:'Add Olympic lifting variations (hang clean, power snatch) and short-contact box jumps to maximise rate of force development into peak power output.' },
     rfd:       { title:'Rate of force dev',    tip:'Incorporate ballistic exercises — jump squats, medicine-ball throws, and sprint-specific resisted starts — to sharpen neuromuscular firing rate.' },
+    eccBrakingRFD: { title:'Ecc braking RFD',  tip:'Train eccentric absorption with tempo squats (4-1-1), heavy eccentric step-downs, and drop-landing progressions to build the braking phase that fuels reactive power.' },
     rsi:       { title:'Reactive strength',    tip:'Build RSI with a progressive drop-jump programme. Focus on short ground-contact times and stiffness cues; add ankle stiffness drills and bounding.' },
     sprint10:  { title:'10 yd acceleration',  tip:'Target starting mechanics: sled pushes at 80 % BW, wicket drills for stride frequency, and hip-flexor strength work to improve first-step explosiveness.' },
     sprintFly: { title:'Max velocity',         tip:'Address top-end speed with fly 10s, wicket runs, and A-skip / B-skip progressions. Focus on posture, dorsiflexion, and front-side mechanics.' },
@@ -2935,7 +2770,7 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
     if (!tip) return '';
     return `<div style="padding:8px 0;border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:${ms.tier.color};font-family:'DM Mono',monospace;">${tip.title}</span>
+        <span style="font-size:12px;font-weight:600;color:${ms.tier.color};font-family:'DM Sans',sans-serif;">${tip.title}</span>
         <span style="font-size:10px;font-family:'DM Mono',monospace;color:${ms.tier.color};background:${ms.tier.bg};padding:1px 6px;border-radius:5px;">${ms.avgPct}th avg</span>
       </div>
       <div style="font-size:11px;color:var(--text2);line-height:1.5;">${tip.tip}</div>
@@ -2960,47 +2795,32 @@ function buildGroupPanel(sex, sexLabel, normKeyOverride) {
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
       <div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:8px;">▲ Group strengths</div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);font-family:'DM Sans',sans-serif;margin-bottom:8px;">▲ Group strengths</div>
         ${strengthRows(strengths,'💪')}
       </div>
       <div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-family:'DM Mono',monospace;margin-bottom:8px;">▼ Priority areas</div>
+        <div style="font-size:12px;font-weight:600;color:var(--orange);font-family:'DM Sans',sans-serif;margin-bottom:8px;">▼ Priority areas</div>
         ${strengthRows(weaknesses,'🎯')}
       </div>
     </div>
 
     <div style="margin-bottom:18px;">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;">Group avg percentile per metric</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;margin-bottom:10px;">Group avg percentile per metric</div>
       ${barRows}
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;">Top performers (composite avg)</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;margin-bottom:8px;">Top performers (composite avg)</div>
         ${topAthletes || '<div style="color:var(--text3);font-size:12px;">No data</div>'}
       </div>
       <div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-family:'DM Mono',monospace;margin-bottom:8px;">Coaching focus areas</div>
+        <div style="font-size:12px;font-weight:600;color:var(--orange);font-family:'DM Sans',sans-serif;margin-bottom:8px;">Coaching focus areas</div>
         ${coachingRecs || '<div style="color:var(--text3);font-size:12px;">No priority areas identified.</div>'}
       </div>
     </div>
   </div>`;
 }
-
-function renderNormsTable() {
-  document.getElementById('norms-sport-label').textContent = selectedNorm;
-  const n = norms[selectedNorm];
-  document.getElementById('norms-table').innerHTML = METRICS.map(m => {
-    if (!n[m.key]) return '';
-    return `<div class="norms-row">
-      <span class="norms-name">${m.label}</span>
-      <div class="norms-field"><span>Mean</span><input type="number" step="0.01" value="${n[m.key].m}" oninput="updateNorm('${m.key}','m',this.value)" /></div>
-      <div class="norms-field"><span>SD</span><input type="number" step="0.01" value="${n[m.key].sd}" oninput="updateNorm('${m.key}','sd',this.value)" /></div>
-      <span class="norms-unit">${m.unit}</span>
-    </div>`;
-  }).join('');
-}
-function updateNorm(key,field,val) { norms[selectedNorm][key][field]=parseFloat(val)||0; renderAll(false); }
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN RENDER
@@ -3013,36 +2833,44 @@ function renderMetricsTable(results) {
   const rows = sorted.map(r => {
     const d = r.step < 0.1 ? 2 : 1;
     const estMark = isEstimated(r.key) ? '<span style="color:var(--orange);font-size:8px;margin-left:2px;">★</span>' : '';
-    // gap: positive = exceeding target, negative = below target
+    // gap as % of target: positive = exceeding target, negative = below target.
+    // Direction is normalized so positive always means "better" regardless of inverse metrics.
     const gapRaw = r.inv ? (r.target85 - r.val) : (r.val - r.target85);
-    const gapStr = (gapRaw >= 0 ? '+' : '') + gapRaw.toFixed(d);
-    const gapColor = r.meetingTarget ? 'var(--green)' : 'var(--orange)';
+    const hasData = r.val > 0 && r.target85 > 0;
+    const gapPct = hasData ? (gapRaw / r.target85) * 100 : 0;
+    const gapStr = hasData
+      ? (gapPct >= 0 ? '+' : '') + gapPct.toFixed(1) + '%'
+      : '—';
+    const gapColor = !hasData ? 'var(--text3)' : (r.meetingTarget ? 'var(--green)' : 'var(--orange)');
     const valDisplay = r.val > 0 ? r.val.toFixed(d) : '—';
     return `<tr>
-      <td style="padding:5px 8px 5px 0;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;width:35%;">
+      <td style="padding:5px 8px 5px 0;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text3);font-family:'DM Sans',sans-serif;white-space:nowrap;width:35%;">
         ${r.label}${estMark}
       </td>
       <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;width:22%;">
-        <span style="font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:${r.tier.color};background:${r.tier.bg};padding:2px 7px;border-radius:5px;">${valDisplay}</span>
-        <span style="font-size:8px;color:var(--text3);margin-left:2px;">${r.unit}</span>
+        <span style="display:inline-block;font-size:13px;font-weight:800;font-family:'DM Mono',monospace;color:${r.tier.color};background:${r.tier.bg};padding:2px 10px;border-radius:5px;min-width:78px;text-align:center;">
+          ${valDisplay}<span style="font-size:0.7em;opacity:0.6;font-weight:500;margin-left:4px;">${r.unit}</span>
+        </span>
       </td>
-      <td style="padding:5px 6px;border-bottom:1px solid var(--border);font-size:12px;font-family:'DM Mono',monospace;color:var(--text2);text-align:center;white-space:nowrap;width:22%;">
-        ${r.target85.toFixed(d)} <span style="font-size:8px;color:var(--text3);">${r.unit}</span>
+      <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;width:22%;">
+        <span style="display:inline-block;font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);min-width:78px;text-align:center;">
+          ${r.target85.toFixed(d)}<span style="font-size:0.75em;opacity:0.55;margin-left:4px;">${r.unit}</span>
+        </span>
       </td>
-      <td style="padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${gapColor};text-align:center;white-space:nowrap;width:21%;">
-        ${r.meetingTarget ? '✓' : '▲'} ${gapStr}
+      <td style="padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;color:${gapColor};text-align:center;white-space:nowrap;width:21%;">
+        ${hasData ? (r.meetingTarget ? '✓ ' : '▲ ') : ''}${gapStr}
       </td>
     </tr>`;
   }).join('');
 
   document.getElementById('metrics-breakdown-table').innerHTML = `
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px;">
-      <table style="width:100%;border-collapse:collapse;">
+      <table class="tbl-base">
         <thead><tr>
-          <th style="padding:0 8px 7px 0;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:left;font-weight:700;border-bottom:1px solid var(--border2);width:35%;">Metric</th>
-          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">Athlete</th>
-          <th style="padding:0 6px 7px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">85th Target</th>
-          <th style="padding:0 0 7px 8px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:21%;">Gap</th>
+          <th style="padding:0 8px 7px 0;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:600;text-align:left;font-weight:700;border-bottom:1px solid var(--border2);width:35%;">Metric</th>
+          <th style="padding:0 6px 7px;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:600;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">Athlete</th>
+          <th style="padding:0 6px 7px;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:600;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:22%;">85th Target</th>
+          <th style="padding:0 0 7px 8px;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;font-weight:600;text-align:center;font-weight:700;border-bottom:1px solid var(--border2);width:21%;">Gap</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -3053,6 +2881,7 @@ function renderMetricsTable(results) {
 function renderAll(rebuildInputs=true) {
   if (rebuildInputs) renderInputGrid();
   else METRICS.forEach(m=>{const el=document.getElementById('inp-'+m.key);if(el)el.value=athleteData[m.key];});
+  updateNormDisplay();
   const results = getResults();
   const matrix  = computeMatrixProfile(results);
   renderSummaryCards(results, matrix);
@@ -3070,33 +2899,84 @@ function renderAll(rebuildInputs=true) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PERSIST STATE
+// PERSIST STATE — per-coach, synced to Supabase
 // ═══════════════════════════════════════════════════════════════
-const KINETIC_STATE_KEY = 'kinetic_v1';
+function stateKey()   { return 'kinetic_v1:' + (currentCoach || 'anon'); }
+function stateTsKey() { return stateKey() + ':ts'; }
+
+let _stateSyncTimer = null;
+
+function buildStateObj() {
+  return {
+    athlete:          currentAthlete?.name,
+    norm:             selectedNorm,
+    tab:              activeTab,
+    suppressEstimated,
+    measuredOnlyMode,
+    rosterFullOnly,
+    compactRoster,
+    disabledMetrics:  [...disabledMetrics],
+    coreMeasuredKeys: [...coreMeasuredKeys],
+    tierThresholds,
+    matrixThreshold,
+    selectedChartMode,
+    testActiveGroup,
+    testSex,
+    testAthlete,
+    testNorm
+  };
+}
 
 function saveState() {
+  if (!currentCoach) return;
+  const obj = buildStateObj();
+  const now = Date.now();
   try {
-    localStorage.setItem(KINETIC_STATE_KEY, JSON.stringify({
-      athlete:          currentAthlete?.name,
-      norm:             selectedNorm,
-      tab:              activeTab,
-      suppressEstimated,
-      measuredOnlyMode,
-      disabledMetrics:  [...disabledMetrics],
-      tierThresholds,
-      matrixThreshold,
-      selectedChartMode,
-      testActiveGroup,
-      testSex,
-      testAthlete,
-      testNorm
-    }));
+    localStorage.setItem(stateKey(), JSON.stringify(obj));
+    localStorage.setItem(stateTsKey(), String(now));
   } catch(e) {}
+  // Debounced push to Supabase
+  clearTimeout(_stateSyncTimer);
+  _stateSyncTimer = setTimeout(() => syncStateToSupabase(obj, now), 600);
+}
+
+async function syncStateToSupabase(obj, ts) {
+  if (!currentCoach) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/coach_state?on_conflict=coach_id', {
+      method: 'POST',
+      headers: { ...SUPABASE_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        coach_id: currentCoach,
+        state: obj,
+        updated_at: new Date(ts).toISOString(),
+      }),
+    });
+  } catch(e) { console.warn('coach_state sync failed:', e); }
+}
+
+async function pullStateFromSupabase() {
+  if (!currentCoach) return;
+  try {
+    const url = SUPABASE_URL + '/rest/v1/coach_state?coach_id=eq.'
+              + encodeURIComponent(currentCoach) + '&select=state,updated_at&limit=1';
+    const resp = await fetch(url, { headers: SUPABASE_HEADERS });
+    if (!resp.ok) return;
+    const rows = await resp.json();
+    if (!rows.length) return;
+    const remoteTs = new Date(rows[0].updated_at).getTime();
+    const localTs  = parseInt(localStorage.getItem(stateTsKey()) || '0', 10);
+    if (remoteTs > localTs) {
+      localStorage.setItem(stateKey(), JSON.stringify(rows[0].state));
+      localStorage.setItem(stateTsKey(), String(remoteTs));
+    }
+  } catch(e) { console.warn('coach_state pull failed:', e); }
 }
 
 function loadState() {
+  if (!currentCoach) return;
   try {
-    const raw = localStorage.getItem(KINETIC_STATE_KEY);
+    const raw = localStorage.getItem(stateKey());
     if (!raw) return;
     const s = JSON.parse(raw);
     if (s.athlete) {
@@ -3106,7 +2986,10 @@ function loadState() {
     if (s.norm && norms[s.norm])           selectedNorm      = s.norm;
     if (s.suppressEstimated !== undefined) suppressEstimated = s.suppressEstimated;
     if (s.measuredOnlyMode  !== undefined) measuredOnlyMode  = s.measuredOnlyMode;
+    if (s.rosterFullOnly    !== undefined) rosterFullOnly    = s.rosterFullOnly;
+    if (s.compactRoster     !== undefined) compactRoster     = s.compactRoster;
     if (Array.isArray(s.disabledMetrics))  disabledMetrics   = new Set(s.disabledMetrics);
+    if (Array.isArray(s.coreMeasuredKeys)) coreMeasuredKeys  = new Set(s.coreMeasuredKeys);
     if (Array.isArray(s.tierThresholds) && s.tierThresholds.length === 4) tierThresholds = s.tierThresholds;
     if (typeof s.matrixThreshold === 'number') matrixThreshold = s.matrixThreshold;
     if (s.selectedChartMode) selectedChartMode = s.selectedChartMode;
@@ -3124,6 +3007,24 @@ function loadState() {
 // ===============================================================
 // SETTINGS TAB
 // ===============================================================
+function toggleAllMetrics() {
+  if (disabledMetrics.size === 0) {
+    METRICS.slice(1).forEach(m => disabledMetrics.add(m.key));
+  } else {
+    disabledMetrics.clear();
+  }
+  renderSettings();
+  renderAll(false);
+  const pr = document.getElementById('pane-roster');
+  const pf = document.getElementById('pane-flags');
+  const pl = document.getElementById('pane-leaderboard');
+  const pc = document.getElementById('pane-coaches');
+  if (pr && pr.style.display !== 'none') renderRosterTable();
+  if (pf && pf.style.display !== 'none') renderFlags();
+  if (pl && pl.style.display !== 'none') renderLeaderboard();
+  if (pc && pc.style.display !== 'none') renderCoachesPage();
+}
+
 function toggleMetricEnabled(key) {
   if (disabledMetrics.has(key)) {
     disabledMetrics.delete(key);
@@ -3160,11 +3061,32 @@ function updateMatrixThreshold(val) {
   renderAll(false);
 }
 
+function toggleCompactRoster() {
+  compactRoster = !compactRoster;
+  document.body.classList.toggle('compact', compactRoster);
+  renderSettings();
+  renderRosterTable();
+  renderAll(false);
+  saveState();
+}
+
+function applyCompactClass() {
+  document.body.classList.toggle('compact', !!compactRoster);
+}
+
+function toggleHistorySmoothing() {
+  historySmoothing = !historySmoothing;
+  renderSettings();
+  renderHistoryTab();
+}
+
 function resetSettings() {
   disabledMetrics   = new Set();
   coreMeasuredKeys  = new Set(CORE_MEASURED_DEFAULTS);
   tierThresholds    = [90, 70, 40, 15];
   matrixThreshold   = 50;
+  compactRoster     = false;
+  historySmoothing  = false;
   renderSettings();
   renderRosterTable();
   renderAll(false);
@@ -3184,8 +3106,8 @@ function renderSettings() {
     const statusBd    = on ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
     return '<button onclick="toggleMetricEnabled(\'' + m.key + '\')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';cursor:pointer;transition:all .15s;text-align:left;width:100%;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;">'
-      + '<span style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + c + ';text-transform:uppercase;letter-spacing:0.05em;">' + m.label + '</span>'
-      + '<span style="font-size:9px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + statusColor + ';background:' + statusBg + ';border:1px solid ' + statusBd + ';padding:1px 6px;border-radius:4px;">' + (on ? 'ON' : 'OFF') + '</span>'
+      + '<span style="font-size:13px;font-weight:600;font-family:\'DM Sans\',sans-serif;color:' + c + ';">' + m.label + '</span>'
+      + '<span style="font-size:11px;font-weight:600;font-family:\'DM Sans\',sans-serif;color:' + statusColor + ';background:' + statusBg + ';border:1px solid ' + statusBd + ';padding:1px 7px;border-radius:4px;">' + (on ? 'On' : 'Off') + '</span>'
       + '</div>'
       + '<span style="font-size:10px;color:var(--text3);">' + m.unit + '</span>'
       + '</button>';
@@ -3209,74 +3131,92 @@ function renderSettings() {
   const suppCol = suppressEstimated ? 'var(--green)'          : 'var(--text3)';
   const activeCount = METRICS.length - disabledMetrics.size;
 
-  pane.innerHTML = '<div style="display:flex;flex-direction:column;gap:14px;max-width:900px;">'
+  const coreGrid = METRICS.map(m => {
+    const on = coreMeasuredKeys.has(m.key);
+    const c  = on ? 'var(--green)'          : 'var(--text3)';
+    const bg = on ? 'rgba(52,211,153,0.08)' : 'var(--bg2)';
+    const bd = on ? 'rgba(52,211,153,0.35)' : 'var(--border)';
+    const sc = on ? '#34d399' : 'rgba(248,113,113,0.7)';
+    const sb = on ? 'rgba(52,211,153,0.1)'  : 'rgba(248,113,113,0.1)';
+    const sd = on ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
+    return '<button onclick="toggleCoreMetric(\'' + m.key + '\')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';cursor:pointer;transition:all .15s;text-align:left;width:100%;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;">'
+      + '<span style="font-size:13px;font-weight:600;font-family:\'DM Sans\',sans-serif;color:' + c + ';">' + m.label + '</span>'
+      + '<span style="font-size:11px;font-weight:600;font-family:\'DM Sans\',sans-serif;color:' + sc + ';background:' + sb + ';border:1px solid ' + sd + ';padding:1px 7px;border-radius:4px;">' + (on ? 'Required' : 'Optional') + '</span>'
+      + '</div>'
+      + '<span style="font-size:10px;color:var(--text3);">' + m.unit + '</span>'
+      + '</button>';
+  }).join('');
+
+  function settingRow(label, desc, toggleFn, isOn) {
+    const bg  = isOn ? 'rgba(52,211,153,0.12)' : 'var(--bg3)';
+    const bd  = isOn ? 'rgba(52,211,153,0.45)' : 'var(--border2)';
+    const col = isOn ? 'var(--green)'           : 'var(--text3)';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:8px;">'
+      + '<div><div style="font-size:13px;font-weight:600;">' + label + '</div>'
+      + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + desc + '</div></div>'
+      + '<button onclick="' + toggleFn + '()" style="padding:6px 16px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';color:' + col + ';font-size:12px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:16px;">' + (isOn ? 'On' : 'Off') + '</button>'
+      + '</div>';
+  }
+
+  const leftCol = '<div style="display:flex;flex-direction:column;gap:14px;">'
 
     + '<div class="card">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
     + '<div class="card-label" style="margin-bottom:0;">Active Metrics</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;">'
     + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + activeCount + ' / ' + METRICS.length + ' active</span>'
+    + '<button onclick="toggleAllMetrics()" style="font-size:10px;font-family:\'DM Mono\',monospace;padding:3px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);transition:all .15s;" onmouseover="this.style.color=\'var(--text)\'" onmouseout="this.style.color=\'var(--text3)\'">' + (disabledMetrics.size === 0 ? 'Disable all' : 'Enable all') + '</button>'
     + '</div>'
+    + '</div>' // end flex header row
     + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Disabled metrics are excluded from composite scores, coaching priorities, bar charts, comparison tables, leaderboard, and matrix calculations. Raw values still appear in the roster.</div>'
     + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + metGrid + '</div>'
     + '</div>'
 
-    + (function() {
-        const coreGrid = METRICS.map(m => {
-          const on = coreMeasuredKeys.has(m.key);
-          const c  = on ? 'var(--green)'              : 'var(--text3)';
-          const bg = on ? 'rgba(52,211,153,0.08)'     : 'var(--bg2)';
-          const bd = on ? 'rgba(52,211,153,0.35)'     : 'var(--border)';
-          const statusColor = on ? '#34d399' : 'rgba(248,113,113,0.7)';
-          const statusBg    = on ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)';
-          const statusBd    = on ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
-          return '<button onclick="toggleCoreMetric(\'' + m.key + '\')" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;border-radius:var(--radius-md);border:1px solid ' + bd + ';background:' + bg + ';cursor:pointer;transition:all .15s;text-align:left;width:100%;">'
-            + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:6px;">'
-            + '<span style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + c + ';text-transform:uppercase;letter-spacing:0.05em;">' + m.label + '</span>'
-            + '<span style="font-size:9px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + statusColor + ';background:' + statusBg + ';border:1px solid ' + statusBd + ';padding:1px 6px;border-radius:4px;">' + (on ? 'REQ' : 'OPT') + '</span>'
-            + '</div>'
-            + '<span style="font-size:10px;color:var(--text3);">' + m.unit + '</span>'
-            + '</button>';
-        }).join('');
-        return '<div class="card">'
-          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-          + '<div class="card-label" style="margin-bottom:0;">Full Athlete Definition</div>'
-          + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + coreMeasuredKeys.size + ' required</span>'
-          + '</div>'
-          + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Required metrics for an athlete to be considered fully measured (green name, sorts to top of roster).</div>'
-          + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + coreGrid + '</div>'
-          + '</div>';
-      })()
+    + '<div class="card">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    + '<div class="card-label" style="margin-bottom:0;">Full Athlete Definition</div>'
+    + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">' + coreMeasuredKeys.size + ' required</span>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:12px;">Required metrics for an athlete to be considered fully measured (green name, sorts to top of roster).</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;">' + coreGrid + '</div>'
+    + '</div>'
+
+    + '</div>';
+
+  const rightCol = '<div style="display:flex;flex-direction:column;gap:14px;min-width:300px;">'
 
     + '<div class="card">'
-    + '<div class="card-label">Performance Tier Thresholds</div>'
-    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:16px;">Set the minimum percentile for each tier. Changes apply globally to all badges, scores, and coaching across the app.</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:18px 28px;">' + tierInputs + '</div>'
+    + '<div class="card-label">Performance Tiers</div>'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:16px;">Minimum percentile for each tier. Applies globally to all badges, scores, and coaching.</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;">' + tierInputs + '</div>'
     + '</div>'
 
     + '<div class="card">'
     + '<div class="card-label">Matrix Quadrant Threshold</div>'
-    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:14px;">Percentile boundary separating high from low on the force–reactive matrix. Default 50th. Raise it to require a stricter standard for the &ldquo;high&rdquo; classification.</div>'
-    + '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">'
-    + '<input type="range" min="20" max="80" value="' + matrixThreshold + '" oninput="updateMatrixThreshold(this.value)" style="flex:1;min-width:160px;max-width:280px;accent-color:var(--gold);height:4px;" />'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:14px;">Percentile boundary separating high from low on the force–reactive matrix.</div>'
+    + '<div style="display:flex;align-items:center;gap:14px;">'
+    + '<input type="range" min="20" max="80" value="' + matrixThreshold + '" oninput="updateMatrixThreshold(this.value)" style="flex:1;accent-color:var(--gold);height:4px;" />'
     + '<span id="matrix-thr-display" style="font-size:20px;font-weight:800;font-family:\'DM Mono\',monospace;color:var(--gold);min-width:52px;">' + matrixThreshold + 'th</span>'
-    + '<span style="font-size:11px;color:var(--text3);">percentile</span>'
     + '</div>'
     + '<div id="matrix-thr-desc" style="margin-top:10px;font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">Force score &ge; ' + matrixThreshold + ' = high &nbsp;&middot;&nbsp; Reactive score &ge; ' + matrixThreshold + ' = high</div>'
     + '</div>'
 
     + '<div class="card">'
     + '<div class="card-label">Display</div>'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-md);border:1px solid var(--border);">'
-    + '<div><div style="font-size:13px;font-weight:600;">Suppress estimated metrics</div>'
-    + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Hide non-measured metrics from all calculations and charts</div></div>'
-    + '<button class="suppress-est-btn" onclick="toggleSuppressEstimated()" style="padding:6px 16px;border-radius:var(--radius-md);border:1px solid ' + suppBd + ';background:' + suppBg + ';color:' + suppCol + ';font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:16px;">' + (suppressEstimated ? 'ON' : 'OFF') + '</button>'
-    + '</div>'
+    + settingRow('Suppress estimated metrics', 'Hide non-measured metrics from all calculations and charts', 'toggleSuppressEstimated', suppressEstimated)
+    + settingRow('Compact mode', 'Reduce padding and row height across the dashboard to fit more on screen', 'toggleCompactRoster', compactRoster)
+    + settingRow('Smooth history curves', 'Use bezier curves instead of straight lines in history charts', 'toggleHistorySmoothing', historySmoothing)
     + '</div>'
 
     + '<div>'
-    + '<button class="btn" onclick="resetSettings()" style="background:transparent;border-color:rgba(248,113,113,0.35);color:rgba(248,113,113,0.8);" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'rgba(248,113,113,0.35)\';this.style.color=\'rgba(248,113,113,0.8)\'">Reset all settings to defaults</button>'
+    + '<button class="btn" onclick="resetSettings()" style="background:transparent;border-color:rgba(248,113,113,0.35);color:rgba(248,113,113,0.8);width:100%;" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'rgba(248,113,113,0.35)\';this.style.color=\'rgba(248,113,113,0.8)\'">Reset all settings to defaults</button>'
     + '</div>'
 
+    + '</div>';
+
+  pane.innerHTML = '<div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">'
+    + leftCol + rightCol
     + '</div>';
 }
 
@@ -3295,30 +3235,46 @@ function showToast(msg) {
 
 // ── Build ATHLETE_DB from Supabase response ──
 function buildAthleteFromSupabase(row) {
-  const bestValues = {};
-  const bestSource = {};
+  // Track per-source best per metric so we can prefer FD even when its value
+  // is "lower" than non-FD readings. Shape: { metric: { source: bestVal } }.
+  const perSource = {};
 
   (row.sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {
       const key = m.metric;
       const val = parseFloat(m.value) || 0;
       if (!val) return;
-      const existing = bestValues[key];
-      if (existing === undefined) {
-        bestValues[key] = val;
-        bestSource[key] = m.source;
-      } else {
-        const better = INVERSE_METRICS.has(key) ? val < existing : val > existing;
-        if (better) {
-          bestValues[key] = val;
-          bestSource[key] = m.source;
-        }
+      const src = m.source || 'manual';
+      if (!perSource[key]) perSource[key] = {};
+      const cur = perSource[key][src];
+      if (cur === undefined || (INVERSE_METRICS.has(key) ? val < cur : val > cur)) {
+        perSource[key][src] = val;
       }
     });
   });
 
-  const ALL_KEYS = ['cmj','power','rfd','rsi','sprint10','sprintFly','sprint1020','broad','shuttle',
-    'isosqt_pvf','isosqt_pvfbm','isosqt_ttpf','isosqt_rfd200','isosqt_rfd100','isosqt_rfd200bw','isosqt_rfd100bw'];
+  // Resolve display value per metric: prefer FD when present, otherwise pick
+  // the best across remaining sources.
+  const bestValues = {};
+  const bestSource = {};
+  Object.keys(perSource).forEach(key => {
+    const sources = perSource[key];
+    if ('FD' in sources) {
+      bestValues[key] = sources['FD'];
+      bestSource[key] = 'FD';
+      return;
+    }
+    const inv = INVERSE_METRICS.has(key);
+    let bestVal = inv ? Infinity : -Infinity;
+    let bestSrc = null;
+    Object.entries(sources).forEach(([src, v]) => {
+      if (inv ? v < bestVal : v > bestVal) { bestVal = v; bestSrc = src; }
+    });
+    bestValues[key] = bestVal;
+    bestSource[key] = bestSrc;
+  });
+
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
 
   const measured = {};
   ALL_KEYS.forEach(k => {
@@ -3380,6 +3336,22 @@ async function saveSessionToSupabase(athlete, metricsMap, date) {
   } catch(e) {
     console.error('Supabase save error:', e);
     showToast('Saved locally (DB sync failed)');
+  }
+}
+
+// ── Rename / update sex of an existing athlete in Supabase ──
+async function renameAthleteInSupabase(id, name, sex) {
+  try {
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/athletes?id=eq.' + id, {
+      method: 'PATCH',
+      headers: SUPABASE_HEADERS,
+      body: JSON.stringify({ name, sex })
+    });
+    if (!resp.ok) throw new Error('Athlete update failed');
+    showToast('Athlete updated in database');
+  } catch(e) {
+    console.error('Supabase rename error:', e);
+    showToast('Rename saved locally only');
   }
 }
 
@@ -3484,8 +3456,6 @@ function rebuildInitialNorms() {
   INITIAL_NORMS["Roster — Female"]            = computeInternalNorms('F');
   INITIAL_NORMS["Roster — Male (Measured)"]   = computeMeasuredNorms('M');
   INITIAL_NORMS["Roster — Female (Measured)"] = computeMeasuredNorms('F');
-  INITIAL_NORMS["ISOSQT — Male"]              = computeISQNorms('M');
-  INITIAL_NORMS["ISOSQT — Female"]            = computeISQNorms('F');
   norms = JSON.parse(JSON.stringify(INITIAL_NORMS));
 }
 
@@ -3508,26 +3478,23 @@ async function init() {
     setLoadingProgress(60, `Processing ${ATHLETE_DB.length} athletes...`);
     console.log('Loaded', ATHLETE_DB.length, 'athletes from Supabase');
   } catch(e) {
-    console.error('Supabase load failed, using fallback:', e);
-    ATHLETE_DB = ATHLETE_DB_FALLBACK.map(a => ({...a}));
-    setLoadingProgress(60, 'Using offline data...');
-    showToast('Using offline data (DB unavailable)');
+    console.error('Supabase load failed:', e);
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:380px;text-align:center;">
+        <div style="font-size:28px;">⚠️</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--text);">Database Unavailable</div>
+        <div style="font-size:13px;color:var(--text3);line-height:1.6;">Could not connect to Supabase. Check your internet connection and try again.</div>
+        <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 14px;border-radius:8px;border:1px solid var(--border);max-width:100%;word-break:break-all;">${e.message}</div>
+        <button onclick="location.reload()" style="padding:10px 28px;border-radius:var(--radius-md);border:1px solid rgba(240,192,64,0.4);background:rgba(240,192,64,0.1);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Retry</button>
+      </div>`;
+    return;
   }
 
-  // Migrate measured flags
-  ATHLETE_DB.forEach(a => {
-    if (!a.measured) a.measured = {};
-    const defaults = {
-      cmj: true, power: true, rfd: true,
-      rsi: !!a.rsiMeasured,
-      sprint10: false, sprintFly: false, broad: false, shuttle: false
-    };
-    for (const [k, v] of Object.entries(defaults)) {
-      if (!(k in a.measured)) a.measured[k] = v;
-    }
-  });
+  setLoadingProgress(70, 'Syncing your layout...');
+  await pullStateFromSupabase();
 
-  setLoadingProgress(75, 'Building performance norms...');
+  setLoadingProgress(78, 'Building performance norms...');
   rebuildInitialNorms();
 
   setLoadingProgress(88, 'Preparing interface...');
@@ -3542,22 +3509,22 @@ async function init() {
     asel.appendChild(o);
   });
 
-  // Norm selector
-  const nsel = document.getElementById('norm-select');
-  Object.keys(INITIAL_NORMS).forEach(s=>{
-    const o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    nsel.appendChild(o);
-  });
+  // Norm selector — populated per-sex via rebuildNormSelect()
 
   // Apply defaults
   currentAthlete = ATHLETE_DB[0];
   athleteData = Object.assign({}, currentAthlete);
-  selectedNorm = 'Roster — ' + (currentAthlete.sex==='M'?'Male':'Female') + ' (Measured)';
+  rebuildNormSelect();
   selectedChartKeys = new Set(METRICS.filter(m => !isEstimatedForAthlete(m.key, currentAthlete)).map(m => m.key));
 
   // Restore saved state (overrides defaults above)
   loadState();
+
+  // Recompute roster norms in case loadState flipped rosterFullOnly
+  if (rosterFullOnly) rebuildInitialNorms();
+
+  // Apply any state-driven body classes (compact mode, etc.)
+  applyCompactClass();
 
   // Sync selectors to state (may have changed via loadState)
   document.getElementById('norm-select').value = selectedNorm;
@@ -3600,7 +3567,96 @@ async function init() {
   });
 }
 
-init();
+// ═══════════════════════════════════════════════════════════════
+// COACH LOGIN (soft client-side gate)
+// ═══════════════════════════════════════════════════════════════
+// Add new coaches by computing sha256("their-password") and adding here.
+const COACHES = {
+  matt: { displayName: 'Coach Matt', passwordHash: 'c3e64604cb6275890df269cce33991366a0a008a53c5b639206a802759c21fb1' },
+};
+
+let currentCoach = null;
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function populateCoachDropdown() {
+  const sel = document.getElementById('login-coach');
+  if (!sel) return;
+  sel.innerHTML = '';
+  Object.entries(COACHES).forEach(([id, info]) => {
+    const o = document.createElement('option');
+    o.value = id;
+    o.textContent = info.displayName;
+    sel.appendChild(o);
+  });
+}
+
+async function attemptLogin() {
+  const coachId = document.getElementById('login-coach').value;
+  const pw      = document.getElementById('login-pw').value;
+  const errEl   = document.getElementById('login-error');
+  const conf    = COACHES[coachId];
+  if (!conf) { errEl.textContent = 'Unknown coach'; errEl.style.display = 'block'; return; }
+  const hash = await sha256(pw);
+  if (hash !== conf.passwordHash) {
+    errEl.textContent = 'Wrong password';
+    errEl.style.display = 'block';
+    document.getElementById('login-pw').select();
+    return;
+  }
+  sessionStorage.setItem('kb-coach', coachId);
+  startApp(coachId);
+}
+
+function logout() {
+  sessionStorage.removeItem('kb-coach');
+  location.reload();
+}
+
+function showCoachBadge() {
+  const conf = COACHES[currentCoach];
+  if (!conf) return;
+  const badge = document.getElementById('coach-badge');
+  const btn   = document.getElementById('logout-btn');
+  if (badge) { badge.textContent = '👤 ' + conf.displayName; badge.style.display = ''; }
+  if (btn)   btn.style.display = '';
+}
+
+function migrateLegacyState(coachId) {
+  // One-time: copy pre-login `kinetic_v1` to this coach's namespaced key
+  // so existing layout doesn't disappear on first login.
+  const legacy = localStorage.getItem('kinetic_v1');
+  const newKey = 'kinetic_v1:' + coachId;
+  if (legacy && !localStorage.getItem(newKey)) {
+    localStorage.setItem(newKey, legacy);
+    localStorage.setItem(newKey + ':ts', String(Date.now()));
+  }
+}
+
+function startApp(coachId) {
+  currentCoach = coachId;
+  migrateLegacyState(coachId);
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.style.display = 'none';
+  showCoachBadge();
+  init();
+}
+
+function bootstrap() {
+  populateCoachDropdown();
+  const saved = sessionStorage.getItem('kb-coach');
+  if (saved && COACHES[saved]) {
+    startApp(saved);
+  } else {
+    // login overlay is visible by default; focus the password field
+    setTimeout(() => document.getElementById('login-pw')?.focus(), 50);
+  }
+}
+
+bootstrap();
 
 // ── Bar click detail card ──
 (function() {
@@ -3615,7 +3671,7 @@ init();
     const tier = typeof getTier === 'function' ? getTier(pctNum) : { color: 'var(--text)', bg: 'transparent', label: '' };
     tip.innerHTML =
       `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px;">
-         <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);">${parts[0] || ''}</span>
+         <span style="font-size:12px;font-weight:600;color:var(--text3);">${parts[0] || ''}</span>
          <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
        </div>
        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
@@ -3661,6 +3717,7 @@ const HISTORY_METRICS = [
   { key:'cmj',        label:'CMJ'    },
   { key:'power',      label:'Power'  },
   { key:'rfd',        label:'RFD'    },
+  { key:'eccBrakingRFD', label:'EccBrk' },
   { key:'rsi',        label:'RSI'    },
   { key:'sprint10',   label:'10yd'   },
   { key:'sprintFly',  label:'Fly10'  },
@@ -3705,12 +3762,19 @@ function openHistoryModal() {
         const color = isBest ? 'var(--green)' : (val ? 'var(--text)' : 'var(--text3)');
         cells += '<td style="padding:6px 10px;text-align:center;font-family:\'DM Mono\',monospace;font-size:11px;color:' + color + ';border-bottom:1px solid var(--border);">' + (val || '—') + '</td>';
       });
-      rowsHTML += '<tr>' + cells + '</tr>';
+      const delBtn = '<td style="padding:4px 6px;border-bottom:1px solid var(--border);text-align:center;">'
+        + '<button onclick="deleteSession(\'' + (sess.id||'') + '\')" title="Delete session"'
+        + ' style="background:none;border:1px solid rgba(248,113,113,0.3);border-radius:6px;color:rgba(248,113,113,0.5);cursor:pointer;font-size:12px;padding:3px 7px;line-height:1;transition:all .15s;"'
+        + ' onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\';"'
+        + ' onmouseout="this.style.borderColor=\'rgba(248,113,113,0.3)\';this.style.color=\'rgba(248,113,113,0.5)\';">✕</button>'
+        + '</td>';
+      rowsHTML += '<tr>' + cells + delBtn + '</tr>';
     });
   }
 
-  const headerCells = '<th style="padding:6px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-family:\'DM Mono\',monospace;white-space:nowrap;border-bottom:1px solid var(--border2);">Date</th>'
-    + HISTORY_METRICS.map(m => '<th style="padding:6px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-family:\'DM Mono\',monospace;white-space:nowrap;border-bottom:1px solid var(--border2);">' + m.label + '</th>').join('');
+  const headerCells = '<th style="padding:6px 10px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);font-family:\'DM Sans\',sans-serif;white-space:nowrap;border-bottom:1px solid var(--border2);">Date</th>'
+    + HISTORY_METRICS.map(m => '<th style="padding:6px 10px;text-align:center;font-size:11px;font-weight:500;color:var(--text3);font-family:\'DM Sans\',sans-serif;white-space:nowrap;border-bottom:1px solid var(--border2);">' + m.label + '</th>').join('')
+    + '<th style="padding:6px 10px;border-bottom:1px solid var(--border2);"></th>';
 
   const modalHTML = '<div class="report-header">'
     + '<div><div class="report-name">' + a.name + '</div><div class="report-meta">Session history · ' + sessions.length + ' session' + (sessions.length!==1?'s':'') + '</div></div>'
@@ -3718,8 +3782,8 @@ function openHistoryModal() {
     + '</div>'
     + '<button class="btn" onclick="openNewSessionForm()" style="margin-bottom:14px;">+ New Session</button>'
     + '<div id="new-session-form-area"></div>'
-    + '<div style="overflow-x:auto;">'
-    + '<table style="width:100%;border-collapse:collapse;">'
+    + '<div class="tbl-scroll">'
+    + '<table class="tbl-base">'
     + '<thead><tr>' + headerCells + '</tr></thead>'
     + '<tbody>' + rowsHTML + '</tbody>'
     + '</table>'
@@ -3739,6 +3803,43 @@ function openHistoryModal() {
   overlay.style.display = 'flex';
 }
 
+async function deleteSession(sessId) {
+  if (!sessId) return;
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+
+  if (currentAthlete._supabase_id) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/sessions?id=eq.' + sessId, {
+        method: 'DELETE', headers: SUPABASE_HEADERS
+      });
+    } catch(e) { console.error('Supabase session delete error:', e); }
+  }
+
+  currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
+
+  // Recompute best values across remaining sessions
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
+  const bestValues = {}, bestSource = {};
+  (currentAthlete._sessions || []).forEach(session => {
+    (session.measurements || []).forEach(m => {
+      const val = parseFloat(m.value) || 0;
+      if (!val) return;
+      const existing = bestValues[m.metric];
+      if (existing === undefined) { bestValues[m.metric] = val; bestSource[m.metric] = m.source; }
+      else if (INVERSE_METRICS.has(m.metric) ? val < existing : val > existing) {
+        bestValues[m.metric] = val; bestSource[m.metric] = m.source;
+      }
+    });
+  });
+  ALL_KEYS.forEach(k => { if (bestValues[k] !== undefined) currentAthlete[k] = bestValues[k]; });
+  currentAthlete.cmjFD = bestSource['cmj'] === 'FD';
+  currentAthlete.rsiFD = bestSource['rsi'] === 'FD';
+  athleteData = {...currentAthlete};
+
+  renderAll(true);
+  openHistoryModal();
+}
+
 function openNewSessionForm() {
   const a = currentAthlete;
   if (!a) return;
@@ -3750,16 +3851,16 @@ function openNewSessionForm() {
 
   let fieldRows = HISTORY_METRICS.map(m =>
     '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">'
-    + '<label style="width:90px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);font-family:\'DM Mono\',monospace;">' + m.label + '</label>'
+    + '<label style="width:90px;font-size:11px;font-weight:500;color:var(--text3);font-family:\'DM Sans\',sans-serif;">' + m.label + '</label>'
     + '<input id="ns-inp-' + m.key + '" type="number" step="any" placeholder="—" style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;font-family:\'DM Mono\',monospace;color:var(--text);text-align:center;outline:none;">'
     + '<select id="ns-src-' + m.key + '" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:10px;color:var(--text2);font-family:\'DM Mono\',monospace;outline:none;">' + sourceOpts + '</select>'
     + '</div>'
   ).join('');
 
   area.innerHTML = '<div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:14px;">'
-    + '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-family:\'DM Mono\',monospace;margin-bottom:10px;">New session</div>'
+    + '<div style="font-size:12px;font-weight:600;color:var(--text3);font-family:\'DM Sans\',sans-serif;margin-bottom:10px;">New session</div>'
     + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
-    + '<label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);font-family:\'DM Mono\',monospace;">Date</label>'
+    + '<label style="font-size:11px;font-weight:500;color:var(--text3);font-family:\'DM Sans\',sans-serif;">Date</label>'
     + '<input id="ns-date" type="date" value="' + new Date().toISOString().slice(0,10) + '" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:\'DM Mono\',monospace;color:var(--text);outline:none;">'
     + '</div>'
     + fieldRows
@@ -3819,59 +3920,3 @@ async function submitNewSession() {
   openHistoryModal(); // refresh modal
 }
 
-</script>
-
-<!-- ═══════════════════════ EXPORT PDF MODAL ═══════════════════════ -->
-<div id="export-pdf-overlay" class="export-overlay" style="display:none;" onclick="if(event.target===this)closeExportPDF()">
-  <div class="export-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:0.5px;">Export PDF</div>
-      <button class="btn" onclick="closeExportPDF()" style="padding:5px 10px;font-size:13px;">✕</button>
-    </div>
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-      <div class="select-wrap" style="flex:1;min-width:180px;">
-        <select id="export-athlete-select" onchange="updateExportPreview()"></select>
-      </div>
-      <div class="select-wrap" style="max-width:230px;min-width:160px;">
-        <select id="export-norm-select" onchange="updateExportPreview()"></select>
-      </div>
-    </div>
-
-    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
-      Metrics to include
-      <button onclick="exportToggleAll(true)"  style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;">All</button>
-      <button onclick="exportToggleAll(false)" style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;">None</button>
-    </div>
-    <div id="export-metric-checks" class="export-checks"></div>
-
-    <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
-      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px;">Preview</div>
-      <div class="report-modal" style="max-width:none;max-height:none;overflow:visible;background:var(--bg3);">
-        <div id="export-card-preview"></div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:16px;justify-content:space-between;align-items:center;flex-wrap:wrap;">
-      <div class="print-mode-seg">
-        <button id="exp-mode-dark"  class="print-mode-btn active" onclick="setExportPrintMode('dark')">◑ Dark</button>
-        <button id="exp-mode-light" class="print-mode-btn"        onclick="setExportPrintMode('light')">◯ Light</button>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" onclick="printExportPDF()">⬇ Print / Save PDF</button>
-        <button class="btn" onclick="closeExportPDF()">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="export-print-area"></div>
-
-<!-- ═══════════════════════ REPORT MODAL ═══════════════════════ -->
-<div id="report-overlay" class="report-overlay" style="display:none;" onclick="if(event.target===this)closeReport()">
-  <div class="report-modal" id="report-modal-content"></div>
-</div>
-
-<div id="bar-tooltip"></div>
-
-</body>
-</html>

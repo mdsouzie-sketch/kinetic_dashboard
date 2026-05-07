@@ -21,16 +21,26 @@ HEADERS = {
     "Prefer": "return=representation",
 }
 
+# Athletes to skip entirely on user request.
+EXCLUDE_ATHLETES = {
+    "Matt De Souza", "Ty Cox", "Quinn Oliver", "Jake Bishop",
+}
+
 # Best-guess sex from first name. F by default for ambiguous-looking sets,
 # explicit overrides for the names where I'm reasonably confident.
 MALE_NAMES = {
     "cohen", "edward", "jack", "anthony", "sam mccoy", "nicolas", "brayden",
     "desean", "carter", "aaron", "justian", "jack dellinger", "wesley",
     "tristan",
+    # confirmed by user prior round
+    "rowan nishimoto", "sam shelton",
+    # new from second import: Buck/Carter/Landon/Travis are M; Malia is F
+    "buck", "landon", "travis",
+    # confirmed third round
+    "kai",
 }
 AMBIGUOUS = {
-    "tatum", "kaimana", "sam shelton", "vai", "rowan", "alexis",
-    "riley", "alexia",
+    "tatum", "kaimana", "vai", "alexis", "riley", "alexia",
 }
 
 METRIC_COLS = {
@@ -39,6 +49,9 @@ METRIC_COLS = {
     "rfd": "Concentric RFD / BM [N/s/kg]",
     "eccBrakingRFD": "Eccentric Braking RFD / BM [N/s/kg]",
 }
+
+# Only ingest standard CMJ rows; ABCMJ and other test types are skipped.
+ALLOWED_TEST_TYPES = {"CMJ"}
 
 VALUE_RE = re.compile(r"^\s*(-?\d+(?:\.\d+)?)\s*(?:[±+]|\\u00b1)?")
 
@@ -96,12 +109,21 @@ def main():
     csv_path = "force_deck_cmj.csv"
     # athlete name -> day -> {metric: best_value}
     grouped = defaultdict(lambda: defaultdict(dict))
+    skipped_test_type = 0
+    skipped_excluded = 0
 
-    with open(csv_path, encoding="utf-8") as fh:
+    with open(csv_path, encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
         for row in reader:
             name = normalize_name(row["Name"])
             if not name:
+                continue
+            test_type = (row.get("Test Type") or "").strip()
+            if test_type not in ALLOWED_TEST_TYPES:
+                skipped_test_type += 1
+                continue
+            if name in EXCLUDE_ATHLETES:
+                skipped_excluded += 1
                 continue
             day = parse_date(row["Date"])
             for key, col in METRIC_COLS.items():
@@ -111,6 +133,9 @@ def main():
                 cur = grouped[name][day].get(key)
                 if cur is None or v > cur:
                     grouped[name][day][key] = v
+
+    print(f"Skipped (non-CMJ test type): {skipped_test_type}")
+    print(f"Skipped (excluded athlete): {skipped_excluded}")
 
     # Build athlete list with sex guess
     athletes = sorted(grouped.keys())

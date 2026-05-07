@@ -1,0 +1,31 @@
+# Claude Code session state
+.claude/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Excel sources (large, regeneratable from CSVs / external systems)
+*.xlsx
+*.xls
+
+# Stale HTML backups — index.html is the canonical dashboard
+kinetic_benchmark.html
+kinetic_benchmark_v*.html
+kinetic_benchmark_old.html.bak
+*.html.bak
+
+# One-off scratch output
+output.txt

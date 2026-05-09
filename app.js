@@ -198,6 +198,15 @@ function escapeHtml(s) {
 // ═══════════════════════════════════════════════════════════════
 // Backwards-compat alias — Z_85 was the original name when TARGET_PCT was hardcoded to 85.
 const Z_85 = Z_TARGET;
+
+// Convert a 10-yard fly time (sprintFly, the 20-30y split) to top-speed MPH.
+// 10 yards in `t` seconds = (10 yds × 3600 sec/hr) / (1760 yds/mi × t) ≈ 20.4545 / t mph.
+// Returns null for missing/zero input. Same formula works for any 10y split (sprint10
+// is acceleration speed, not top speed — caller should label appropriately).
+function mphFrom10y(t) {
+  if (!t || t <= 0) return null;
+  return 20.4545 / t;
+}
 const TIERS = [
   { min:90, label:'Elite',       color:'#a78bfa', bg:'rgba(167,139,250,0.15)'  },
   { min:70, label:'Advanced',    color:'#60a5fa', bg:'rgba(96,165,250,0.15)'   },
@@ -710,7 +719,7 @@ function renderCompareTable() {
 // ═══════════════════════════════════════════════════════════════
 function switchTab(tab) {
   activeTab = tab;
-  ['analytics','roster','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
+  ['analytics','roster','data','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
     const pane = document.getElementById('pane-'+t);
     const btn  = document.getElementById('tab-'+t);
     if (!pane || !btn) return;
@@ -723,6 +732,7 @@ function switchTab(tab) {
     btn.className = 'tab-btn'+(t===tab?' active':'');
   });
   if (tab==='roster')      renderRosterTable();
+  if (tab==='data')        renderDataTab();
   if (tab==='leaderboard') renderLeaderboard();
   if (tab==='coaches')     renderCoachesPage();
   if (tab==='flags')       renderFlags();
@@ -2445,6 +2455,131 @@ function loadAthleteFromRoster(name) {
   switchTab('analytics');
 }
 
+// ─── Data tab ─────────────────────────────────────────────────────────
+// Pure number view of every athlete × every metric, plus derived columns
+// (top speed in mph from sprintFly). Sortable. Search-filterable.
+let dataSex = 'all';
+let dataSortKey = 'name';
+let dataSortDir = 1;
+
+function dataSetSex(s) {
+  dataSex = s;
+  renderDataTab();
+}
+
+function dataSort(key) {
+  if (dataSortKey === key) dataSortDir *= -1;
+  else { dataSortKey = key; dataSortDir = (key === 'name' || key === 'sex') ? 1 : -1; }
+  renderDataTab();
+}
+
+function renderDataTab() {
+  const tbl = document.getElementById('data-table');
+  if (!tbl) return;
+
+  // Sync sex toggle button states
+  ['all','m','f'].forEach(s => {
+    const btn = document.getElementById('data-sex-' + s);
+    if (!btn) return;
+    const active = s === dataSex.toLowerCase();
+    btn.style.background  = active ? 'rgba(52,211,153,0.12)' : 'var(--bg2)';
+    btn.style.borderColor = active ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.13)';
+    btn.style.color       = active ? 'var(--green)'          : 'var(--text3)';
+  });
+
+  const search = (document.getElementById('data-search')?.value || '').trim().toLowerCase();
+  const activeMetrics = METRICS.filter(m => !disabledMetrics.has(m.key));
+
+  // Columns: Name, Sex, [each metric], MPH (top speed), Sessions
+  const cols = [
+    { key: 'name', label: 'Name', align: 'left' },
+    { key: 'sex',  label: 'Sex',  align: 'center' },
+    ...activeMetrics.map(m => ({
+      key:   m.key,
+      label: m.label,
+      sub:   m.unit,
+      align: 'right',
+    })),
+    { key: '_mph',     label: 'Top speed', sub: 'mph',  align: 'right' },
+    { key: '_nsess',   label: 'Sessions',  sub: 'count', align: 'right' },
+  ];
+
+  // Compute derived values per athlete
+  const rows = ATHLETE_DB
+    .filter(a => dataSex === 'all' || a.sex === dataSex)
+    .filter(a => !search || a.name.toLowerCase().includes(search))
+    .map(a => ({
+      ...a,
+      _mph:   mphFrom10y(a.sprintFly),
+      _nsess: (a._sessions || []).length,
+    }));
+
+  // Sort
+  rows.sort((a, b) => {
+    const k = dataSortKey;
+    const av = a[k];
+    const bv = b[k];
+    // Push null/missing values to the end regardless of direction
+    const aMissing = av == null || av === 0 || av === '';
+    const bMissing = bv == null || bv === 0 || bv === '';
+    if (aMissing !== bMissing) return aMissing ? 1 : -1;
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dataSortDir;
+    return String(av).localeCompare(String(bv)) * dataSortDir;
+  });
+
+  // Header
+  const thStyle = `padding:8px 10px;font-size:11px;font-weight:600;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border2);white-space:nowrap;cursor:pointer;user-select:none;`;
+  const headHtml = cols.map(c => {
+    const active = dataSortKey === c.key;
+    const arrow  = active ? (dataSortDir === -1 ? ' ▼' : ' ▲') : '';
+    const color  = active ? 'var(--text)' : 'var(--text3)';
+    const sub    = c.sub ? `<span style="font-size:9px;opacity:0.7;font-weight:500;margin-left:3px;">(${c.sub})</span>` : '';
+    return `<th onclick="dataSort('${c.key}')" style="${thStyle}text-align:${c.align};color:${color};">${c.label}${sub}${arrow}</th>`;
+  }).join('');
+
+  // Body
+  const bodyHtml = rows.map(a => {
+    return '<tr class="data-row" style="cursor:pointer;" onclick="loadAthleteFromRoster(\''
+      + a.name.replace(/'/g, "\\'") + '\')">'
+      + cols.map(c => _dataCell(a, c)).join('')
+      + '</tr>';
+  }).join('');
+
+  tbl.innerHTML = `<thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody>`;
+
+  // Hover effect
+  tbl.querySelectorAll('.data-row').forEach(r => {
+    r.addEventListener('mouseenter', () => r.style.background = 'var(--bg3)');
+    r.addEventListener('mouseleave', () => r.style.background = '');
+  });
+}
+
+function _dataCell(a, c) {
+  const tdBase = 'padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;font-family:\'DM Mono\',monospace;text-align:' + c.align + ';white-space:nowrap;';
+  if (c.key === 'name') {
+    const greenName = hasAllMeasured(a) ? 'color:var(--green);' : '';
+    return `<td style="${tdBase}font-family:'DM Sans',sans-serif;font-weight:600;${greenName}">${escapeHtml(a.name)}</td>`;
+  }
+  if (c.key === 'sex') {
+    const col = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
+    return `<td style="${tdBase}color:${col};">${a.sex}</td>`;
+  }
+  if (c.key === '_mph' || c.key === '_nsess') {
+    const v = a[c.key];
+    if (v == null) return `<td style="${tdBase}color:var(--text3);opacity:0.5;">—</td>`;
+    const display = c.key === '_mph' ? v.toFixed(1) : String(v);
+    return `<td style="${tdBase}color:var(--text2);">${display}</td>`;
+  }
+  // Metric cell
+  const v = a[c.key];
+  const measured = !!(a.measured && a.measured[c.key]);
+  if (typeof v !== 'number' || v <= 0 || !measured) {
+    return `<td style="${tdBase}color:var(--text3);opacity:0.5;" title="Test required">—</td>`;
+  }
+  const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' || c.key === 'eccBrakingRFD' ? 1 : 2);
+  return `<td style="${tdBase}color:var(--text);font-weight:600;">${v.toFixed(decimals)}</td>`;
+}
+
 function exportRosterCsv() {
   const pool = rosterFullOnly ? ATHLETE_DB.filter(hasAllMeasured) : ATHLETE_DB;
   const cols = METRICS.filter(m => !disabledMetrics.has(m.key));
@@ -2687,6 +2822,7 @@ function _renderLbMetric(metric, sex) {
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
         <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${val.toFixed(decimals)}</span>
         <span style="font-size:9px;color:var(--text3);margin-left:3px;">${metric.unit}</span>
+        ${metKey === 'sprintFly' ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px;">${mphFrom10y(val).toFixed(1)} mph</div>` : ''}
       </td>
       <td style="padding:8px 12px 8px 20px;border-bottom:1px solid var(--border);min-width:140px;">
         <div style="position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">

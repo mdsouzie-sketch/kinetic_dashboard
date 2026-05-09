@@ -257,7 +257,100 @@
       .dossier-section, .dossier-grid-2col { page-break-inside: avoid; }
     }
 
-    /* ── Zebra striping for tables ── */
+    /* ── Profile tab ── */
+.profile-header {
+  display: flex; align-items: center; gap: 18px;
+  padding: 18px 22px; margin-bottom: 16px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); flex-wrap: wrap;
+}
+.profile-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 2px solid var(--border2); background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 22px;
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; min-width: 200px; }
+.profile-name {
+  font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 700;
+  color: var(--text); line-height: 1.1;
+}
+.profile-meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.profile-meta-sep { font-size: 12px; color: var(--text3); }
+.profile-meta #profile-norm { font-size: 12px; color: var(--text2); font-weight: 500; }
+.profile-composite { text-align: center; flex-shrink: 0; padding: 0 18px; border-left: 1px solid var(--border); }
+.profile-composite-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.profile-composite-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 48px; font-weight: 800; font-style: italic;
+  line-height: 1; color: var(--gold); margin-bottom: 6px;
+}
+.profile-controls { flex-shrink: 0; }
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.profile-metric-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+  border-left: 4px solid var(--text3);
+  transition: transform 0.15s, border-color 0.15s;
+}
+.profile-metric-card:hover { transform: translateY(-1px); }
+.profile-metric-card .pmc-label {
+  font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2;
+}
+.profile-metric-card .pmc-test {
+  font-size: 11px; color: var(--text3); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.profile-metric-card .pmc-value-row {
+  display: flex; align-items: baseline; gap: 5px;
+  margin-top: 14px; line-height: 1;
+}
+.profile-metric-card .pmc-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 32px; font-weight: 800;
+}
+.profile-metric-card .pmc-unit {
+  font-size: 12px; color: var(--text3);
+}
+.profile-metric-card .pmc-bar {
+  height: 6px; background: var(--bg3); border-radius: 3px;
+  margin-top: 14px; position: relative; overflow: hidden;
+}
+.profile-metric-card .pmc-bar-fill {
+  height: 100%; border-radius: 3px; transition: width 0.4s ease;
+}
+.profile-metric-card .pmc-bar-target {
+  position: absolute; top: -2px; left: 85%;
+  width: 1px; height: 10px; background: rgba(255,255,255,0.35);
+}
+.profile-metric-card .pmc-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px; font-size: 11px;
+}
+.profile-metric-card .pmc-pct {
+  font-family: 'DM Mono', monospace; font-weight: 700; font-size: 13px;
+}
+.profile-metric-card.untested {
+  opacity: 0.6; border-left-color: var(--text3);
+}
+.profile-metric-card.untested .pmc-value { color: var(--text3); font-size: 22px; }
+
+.profile-summary {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 18px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2);
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.profile-summary .ps-stat strong { color: var(--text); font-weight: 600; }
+
+/* ── Zebra striping for tables ── */
     #roster-table tbody tr.roster-row:nth-child(even) > td { background: rgba(255,255,255,0.018); }
     #roster-table tbody tr.roster-row:hover > td { background: rgba(255,255,255,0.05) !important; }
 

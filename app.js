@@ -719,7 +719,7 @@ function renderCompareTable() {
 // ═══════════════════════════════════════════════════════════════
 function switchTab(tab) {
   activeTab = tab;
-  ['analytics','roster','data','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
+  ['analytics','profile','roster','data','leaderboard','coaches','flags','cards','tests','history','settings'].forEach(t => {
     const pane = document.getElementById('pane-'+t);
     const btn  = document.getElementById('tab-'+t);
     if (!pane || !btn) return;
@@ -731,6 +731,7 @@ function switchTab(tab) {
     }
     btn.className = 'tab-btn'+(t===tab?' active':'');
   });
+  if (tab==='profile')     renderProfileTab();
   if (tab==='roster')      renderRosterTable();
   if (tab==='data')        renderDataTab();
   if (tab==='leaderboard') renderLeaderboard();
@@ -2455,6 +2456,157 @@ function loadAthleteFromRoster(name) {
   switchTab('analytics');
 }
 
+// ─── Profile tab ──────────────────────────────────────────────────────
+// Single-athlete focused view. Big metric-card grid colored by tier
+// percentile vs the team. Designed for at-a-glance reading, not for the
+// dense Analytics chrome (charts, comparison strip, edit panels).
+function onProfileAthleteChange() {
+  const name = document.getElementById('profile-athlete-select').value;
+  const a = ATHLETE_DB.find(x => x.name === name);
+  if (a) {
+    currentAthlete = a;
+    athleteData = { ...a };
+    selectedNorm = `Roster — ${a.sex === 'M' ? 'Male' : 'Female'} (Measured)`;
+    rebuildNormSelect();
+    updateAthleteAvatar(a);
+    renderProfileTab();
+  }
+}
+
+function renderProfileTab() {
+  if (!currentAthlete) return;
+  const a = currentAthlete;
+  const normKey = `Roster — ${a.sex === 'M' ? 'Male' : 'Female'} (Measured)`;
+  const n = norms[normKey] || {};
+
+  // Populate athlete picker (sorted, current selected)
+  const sel = document.getElementById('profile-athlete-select');
+  if (sel) {
+    const sorted = [...ATHLETE_DB].sort((x, y) => x.name.localeCompare(y.name));
+    sel.innerHTML = sorted.map(x =>
+      `<option value="${escapeHtml(x.name)}"${x.name === a.name ? ' selected' : ''}>${escapeHtml(x.name)} (${x.sex})</option>`
+    ).join('');
+  }
+
+  // Header
+  const parts = a.name.trim().split(/\s+/);
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)).toUpperCase();
+  const sexCol = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
+  const sexBg  = a.sex === 'M' ? 'rgba(96,165,250,0.10)' : 'rgba(167,139,250,0.10)';
+
+  const avatar = document.getElementById('profile-avatar');
+  if (avatar) {
+    avatar.textContent = initials;
+    avatar.style.color = sexCol;
+    avatar.style.borderColor = sexCol;
+    avatar.style.background = sexBg;
+  }
+  document.getElementById('profile-name').textContent = a.name;
+  document.getElementById('profile-norm').textContent = normKey;
+
+  const sbadge = document.getElementById('profile-sex-badge');
+  if (sbadge) {
+    sbadge.textContent = a.sex === 'M' ? '♂ Male' : '♀ Female';
+    sbadge.className = 'sex-badge ' + (a.sex === 'M' ? 'male' : 'female');
+  }
+
+  // Composite (avg percentile of measured metrics only)
+  const measured = METRICS
+    .filter(m => !disabledMetrics.has(m.key) && a.measured && a.measured[m.key] && (a[m.key] || 0) > 0 && n[m.key])
+    .map(m => ({ m, pct: calcPercentile(a[m.key], n[m.key], m.inv) }));
+  const avg = measured.length
+    ? Math.round(measured.reduce((s, x) => s + x.pct, 0) / measured.length)
+    : 0;
+  const avgTier = getTier(avg || 0);
+  const compEl  = document.getElementById('profile-composite-score');
+  const tierEl  = document.getElementById('profile-composite-tier');
+  if (compEl) {
+    compEl.textContent = avg || '—';
+    compEl.style.color = avg ? avgTier.color : 'var(--text3)';
+  }
+  if (tierEl) {
+    tierEl.textContent = avg ? avgTier.label : '—';
+    tierEl.style.background = avg ? avgTier.bg : 'var(--bg3)';
+    tierEl.style.color      = avg ? avgTier.color : 'var(--text3)';
+  }
+
+  // Metric cards
+  const grid = document.getElementById('profile-grid');
+  if (grid) {
+    grid.innerHTML = METRICS
+      .filter(m => !disabledMetrics.has(m.key))
+      .map(m => _renderProfileCard(a, m, n))
+      .join('');
+  }
+
+  // Summary line
+  const summary = document.getElementById('profile-summary');
+  if (summary) {
+    const above = measured.filter(x => x.pct >= TARGET_PCT).length;
+    const totalMeas = measured.length;
+    const sessions  = (a._sessions || []).length;
+    const lastDate = (a._sessions || []).reduce((max, s) =>
+      s.session_date && (!max || s.session_date > max) ? s.session_date : max, null);
+    summary.innerHTML = `
+      <div class="ps-stat"><strong>${totalMeas}</strong> of ${METRICS.length - disabledMetrics.size} metrics measured</div>
+      <div class="ps-stat"><strong>${above}</strong> at or above ${TARGET_PCT}th-pct target</div>
+      <div class="ps-stat"><strong>${sessions}</strong> session${sessions === 1 ? '' : 's'} on file</div>
+      ${lastDate ? `<div class="ps-stat">Last test: <strong>${lastDate}</strong></div>` : ''}
+    `;
+  }
+}
+
+function _renderProfileCard(a, m, n) {
+  const decimals = m.step < 0.1 ? 2 : 1;
+  const measuredFlag = !!(a.measured && a.measured[m.key]);
+  const val = a[m.key];
+  const hasValue = typeof val === 'number' && val > 0 && measuredFlag;
+  const nd = n[m.key];
+
+  // Untested state
+  if (!hasValue || !nd) {
+    return `<div class="profile-metric-card untested" title="${m.testName || m.label}">
+      <div class="pmc-label">${m.label}</div>
+      <div class="pmc-test">${m.testName || ''}</div>
+      <div class="pmc-value-row">
+        <span class="pmc-value">—</span>
+      </div>
+      <div class="pmc-footer">
+        <span style="color:var(--text3);">Test required</span>
+      </div>
+    </div>`;
+  }
+
+  const pct  = calcPercentile(val, nd, m.inv);
+  const tier = getTier(pct);
+  const isCmjNonFD = m.key === 'cmj' && !a.cmjFD;
+
+  // Optional secondary line: Top speed mph for sprintFly
+  let secondary = '';
+  if (m.key === 'sprintFly') {
+    const mph = mphFrom10y(val);
+    if (mph) secondary = `<div class="pmc-test" style="margin-top:8px;">${mph.toFixed(1)} mph top speed</div>`;
+  }
+
+  return `<div class="profile-metric-card" style="border-left-color:${tier.color};" title="${m.testName || m.label}">
+    <div class="pmc-label">${m.label}${isCmjNonFD ? ' <span style="color:var(--gold);font-size:11px;" title="Non-FD sensor">†</span>' : ''}</div>
+    <div class="pmc-test">${m.testName || ''}</div>
+    <div class="pmc-value-row">
+      <span class="pmc-value" style="color:${tier.color};">${val.toFixed(decimals)}</span>
+      <span class="pmc-unit">${m.unit}</span>
+    </div>
+    <div class="pmc-bar">
+      <div class="pmc-bar-fill" style="width:${pct}%;background:${tier.color};"></div>
+      <div class="pmc-bar-target" title="85th-pct target"></div>
+    </div>
+    <div class="pmc-footer">
+      <span class="pmc-pct" style="color:${tier.color};">${pct}th</span>
+      <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
+    </div>
+    ${secondary}
+  </div>`;
+}
+
 // ─── Data tab ─────────────────────────────────────────────────────────
 // Pure number view of every athlete × every metric, plus derived columns
 // (top speed in mph from sprintFly). Sortable. Search-filterable.
@@ -2812,6 +2964,12 @@ function _renderLbMetric(metric, sex) {
     const sexCell = sex === 'all'
       ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sexColor};background:${sexColor}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>`
       : '';
+    const mphCell = metKey === 'sprintFly'
+      ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
+          <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${mphFrom10y(val).toFixed(1)}</span>
+          <span style="font-size:9px;color:var(--text3);margin-left:3px;">mph</span>
+        </td>`
+      : '';
     return `<tr>
       <td style="padding:8px 10px 8px 6px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;width:36px;">${medal || (i+1)}</td>
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;">
@@ -2819,10 +2977,10 @@ function _renderLbMetric(metric, sex) {
         ${est ? '' : ''}
       </td>
       ${sexCell}
+      ${mphCell}
       <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
         <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${val.toFixed(decimals)}</span>
         <span style="font-size:9px;color:var(--text3);margin-left:3px;">${metric.unit}</span>
-        ${metKey === 'sprintFly' ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px;">${mphFrom10y(val).toFixed(1)} mph</div>` : ''}
       </td>
       <td style="padding:8px 12px 8px 20px;border-bottom:1px solid var(--border);min-width:140px;">
         <div style="position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">
@@ -2846,6 +3004,7 @@ function _renderLbMetric(metric, sex) {
         <th class="tbl-th tbl-th-c" style="width:36px;">#</th>
         <th class="tbl-th tbl-th-l">Athlete</th>
         ${sex === 'all' ? '<th class="tbl-th tbl-th-c">Sex</th>' : ''}
+        ${metKey === 'sprintFly' ? '<th class="tbl-th tbl-th-r">Top speed</th>' : ''}
         <th class="tbl-th tbl-th-r">Value</th>
         <th class="tbl-th"></th>
         <th class="tbl-th tbl-th-c">Percentile</th>

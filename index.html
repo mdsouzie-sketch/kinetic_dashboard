@@ -62,6 +62,7 @@
     <aside class="sidebar">
       <nav class="tabs">
         <button class="tab-btn active" id="tab-analytics" onclick="switchTab('analytics')">Analytics</button>
+        <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">Profile</button>
         <button class="tab-btn" id="tab-roster" onclick="switchTab('roster')">Roster</button>
         <button class="tab-btn" id="tab-data" onclick="switchTab('data')">Data</button>
         <button class="tab-btn" id="tab-leaderboard" onclick="switchTab('leaderboard')">Leaderboard</button>
@@ -236,6 +237,35 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ═══════════════════════ PROFILE PANE ═══════════════════════ -->
+  <div id="pane-profile" style="display:none;">
+    <div class="profile-header">
+      <div id="profile-avatar" class="profile-avatar">—</div>
+      <div class="profile-info">
+        <div class="profile-name" id="profile-name">—</div>
+        <div class="profile-meta">
+          <span id="profile-sex-badge" class="sex-badge">—</span>
+          <span class="profile-meta-sep">vs</span>
+          <span id="profile-norm">—</span>
+        </div>
+      </div>
+      <div class="profile-composite">
+        <div class="profile-composite-label">Composite</div>
+        <div class="profile-composite-score" id="profile-composite-score">—</div>
+        <div id="profile-composite-tier" class="tier-badge">—</div>
+      </div>
+      <div class="profile-controls">
+        <div class="select-wrap" style="min-width:200px;">
+          <select id="profile-athlete-select" onchange="onProfileAthleteChange()"></select>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile-grid" class="profile-grid"></div>
+
+    <div class="profile-summary" id="profile-summary"></div>
   </div>
 
   <!-- ═══════════════════════ ROSTER PANE ═══════════════════════ -->

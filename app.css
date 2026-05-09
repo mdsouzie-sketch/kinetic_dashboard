@@ -299,6 +299,7 @@
   border-radius: var(--radius-lg); padding: 16px 18px;
   border-left: 4px solid var(--text3);
   transition: transform 0.15s, border-color 0.15s;
+  display: flex; flex-direction: column;
 }
 .profile-metric-card:hover { transform: translateY(-1px); }
 .profile-metric-card .pmc-label {
@@ -341,6 +342,21 @@
   opacity: 0.6; border-left-color: var(--text3);
 }
 .profile-metric-card.untested .pmc-value { color: var(--text3); font-size: 22px; }
+
+/* Top-speed callout for sprintFly cards — bright, centered, sits at the
+   bottom of the card via margin-top:auto + the card's flex column. */
+.profile-metric-card .pmc-mph {
+  margin-top: auto; padding-top: 12px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+}
+.profile-metric-card .pmc-mph-value {
+  font-size: 22px; font-weight: 800; letter-spacing: 0.01em;
+}
+.profile-metric-card .pmc-mph-unit {
+  font-size: 11px; opacity: 0.75; font-weight: 500;
+  margin-left: 5px; letter-spacing: 0.04em; text-transform: uppercase;
+}
 
 .profile-summary {
   background: var(--bg2); border: 1px solid var(--border);

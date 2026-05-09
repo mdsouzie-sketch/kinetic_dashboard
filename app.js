@@ -2581,11 +2581,15 @@ function _renderProfileCard(a, m, n) {
   const tier = getTier(pct);
   const isCmjNonFD = m.key === 'cmj' && !a.cmjFD;
 
-  // Optional secondary line: Top speed mph for sprintFly
+  // Optional secondary line: Top speed mph for sprintFly. Brighter, centered,
+  // anchored at the bottom of the card so the value pops at a glance.
   let secondary = '';
   if (m.key === 'sprintFly') {
     const mph = mphFrom10y(val);
-    if (mph) secondary = `<div class="pmc-test" style="margin-top:8px;">${mph.toFixed(1)} mph top speed</div>`;
+    if (mph) secondary = `<div class="pmc-mph" style="color:${tier.color};">
+      <span class="pmc-mph-value">${mph.toFixed(1)}</span>
+      <span class="pmc-mph-unit">mph top speed</span>
+    </div>`;
   }
 
   return `<div class="profile-metric-card" style="border-left-color:${tier.color};" title="${m.testName || m.label}">
@@ -3959,17 +3963,29 @@ async function init() {
     _resizeTid = setTimeout(() => { const r=getResults(); renderMatrix(computeMatrixProfile(r)); }, 150);
   });
 
-  // Arrow key athlete navigation (Left/Right when not typing)
+  // Arrow key athlete navigation (Left/Right when not typing) — works on
+  // Analytics and Profile tabs. Each tab has its own picker; we route to
+  // the visible one and call its change handler.
   document.addEventListener('keydown', e => {
     const tag = document.activeElement?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-    if (activeTab !== 'analytics') return;
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-    const sel = document.getElementById('athlete-select');
+    const isProfile = activeTab === 'profile';
+    const isAnalytics = activeTab === 'analytics';
+    if (!isProfile && !isAnalytics) return;
+    const selId = isProfile ? 'profile-athlete-select' : 'athlete-select';
+    const sel = document.getElementById(selId);
     if (!sel) return;
     const idx = sel.selectedIndex;
-    const newIdx = e.key === 'ArrowLeft' ? Math.max(0, idx - 1) : Math.min(sel.options.length - 1, idx + 1);
-    if (newIdx !== idx) { sel.selectedIndex = newIdx; onAthleteChange(); e.preventDefault(); }
+    const newIdx = e.key === 'ArrowLeft'
+      ? Math.max(0, idx - 1)
+      : Math.min(sel.options.length - 1, idx + 1);
+    if (newIdx !== idx) {
+      sel.selectedIndex = newIdx;
+      if (isProfile) onProfileAthleteChange();
+      else           onAthleteChange();
+      e.preventDefault();
+    }
   });
 }
 

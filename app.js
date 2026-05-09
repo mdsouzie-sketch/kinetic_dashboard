@@ -72,12 +72,16 @@ const TEST_GROUPS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// NORMS — internal (computed from measured roster only) + external NCAA
+// NORMS — computed from the team roster (measured-only).
 //
 // Only athletes with a real measurement for a given metric contribute
 // to that metric's norm. Estimated/auto-derived values are not used —
 // untested athletes simply have no value, which the UI surfaces as
 // "Test required" rather than fabricating a number.
+//
+// External (NCAA) norms were removed pending real source data. See
+// project_open_followups.md for the plan to add sport-specific norms
+// from NSCA / peer-reviewed studies.
 // ═══════════════════════════════════════════════════════════════
 
 // When true: roster table + Roster (Measured) norms restricted to full-data athletes.
@@ -109,16 +113,13 @@ function computeMeasuredNorms(sexKey) {
 }
 
 
+// Roster-only norms. Hardcoded NCAA D1/D2/D3 presets were removed because
+// the values were unverified estimates — refining them is filed as a
+// follow-up. Add real sport-specific NCAA norms here once we have a
+// trusted source (NSCA, peer-reviewed studies, etc.).
 let INITIAL_NORMS = {
   "Roster — Male (Measured)":   computeMeasuredNorms('M'),
   "Roster — Female (Measured)": computeMeasuredNorms('F'),
-  "Male NCAA D1":   { power:{m:72.0,sd:4.5}, sprint10:{m:1.45,sd:0.03}, sprintFly:{m:0.98,sd:0.02}, rsi:{m:1.65,sd:0.15}, cmj:{m:11.2,sd:1.5}, broad:{m:109,sd:8.0}, rfd:{m:240,sd:20.0}, eccBrakingRFD:{m:95,sd:30}, shuttle:{m:4.15,sd:0.10} },
-  "Male NCAA D2":   { power:{m:66.5,sd:4.8}, sprint10:{m:1.51,sd:0.04}, sprintFly:{m:1.04,sd:0.03}, rsi:{m:1.48,sd:0.18}, cmj:{m:10.2,sd:1.8}, broad:{m:99,sd:9.0},  rfd:{m:210,sd:22.0}, eccBrakingRFD:{m:80,sd:28}, shuttle:{m:4.32,sd:0.12} },
-  "Male NCAA D3":   { power:{m:58.2,sd:5.5}, sprint10:{m:1.58,sd:0.06}, sprintFly:{m:1.12,sd:0.04}, rsi:{m:1.30,sd:0.20}, cmj:{m:9.2,sd:2.0},  broad:{m:90,sd:10.0}, rfd:{m:185,sd:25.0}, eccBrakingRFD:{m:65,sd:25}, shuttle:{m:4.48,sd:0.15} },
-  "Female NCAA D1": { power:{m:54.5,sd:4.2}, sprint10:{m:1.74,sd:0.05}, sprintFly:{m:1.21,sd:0.04}, rsi:{m:1.42,sd:0.15}, cmj:{m:8.8,sd:1.4},  broad:{m:87,sd:7.0},  rfd:{m:165,sd:18.0}, eccBrakingRFD:{m:75,sd:28}, shuttle:{m:4.62,sd:0.12} },
-  "Female NCAA D2": { power:{m:49.8,sd:4.5}, sprint10:{m:1.82,sd:0.06}, sprintFly:{m:1.29,sd:0.05}, rsi:{m:1.25,sd:0.16}, cmj:{m:8.1,sd:1.6},  broad:{m:80,sd:8.0},  rfd:{m:145,sd:20.0}, eccBrakingRFD:{m:60,sd:25}, shuttle:{m:4.80,sd:0.15} },
-  "Female NCAA D3": { power:{m:44.5,sd:5.0}, sprint10:{m:1.90,sd:0.08}, sprintFly:{m:1.38,sd:0.06}, rsi:{m:1.10,sd:0.18}, cmj:{m:7.2,sd:1.8},  broad:{m:73,sd:9.0},  rfd:{m:125,sd:22.0}, eccBrakingRFD:{m:50,sd:22}, shuttle:{m:5.05,sd:0.20} },
-
 };
 
 let norms = JSON.parse(JSON.stringify(INITIAL_NORMS));

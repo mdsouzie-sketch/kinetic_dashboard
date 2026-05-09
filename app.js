@@ -44,7 +44,7 @@ function toggleCoreMetric(key) {
 const METRICS = [
   { key:'power',         label:'Power',            testName:'Peak power',              inv:false, unit:'W/kg',   step:0.1  },
   { key:'rsi',           label:'Reactivity',       testName:'Drop jump RSI',           inv:false, unit:'idx',    step:0.01 },
-  { key:'rfd',           label:'Explosiveness',    testName:'Concentric RFD',          inv:false, unit:'N/s',    step:1    },
+  { key:'rfd',           label:'Explosiveness',    testName:'Concentric RFD',          inv:false, unit:'N/s/kg', step:1    },
   { key:'eccBrakingRFD', label:'Braking force',    testName:'Eccentric braking RFD',   inv:false, unit:'N/s/kg', step:1    },
   { key:'cmj',           label:'Vertical jump',    testName:'Countermovement jump',    inv:false, unit:'in',     step:0.1  },
   { key:'sprint10',      label:'Acceleration',     testName:'10-yard sprint',          inv:true,  unit:'s',      step:0.01 },
@@ -393,7 +393,7 @@ function renderAthletePanel() {
         oninput="this.style.borderColor=this.value?'var(--teal)':'';" />
       <button id="meas-${m.key}" class="meas-toggle" onclick="togglePanelMeasured('${m.key}')"
         style="color:${isMeas?gc:oc};border-color:${isMeas?'rgba(52,211,153,.4)':'rgba(251,146,60,.4)'};">
-        ${isMeas?'✓ Measured':'~ Estimated'}
+        ${isMeas?'✓ Measured':'− Untested'}
       </button>
     </div>`;
   }).join('');
@@ -433,7 +433,7 @@ function togglePanelMeasured(key) {
   const on = newMeasured[key];
   btn.style.color = on ? 'var(--green)' : 'var(--orange)';
   btn.style.borderColor = on ? 'rgba(52,211,153,.4)' : 'rgba(251,146,60,.4)';
-  btn.textContent = on ? '✓ Measured' : '~ Estimated';
+  btn.textContent = on ? '✓ Measured' : '− Untested';
 }
 
 function togglePanelCmjFD() {
@@ -2376,7 +2376,7 @@ function _buildRosterHead(colLabels, keys) {
     <tr>${headerCells}</tr>
     <tr><td colspan="2" style="padding:4px 10px 8px;font-size:12px;color:var(--text3);font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border);">
       <span style="color:var(--green);font-weight:700;">■</span> measured &nbsp;&nbsp;
-      <span style="color:var(--orange);font-weight:700;">■</span> estimated &nbsp;&nbsp;
+      <span style="color:var(--text3);font-weight:700;">—</span> test required &nbsp;&nbsp;
       <span style="color:var(--gold);font-weight:700;">†</span> CMJ (non-FD sensor)
     </td><td colspan="${legendSpan}" style="border-bottom:1px solid var(--border);"></td></tr>
   </thead>`;
@@ -2458,12 +2458,12 @@ function exportRosterCsv() {
   const header = [
     'Name', 'Sex', 'Custom', 'CMJ Source', 'All Core Measured',
     ...cols.map(c => `${c.label}${c.unit ? ' (' + c.unit + ')' : ''}`),
-    'Estimated Metrics',
+    'Untested Metrics',
   ];
 
   const rows = pool.map(a => {
     const cmjSource = a.cmj == null ? '' : (a.cmjFD ? 'ForceDecks' : 'Sensor');
-    const estimated = cols.filter(c => a[c.key] != null && isEstimatedForAthlete(c.key, a)).map(c => c.key);
+    const untested = cols.filter(c => a[c.key] != null && isEstimatedForAthlete(c.key, a)).map(c => c.key);
     return [
       a.name,
       a.sex || '',
@@ -2476,7 +2476,7 @@ function exportRosterCsv() {
         const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' ? 1 : 2);
         return v.toFixed(decimals);
       }),
-      estimated.join(';'),
+      untested.join(';'),
     ].map(csvEscape).join(',');
   });
 
@@ -3317,7 +3317,7 @@ function renderSettings() {
 
     + '<div class="card">'
     + '<div class="card-label">Display</div>'
-    + settingRow('Suppress estimated metrics', 'Hide non-measured metrics from all calculations and charts', 'toggleSuppressEstimated', suppressEstimated)
+    + settingRow('Hide untested metrics', 'Exclude metrics with no measured value from all calculations, charts, and comparisons', 'toggleSuppressEstimated', suppressEstimated)
     + settingRow('Compact mode', 'Reduce padding and row height across the dashboard to fit more on screen', 'toggleCompactRoster', compactRoster)
     + settingRow('Smooth history curves', 'Use bezier curves instead of straight lines in history charts', 'toggleHistorySmoothing', historySmoothing)
     + '</div>'
@@ -3958,7 +3958,7 @@ function openNewSessionForm() {
   if (!area) return;
   if (area.innerHTML.trim()) { area.innerHTML = ''; return; } // toggle
 
-  const sourceOpts = ['FD','sensor','manual','estimated'].map(s => '<option value="' + s + '"' + (s==='manual'?' selected':'') + '>' + s + '</option>').join('');
+  const sourceOpts = ['FD','sensor','manual'].map(s => '<option value="' + s + '"' + (s==='manual'?' selected':'') + '>' + s + '</option>').join('');
 
   let fieldRows = HISTORY_METRICS.map(m =>
     '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">'

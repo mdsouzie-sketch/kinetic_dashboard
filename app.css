@@ -478,14 +478,6 @@
     .norms-field input:focus { border-color: var(--gold); }
     .norms-unit { font-size: 11px; color: var(--text3); width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
 
-    /* ── Estimated data notice ── */
-    .est-notice {
-      display: flex; align-items: center; gap: 7px; padding: 7px 11px;
-      background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.2);
-      border-radius: var(--radius-md); font-size: 11px; color: var(--orange);
-      margin-bottom: 10px; font-family: 'DM Mono', monospace;
-    }
-
     .gap-14 { margin-bottom: 10px; }
 
     /* ── Report modal ── */

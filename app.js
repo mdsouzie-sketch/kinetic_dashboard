@@ -796,7 +796,6 @@ function renderInputGrid() {
         <input id="inp-${m.key}" type="number" step="${m.step}" value="${athleteData[m.key]}" oninput="onInput('${m.key}',this.value)" />
       </div>`;
     }).join('');
-  document.getElementById('est-notice').style.display = '';
 }
 
 // ═══════════════════════════════════════════════════════════════

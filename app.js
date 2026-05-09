@@ -3682,7 +3682,8 @@ async function init() {
 // ═══════════════════════════════════════════════════════════════
 // Add new coaches by computing sha256("their-password") and adding here.
 const COACHES = {
-  matt: { displayName: 'Coach Matt', passwordHash: 'c3e64604cb6275890df269cce33991366a0a008a53c5b639206a802759c21fb1' },
+  matt:   { displayName: 'Coach Matt',   passwordHash: 'c3e64604cb6275890df269cce33991366a0a008a53c5b639206a802759c21fb1' },
+  desean: { displayName: 'Coach Desean', passwordHash: '64f363361a0acc78ce6d9e6240ca840dfc9a338bab1a2fcb7c6270baf81b1f86' },
 };
 
 let currentCoach = null;

@@ -2951,7 +2951,6 @@ function _renderLbMetric(metric, sex) {
   pool = [...pool].sort((a, b) => metric.inv ? a[metKey] - b[metKey] : b[metKey] - a[metKey]);
 
   const decimals = metric.step < 0.1 ? 2 : 1;
-  const best = pool[0]?.[metKey] || 1;
 
   const rows = pool.map((a, i) => {
     const val = a[metKey];
@@ -2959,19 +2958,18 @@ function _renderLbMetric(metric, sex) {
     const pct = calcPercentile(val, n[metKey], metric.inv);
     const tier = getTier(pct);
     const est = isEstimatedForAthlete(metKey, a);
-    const worst = pool[pool.length-1]?.[metKey];
-    const barPct = metric.inv
-      ? (val > 0 && worst > 0 ? Math.max(5, Math.round((worst / val) * 100)) : 5)
-      : Math.round((val / best) * 100);
+    // Bar fills to the athlete's actual percentile against the team norm —
+    // so a 90th-pct row is visibly longer than a 50th-pct row regardless
+    // of where they sit within the visible pool.
+    const barPct = Math.max(2, pct);
     const sexColor = a.sex === 'M' ? 'var(--blue)' : 'var(--purple)';
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
     const sexCell = sex === 'all'
       ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;"><span style="font-size:11px;font-family:'DM Mono',monospace;color:${sexColor};background:${sexColor}22;padding:2px 8px;border-radius:8px;">${a.sex}</span></td>`
       : '';
     const mphCell = metKey === 'sprintFly'
-      ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
-          <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${mphFrom10y(val).toFixed(1)}</span>
-          <span style="font-size:9px;color:var(--text3);margin-left:3px;">mph</span>
+      ? `<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;">
+          <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 12px;border-radius:6px;">${mphFrom10y(val).toFixed(1)}</span>
         </td>`
       : '';
     return `<tr>
@@ -2982,9 +2980,8 @@ function _renderLbMetric(metric, sex) {
       </td>
       ${sexCell}
       ${mphCell}
-      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;">
-        <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 10px;border-radius:6px;">${val.toFixed(decimals)}</span>
-        <span style="font-size:9px;color:var(--text3);margin-left:3px;">${metric.unit}</span>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;">
+        <span style="font-size:15px;font-weight:800;font-family:'DM Mono',monospace;color:${tier.color};background:${tier.bg};padding:3px 12px;border-radius:6px;">${val.toFixed(decimals)}</span>
       </td>
       <td style="padding:8px 12px 8px 20px;border-bottom:1px solid var(--border);min-width:140px;">
         <div style="position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">
@@ -3003,13 +3000,17 @@ function _renderLbMetric(metric, sex) {
   if (pool.length === 0) {
     return `<div style="color:var(--text3);font-size:13px;font-family:'DM Mono',monospace;padding:24px 0;">No athletes match the current filter.</div>`;
   }
+  // Header label for the raw-value column. For time-based (inverse) metrics
+  // it reads "Time (s)", for everything else "<metric label> (<unit>)".
+  // Unit lives in the header so individual cells can show clean numbers.
+  const valueHeader = metric.inv ? `Time (${metric.unit})` : `${metric.label} (${metric.unit})`;
   return `<table class="sticky-table tbl-base">
       <thead><tr>
         <th class="tbl-th tbl-th-c" style="width:36px;">#</th>
         <th class="tbl-th tbl-th-l">Athlete</th>
         ${sex === 'all' ? '<th class="tbl-th tbl-th-c">Sex</th>' : ''}
-        ${metKey === 'sprintFly' ? '<th class="tbl-th tbl-th-r">Top speed</th>' : ''}
-        <th class="tbl-th tbl-th-r">Value</th>
+        ${metKey === 'sprintFly' ? '<th class="tbl-th tbl-th-c">Top speed (mph)</th>' : ''}
+        <th class="tbl-th tbl-th-c">${valueHeader}</th>
         <th class="tbl-th"></th>
         <th class="tbl-th tbl-th-c">Percentile</th>
         <th class="tbl-th tbl-th-l">Tier</th>

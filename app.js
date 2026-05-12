@@ -3628,9 +3628,547 @@ function renderSettings() {
 
     + '</div>';
 
-  pane.innerHTML = '<div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">'
+  pane.innerHTML = '<div style="display:flex;flex-direction:column;gap:14px;">'
+    + renderCSVUploadCard()
+    + '<div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">'
     + leftCol + rightCol
+    + '</div>'
     + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CSV UPLOAD — ForceDecks CMJ + Sprint/Manual → Supabase
+// ═══════════════════════════════════════════════════════════════
+
+const CMJ_METRIC_COLS = {
+  cmj:           'Jump Height (Imp-Mom) in Inches [in]',
+  power:         'Peak Power / BM [W/kg]',
+  rfd:           'Concentric RFD / BM [N/s/kg]',
+  eccBrakingRFD: 'Eccentric Braking RFD / BM [N/s/kg]',
+};
+
+// Manual / sprint format — friendly aliases for column headers.
+// All aliases are matched case-insensitively after collapsing whitespace
+// and normalising en-dash → hyphen.
+const MANUAL_METRIC_ALIASES = {
+  sprint10:   ['0-10','sprint10','10y','10yd','10 yd','10 yard','10-yard sprint','10y sprint'],
+  sprint1020: ['10-20','sprint1020','1020','10-20 split','10y-20y','10-20y'],
+  sprintFly:  ['20-30','sprintfly','fly','fly10','fly 10','fly 10 (20-30y)','20-30y','fly10 (20-30y)'],
+  broad:      ['broad','broad jump','standing broad','standing broad jump','bj','broad (in)'],
+  shuttle:    ['shuttle','5-10-5','pro agility','pro agility (5-10-5)','shuttle (5-10-5)','agility'],
+};
+
+function normaliseHeader(h) {
+  return String(h || '').replace(/–|—/g,'-').replace(/\s+/g,' ').trim().toLowerCase();
+}
+
+// header → metric key map, built once
+const MANUAL_HEADER_TO_METRIC = (() => {
+  const m = {};
+  Object.entries(MANUAL_METRIC_ALIASES).forEach(([metric, aliases]) => {
+    aliases.forEach(a => { m[normaliseHeader(a)] = metric; });
+  });
+  return m;
+})();
+
+let csvUploadState = null;
+
+function normalizeNameForMatch(s) {
+  return (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function parseCMJValue(cell) {
+  if (cell == null) return null;
+  const s = String(cell).trim();
+  if (!s) return null;
+  const m = s.match(/^\s*(-?\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  const v = parseFloat(m[1]);
+  return v > 0 ? v : null;
+}
+
+function parseCMJDate(s) {
+  s = String(s || '').trim();
+  // ISO YYYY-MM-DD passes through
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (iso) return iso[1] + '-' + iso[2].padStart(2,'0') + '-' + iso[3].padStart(2,'0');
+  // M/D/YYYY or MM/DD/YYYY
+  const us = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (us) return us[3] + '-' + us[1].padStart(2,'0') + '-' + us[2].padStart(2,'0');
+  return null;
+}
+
+// CSV parser that handles quoted fields containing commas / embedded newlines.
+function parseCSVText(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  let i = 0, field = '', row = [], inQuotes = false;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i+1] === '"') { field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQuotes = true; i++; continue; }
+    if (ch === ',') { row.push(field); field = ''; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    if (ch === '\n') { row.push(field); rows.push(row); field = ''; row = []; i++; continue; }
+    field += ch; i++;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function parseCMJCSV(text) {
+  const rows = parseCSVText(text);
+  if (rows.length < 2) throw new Error('CSV has no data rows');
+  const headers = rows[0].map(h => (h || '').trim());
+  const nameI = headers.indexOf('Name');
+  const dateI = headers.indexOf('Date');
+  const typeI = headers.indexOf('Test Type');
+  if (nameI < 0 || dateI < 0) {
+    throw new Error('CSV missing required "Name" or "Date" column');
+  }
+
+  const metricI = {};
+  let metricHits = 0;
+  Object.entries(CMJ_METRIC_COLS).forEach(([k, col]) => {
+    metricI[k] = headers.indexOf(col);
+    if (metricI[k] >= 0) metricHits++;
+  });
+  if (metricHits === 0) {
+    throw new Error('No ForceDecks metric columns found. Expected columns like "Jump Height (Imp-Mom) in Inches [in]".');
+  }
+
+  const grouped = {};
+  let skippedTestType = 0, skippedDate = 0, dataRows = 0;
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+    const name = (row[nameI] || '').trim().replace(/\s+/g, ' ');
+    if (!name) continue;
+    if (typeI >= 0) {
+      const t = (row[typeI] || '').trim();
+      if (t !== 'CMJ') { skippedTestType++; continue; }
+    }
+    const d = parseCMJDate(row[dateI]);
+    if (!d) { skippedDate++; continue; }
+    dataRows++;
+    for (const [key, colIdx] of Object.entries(metricI)) {
+      if (colIdx < 0) continue;
+      const v = parseCMJValue(row[colIdx]);
+      if (v == null) continue;
+      grouped[name] = grouped[name] || {};
+      grouped[name][d] = grouped[name][d] || {};
+      const cur = grouped[name][d][key];
+      if (cur == null || v > cur) grouped[name][d][key] = v;
+    }
+  }
+  return { grouped, skippedTestType, skippedDate, dataRows };
+}
+
+function parseManualCSV(text) {
+  const rows = parseCSVText(text);
+  if (rows.length < 2) throw new Error('CSV has no data rows');
+  const headersRaw = rows[0].map(h => (h || '').trim());
+  const headers = headersRaw.map(normaliseHeader);
+  const nameI = headers.indexOf('name');
+  const dateI = headers.indexOf('date');
+  if (nameI < 0 || dateI < 0) {
+    throw new Error('CSV missing required "Name" or "Date" column');
+  }
+
+  // Map column index → metric key
+  const colMetric = {};
+  let metricHits = 0;
+  headers.forEach((h, i) => {
+    const metric = MANUAL_HEADER_TO_METRIC[h];
+    if (metric) { colMetric[i] = metric; metricHits++; }
+  });
+  if (metricHits === 0) {
+    throw new Error('No recognised metric columns. Expected one or more of: 0-10, 10-20, 20-30, broad, shuttle.');
+  }
+
+  const grouped = {};
+  let skippedDate = 0, dataRows = 0;
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+    const name = (row[nameI] || '').trim().replace(/\s+/g, ' ');
+    if (!name) continue;
+    const d = parseCMJDate(row[dateI]);
+    if (!d) { skippedDate++; continue; }
+    dataRows++;
+    Object.entries(colMetric).forEach(([idx, metric]) => {
+      const v = parseCMJValue(row[idx]);
+      if (v == null) return;
+      grouped[name] = grouped[name] || {};
+      grouped[name][d] = grouped[name][d] || {};
+      const cur = grouped[name][d][metric];
+      const inv = INVERSE_METRICS.has(metric);
+      if (cur == null || (inv ? v < cur : v > cur)) {
+        grouped[name][d][metric] = v;
+      }
+    });
+  }
+  return { grouped, skippedDate, dataRows, metricsDetected: Object.values(colMetric) };
+}
+
+function detectCSVFormat(text) {
+  const rows = parseCSVText(text);
+  if (rows.length < 1) return 'unknown';
+  const headers = rows[0].map(h => normaliseHeader(h));
+  // CMJ — Test Type column or any of the FD metric columns
+  if (headers.includes('test type')) return 'cmj';
+  for (const col of Object.values(CMJ_METRIC_COLS)) {
+    if (headers.includes(normaliseHeader(col))) return 'cmj';
+  }
+  // Manual — any recognised metric alias
+  if (headers.some(h => MANUAL_HEADER_TO_METRIC[h])) return 'manual';
+  return 'unknown';
+}
+
+function handleCSVFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const text = ev.target.result;
+      const format = detectCSVFormat(text);
+      let parsed, source, formatLabel;
+      if (format === 'cmj') {
+        parsed = parseCMJCSV(text);
+        source = 'FD';
+        formatLabel = 'ForceDecks CMJ';
+      } else if (format === 'manual') {
+        parsed = parseManualCSV(text);
+        source = 'manual';
+        formatLabel = 'Sprint / Manual';
+      } else {
+        throw new Error('Could not detect format. Expected ForceDecks CMJ headers or columns like 0-10, 10-20, 20-30, broad, shuttle.');
+      }
+
+      const athleteCount = Object.keys(parsed.grouped).length;
+      if (athleteCount === 0) {
+        showToast('No usable rows found in CSV');
+        return;
+      }
+
+      const dbByNorm = {};
+      ATHLETE_DB.forEach(a => { dbByNorm[normalizeNameForMatch(a.name)] = a; });
+
+      const newAthletes = [];
+      const matched = {};
+      Object.keys(parsed.grouped).forEach(displayName => {
+        const hit = dbByNorm[normalizeNameForMatch(displayName)];
+        if (hit) matched[displayName] = hit;
+        else newAthletes.push({ name: displayName, sex: 'F' });
+      });
+
+      let sessionCount = 0, measurementCount = 0, duplicateSessions = 0;
+      Object.entries(parsed.grouped).forEach(([displayName, byDay]) => {
+        const hit = matched[displayName];
+        Object.entries(byDay).forEach(([day, metrics]) => {
+          sessionCount++;
+          measurementCount += Object.keys(metrics).length;
+          if (hit && hit._sessions && hit._sessions.some(s => s.session_date === day)) {
+            duplicateSessions++;
+          }
+        });
+      });
+
+      csvUploadState = {
+        fileName: file.name,
+        format,
+        formatLabel,
+        source,
+        grouped: parsed.grouped,
+        matched,
+        newAthletes,
+        athleteCount,
+        sessionCount,
+        measurementCount,
+        duplicateSessions,
+        skippedTestType: parsed.skippedTestType || 0,
+        skippedDate: parsed.skippedDate || 0,
+        dataRows: parsed.dataRows,
+        metricsDetected: parsed.metricsDetected,
+        status: 'parsed',
+      };
+      renderSettings();
+    } catch (e) {
+      console.error('CSV parse error:', e);
+      showToast('CSV error: ' + e.message);
+    }
+  };
+  reader.onerror = () => showToast('Could not read file');
+  reader.readAsText(file);
+}
+
+function setNewAthleteSex(name, sex) {
+  if (!csvUploadState) return;
+  const a = csvUploadState.newAthletes.find(x => x.name === name);
+  if (a) {
+    a.sex = sex;
+    renderSettings();
+  }
+}
+
+function cancelCSVUpload() {
+  csvUploadState = null;
+  renderSettings();
+}
+
+async function executeCSVImport() {
+  if (!csvUploadState || csvUploadState.status === 'importing') return;
+  const st = csvUploadState;
+  st.status = 'importing';
+  renderSettings();
+
+  try {
+    // 1) Insert new athletes.
+    const idByName = {};
+    Object.entries(st.matched).forEach(([displayName, ath]) => {
+      idByName[displayName] = ath._supabase_id;
+    });
+
+    if (st.newAthletes.length > 0) {
+      const payload = st.newAthletes.map(a => ({ name: a.name, sex: a.sex }));
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/athletes', {
+        method: 'POST',
+        headers: { ...SUPABASE_HEADERS, 'Prefer': 'return=representation' },
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) throw new Error('Insert athletes failed (HTTP ' + resp.status + ')');
+      const inserted = await resp.json();
+      inserted.forEach(r => { idByName[r.name] = r.id; });
+    }
+
+    // 2) Build session insert payload (one per (athlete, day)).
+    const sessionMeta = [];
+    Object.entries(st.grouped).forEach(([displayName, byDay]) => {
+      const aid = idByName[displayName];
+      if (!aid) return;
+      Object.keys(byDay).forEach(day => {
+        sessionMeta.push({ displayName, day, aid });
+      });
+    });
+    const sessionPayload = sessionMeta.map(({ aid, day }) => ({
+      athlete_id: aid,
+      session_date: day,
+      notes: st.formatLabel + ' import (' + st.fileName + ')',
+    }));
+
+    let sessRows = [];
+    if (sessionPayload.length > 0) {
+      const sessResp = await fetch(SUPABASE_URL + '/rest/v1/sessions', {
+        method: 'POST',
+        headers: { ...SUPABASE_HEADERS, 'Prefer': 'return=representation' },
+        body: JSON.stringify(sessionPayload),
+      });
+      if (!sessResp.ok) throw new Error('Insert sessions failed (HTTP ' + sessResp.status + ')');
+      sessRows = await sessResp.json();
+    }
+
+    // 3) Build measurements.
+    const measurements = [];
+    sessRows.forEach((srow, i) => {
+      const { displayName, day } = sessionMeta[i];
+      const metrics = st.grouped[displayName][day] || {};
+      Object.entries(metrics).forEach(([metric, value]) => {
+        measurements.push({ session_id: srow.id, metric, value, source: st.source });
+      });
+    });
+
+    const CHUNK = 500;
+    for (let i = 0; i < measurements.length; i += CHUNK) {
+      const chunk = measurements.slice(i, i + CHUNK);
+      const mResp = await fetch(SUPABASE_URL + '/rest/v1/measurements', {
+        method: 'POST',
+        headers: SUPABASE_HEADERS,
+        body: JSON.stringify(chunk),
+      });
+      if (!mResp.ok) throw new Error('Insert measurements failed (HTTP ' + mResp.status + ')');
+    }
+
+    showToast('Imported ' + st.newAthletes.length + ' new athletes · '
+      + sessionMeta.length + ' sessions · ' + measurements.length + ' measurements');
+    csvUploadState = null;
+
+    // Reload roster and refresh visible views.
+    try {
+      const fresh = await loadFromSupabase();
+      ATHLETE_DB = fresh;
+      const asel = document.getElementById('athlete-select');
+      if (asel) {
+        const keep = asel.value;
+        asel.innerHTML = '';
+        ATHLETE_DB.sort((a,b)=>a.name.localeCompare(b.name)).forEach(a=>{
+          const o = document.createElement('option');
+          o.value = a.name;
+          o.textContent = (hasAllMeasured(a) ? '● ' : '') + a.name + ' (' + a.sex + ')';
+          asel.appendChild(o);
+        });
+        if (keep) asel.value = keep;
+      }
+      const refreshed = ATHLETE_DB.find(a => athleteData && a.name === athleteData.name);
+      if (refreshed) athleteData = refreshed;
+      renderAll(false);
+    } catch (reloadErr) {
+      console.error('Reload after import failed:', reloadErr);
+    }
+    renderSettings();
+  } catch (e) {
+    console.error('Import failed:', e);
+    showToast('Import failed: ' + e.message);
+    if (csvUploadState) {
+      csvUploadState.status = 'parsed';
+      renderSettings();
+    }
+  }
+}
+
+function renderCSVUploadCard() {
+  const accent = 'var(--gold)';
+  const headerBar = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    + '<div class="card-label" style="margin-bottom:0;">Data Import</div>'
+    + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">ForceDecks CMJ &middot; Sprint / Manual &middot; CSV</span>'
+    + '</div>';
+
+  const codeStyle = 'font-family:\'DM Mono\',monospace;color:var(--text);';
+  const tplLink = (label, fn) =>
+    '<button onclick="' + fn + '" style="background:none;border:none;padding:0;color:' + accent + ';text-decoration:underline;cursor:pointer;font:inherit;">' + label + '</button>';
+
+  if (!csvUploadState) {
+    return '<div class="card">'
+      + headerBar
+      + '<div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px;">'
+      + 'Two formats auto-detected from headers:'
+      + '<ul style="margin:6px 0 0 18px;padding:0;list-style:disc;">'
+      + '<li><b>ForceDecks CMJ</b> — drop in the raw FD export (e.g. <code style="' + codeStyle + '">force_deck_cmj.csv</code>). Rows with <code style="' + codeStyle + '">Test Type = CMJ</code> import as <code style="' + codeStyle + '">source = FD</code>. ' + tplLink('Download template', 'downloadCMJTemplate()') + '</li>'
+      + '<li><b>Sprint / Manual</b> — wide layout with columns <code style="' + codeStyle + '">Name</code>, <code style="' + codeStyle + '">Date</code>, and any of <code style="' + codeStyle + '">0-10</code>, <code style="' + codeStyle + '">10-20</code>, <code style="' + codeStyle + '">20-30</code>, <code style="' + codeStyle + '">broad</code>, <code style="' + codeStyle + '">shuttle</code>. Imports as <code style="' + codeStyle + '">source = manual</code>. ' + tplLink('Download template', 'downloadManualTemplate()') + '</li>'
+      + '</ul>'
+      + '<div style="margin-top:8px;color:var(--text3);">Per (athlete, day): best value per metric wins (max, or min for inverse sprint/shuttle).</div>'
+      + '</div>'
+      + '<label style="display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:var(--radius-md);border:1px dashed rgba(240,192,64,0.45);background:rgba(240,192,64,0.06);color:' + accent + ';font-size:13px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:pointer;transition:all .15s;" onmouseover="this.style.background=\'rgba(240,192,64,0.12)\'" onmouseout="this.style.background=\'rgba(240,192,64,0.06)\'">'
+      + 'Choose CSV file…'
+      + '<input type="file" accept=".csv,text/csv" onchange="handleCSVFile(this)" style="display:none;" />'
+      + '</label>'
+      + '</div>';
+  }
+
+  const st = csvUploadState;
+  const importing = st.status === 'importing';
+
+  const summary = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px;">'
+    + statTile('Format', st.formatLabel + ' · ' + st.source, accent)
+    + statTile('File', st.fileName, 'var(--text)')
+    + statTile('Athletes', String(st.athleteCount) + ' (' + st.newAthletes.length + ' new)', 'var(--text)')
+    + statTile('Sessions', String(st.sessionCount), 'var(--text)')
+    + statTile('Measurements', String(st.measurementCount), 'var(--text)')
+    + (st.duplicateSessions > 0
+        ? statTile('Same-date sessions', String(st.duplicateSessions) + ' (will add)', 'rgba(248,180,80,1)')
+        : '')
+    + (st.skippedTestType > 0
+        ? statTile('Skipped non-CMJ', String(st.skippedTestType), 'var(--text3)')
+        : '')
+    + '</div>';
+
+  let newAthletesBlock = '';
+  if (st.newAthletes.length > 0) {
+    const rows = st.newAthletes.map(a => {
+      const mSel = a.sex === 'M';
+      const fSel = a.sex === 'F';
+      const attrName = escapeHTML(JSON.stringify(a.name));
+      const btn = (sex, label, on) =>
+        '<button onclick="setNewAthleteSex(' + attrName + ', \'' + sex + '\')" '
+        + 'style="padding:4px 12px;border-radius:6px;border:1px solid ' + (on ? 'rgba(240,192,64,0.5)' : 'var(--border2)') + ';'
+        + 'background:' + (on ? 'rgba(240,192,64,0.15)' : 'var(--bg3)') + ';'
+        + 'color:' + (on ? accent : 'var(--text3)') + ';'
+        + 'font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;cursor:pointer;">' + label + '</button>';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);">'
+        + '<span style="font-size:12px;font-weight:600;">' + escapeHTML(a.name) + '</span>'
+        + '<div style="display:flex;gap:4px;">' + btn('M','M',mSel) + btn('F','F',fSel) + '</div>'
+        + '</div>';
+    }).join('');
+    newAthletesBlock = '<div style="margin-bottom:14px;">'
+      + '<div style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">New athletes — confirm sex</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px;">' + rows + '</div>'
+      + '</div>';
+  }
+
+  const resolverNote = st.source === 'FD'
+    ? 'the FD values will win in the dashboard\'s metric resolver.'
+    : 'the dashboard will pick the best value per metric across sources (FD still wins over manual when present).';
+  const dupNote = st.duplicateSessions > 0
+    ? '<div style="font-size:11px;color:rgba(248,180,80,0.9);line-height:1.5;margin-bottom:12px;">'
+      + '⚠ ' + st.duplicateSessions + ' (athlete, day) combination(s) already have a session on that date. Importing will create an additional session — ' + resolverNote
+      + '</div>'
+    : '';
+
+  const actions = '<div style="display:flex;gap:8px;justify-content:flex-end;">'
+    + '<button onclick="cancelCSVUpload()" ' + (importing ? 'disabled' : '')
+    + ' style="padding:8px 18px;border-radius:var(--radius-md);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:' + (importing ? 'not-allowed' : 'pointer') + ';opacity:' + (importing ? '0.5' : '1') + ';">Cancel</button>'
+    + '<button onclick="executeCSVImport()" ' + (importing ? 'disabled' : '')
+    + ' style="padding:8px 22px;border-radius:var(--radius-md);border:1px solid rgba(240,192,64,0.5);background:rgba(240,192,64,0.15);color:' + accent + ';font-size:12px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:' + (importing ? 'not-allowed' : 'pointer') + ';opacity:' + (importing ? '0.6' : '1') + ';">'
+    + (importing ? 'Importing…' : 'Import to database')
+    + '</button>'
+    + '</div>';
+
+  return '<div class="card">' + headerBar + summary + newAthletesBlock + dupNote + actions + '</div>';
+}
+
+function statTile(label, value, color) {
+  return '<div style="padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);">'
+    + '<div style="font-size:9px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">' + label + '</div>'
+    + '<div style="font-size:14px;font-weight:700;color:' + color + ';margin-top:3px;word-break:break-word;">' + escapeHTML(String(value)) + '</div>'
+    + '</div>';
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function downloadCSV(filename, text) {
+  const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+function downloadCMJTemplate() {
+  // Mirror the real ForceDecks export header so coaches can drop in raw exports.
+  const headers = [
+    'Name','ExternalId','Test Type','Date','Time','BW [KG]','Reps','Tags','Additional Load [lb]',
+    'Jump Height (Imp-Mom) in Inches [in]',
+    'Peak Power / BM [W/kg]',
+    'Concentric RFD / BM [N/s/kg]',
+    'Eccentric Braking RFD / BM [N/s/kg]',
+    'Concentric Time to Peak Force [ms]',
+  ];
+  const sample = [
+    '"Jane Sample","","CMJ","05/01/2026","3:30 PM","60.0","3","","0","12.0","45.0","30.0","20","160"',
+    '"Jane Sample","","CMJ","05/08/2026","3:30 PM","60.0","3","","0","12.4","46.5","31.2","22","158"',
+  ];
+  downloadCSV('forcedecks_cmj_template.csv',
+    headers.map(h => '"' + h + '"').join(',') + '\n' + sample.join('\n') + '\n');
+}
+
+function downloadManualTemplate() {
+  const headers = ['Name','Date','0-10','10-20','20-30','broad','shuttle'];
+  const sample = [
+    'Jane Sample,5/1/2026,1.85,1.05,1.12,95,4.82',
+    'Jane Sample,5/8/2026,1.82,1.03,1.10,97,4.78',
+    'John Sample,5/1/2026,1.78,1.01,1.08,98,4.75',
+  ];
+  downloadCSV('sprint_manual_template.csv',
+    headers.join(',') + '\n' + sample.join('\n') + '\n');
 }
 
 // ═══════════════════════════════════════════════════════════════

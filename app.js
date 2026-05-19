@@ -52,6 +52,10 @@ const METRICS = [
   { key:'sprint1020',    label:'Transition speed', testName:'10–20y split',            inv:true,  unit:'s',      step:0.01 },
   { key:'broad',         label:'Broad jump',       testName:'Standing broad jump',     inv:false, unit:'in',     step:0.1  },
   { key:'shuttle',       label:'Agility',          testName:'Pro agility (5-10-5)',    inv:true,  unit:'s',      step:0.01 },
+  { key:'slhopL',        label:'L SL hop',         testName:'Left single-leg hop',     inv:false, unit:'in',     step:0.1  },
+  { key:'slhopR',        label:'R SL hop',         testName:'Right single-leg hop',    inv:false, unit:'in',     step:0.1  },
+  { key:'sjump',         label:'Squat jump',       testName:'Squat jump',              inv:false, unit:'in',     step:0.1  },
+  { key:'rcmj',          label:'Rebound CMJ',      testName:'Rebound CMJ',             inv:false, unit:'in',     step:0.1  },
 ];
 
 const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
@@ -139,7 +143,7 @@ let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
 let rosterSortKey = 'name';
 let rosterSortDir = 1; // 1 = asc (A→Z / low→high), -1 = desc (Z→A / high→low)
-let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle']);
+let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj']);
 let collapsedCards = new Set();
 let suppressEstimated = true;
 let selectedChartMode = 'measured'; // 'all' | 'measured' | 'none' | 'custom'
@@ -171,9 +175,17 @@ const Z_TARGET = 1.036433;
 const DEFAULT_TIER_THRESHOLDS = [90, 70, 40, 15];
 // Default Force × Reactive matrix split — scores >= this count as "high" on each axis.
 const DEFAULT_MATRIX_THRESHOLD = 50;
+// Default Personal-Record settings (Profile tab gold pill).
+//   prThresholdPct: minimum % improvement over prior best (same source) to qualify
+//   prWindowDays:   only flag a PR if its date falls within this many days from today;
+//                   null = no time limit (any all-time PR earns the pill)
+const DEFAULT_PR_THRESHOLD_PCT = 2;
+const DEFAULT_PR_WINDOW_DAYS   = null;
 
 let tierThresholds  = [...DEFAULT_TIER_THRESHOLDS];
 let matrixThreshold = DEFAULT_MATRIX_THRESHOLD;
+let prThresholdPct  = DEFAULT_PR_THRESHOLD_PCT;
+let prWindowDays    = DEFAULT_PR_WINDOW_DAYS;
 let compactRoster   = false;
 let historySmoothing = false;
 
@@ -230,6 +242,10 @@ const COACHING_LIB = {
   cmj:       { title:'Vertical power expression',      text:'CMJ height indicates a deficit in vertical power. Develop reactive power through SSC alongside eccentric loading to build the force foundation.',               methods:['Loaded jump training','SSC power development','Eccentric loading','Concentric intent'] },
   broad:     { title:'Horizontal power output',        text:'Horizontal power and projection mechanics underperforming. Develop unilateral hip extension strength and horizontal momentum generation.',                      methods:['Unilateral hip extension','Horizontal intent loading','Projection mechanics','Single-leg power'] },
   power:     { title:'Maximal strength foundation',    text:'Absolute force capacity is limiting downstream power expression. Primary intervention: raise the maximal strength ceiling through progressive bilateral overload.', methods:['Maximal strength emphasis','Progressive overload','Bilateral compound loading','Strength-first periodization'] },
+  slhopL:    { title:'Left single-leg power',          text:'Left-side unilateral power output is the limiting expression. Target single-leg loading, asymmetry correction, and balanced ground reaction force application.',  methods:['Unilateral strength emphasis','L/R asymmetry correction','Single-leg plyometrics','Step-up & split-squat overload'] },
+  slhopR:    { title:'Right single-leg power',         text:'Right-side unilateral power output is the limiting expression. Target single-leg loading, asymmetry correction, and balanced ground reaction force application.', methods:['Unilateral strength emphasis','L/R asymmetry correction','Single-leg plyometrics','Step-up & split-squat overload'] },
+  sjump:     { title:'Concentric-only power',          text:'Squat jump isolates pure concentric output (no SSC contribution). A deficit here points to maximal force and explosive concentric intent as the primary levers.', methods:['Concentric intent training','Pause squats','Ballistic loading','Force-velocity ceiling work'] },
+  rcmj:      { title:'Repeat reactive power',          text:'Rebound CMJ reflects the ability to express reactive power across repeated SSC cycles. Develop fatigue-resistant stiffness and short ground-contact plyometrics.', methods:['Repeat-effort jumps','Short-contact plyometrics','Stiffness loading','SSC endurance work'] },
 };
 
 // Plain-English one-liners used in the athlete dossier (parent/athlete-facing copy).
@@ -244,6 +260,10 @@ const METRIC_EXPLAINER = {
   sprint1020:    'How smoothly you transition from acceleration to maximum velocity.',
   broad:         'Horizontal jump distance from a standing start.',
   shuttle:       'How quickly you change direction over short distances.',
+  slhopL:        'Single-leg horizontal hop distance off the left leg — a measure of unilateral power.',
+  slhopR:        'Single-leg horizontal hop distance off the right leg — a measure of unilateral power.',
+  sjump:         'Vertical jump height from a paused squat — concentric power without the elastic rebound.',
+  rcmj:          'Vertical jump height during continuous rebound jumps — reactive power across repeated cycles.',
 };
 
 function getTier(p) {
@@ -1889,6 +1909,10 @@ const HIST_METRICS = [
   { key:'sprint1020',label:'10-20',   unit:'s',      inv:true  },
   { key:'broad',     label:'Broad',   unit:'in',     inv:false },
   { key:'shuttle',   label:'Shuttle', unit:'s',      inv:true  },
+  { key:'slhopL',    label:'L Hop',   unit:'in',     inv:false },
+  { key:'slhopR',    label:'R Hop',   unit:'in',     inv:false },
+  { key:'sjump',     label:'SJ',      unit:'in',     inv:false },
+  { key:'rcmj',      label:'RCMJ',    unit:'in',     inv:false },
 ];
 
 function renderHistoryTab() {
@@ -2556,6 +2580,95 @@ function renderProfileTab() {
   }
 }
 
+// Per-source PR detection for the profile cards.
+// Walks the athlete's sessions, picks the source the dashboard currently
+// displays (FD preferred, else the source with the best best-value), and
+// reports whether the latest session in that source set a new best at
+// or above the threshold improvement over the prior best. The badge is
+// also suppressed when the PR date is outside the configured window.
+function computePRForMetric(athlete, metricKey) {
+  const inv = INVERSE_METRICS.has(metricKey);
+  // Build: source → [{ date, value }]  (one entry per session, best within that session)
+  const bySource = {};
+  (athlete._sessions || []).forEach(s => {
+    const perSrc = {};
+    (s.measurements || []).forEach(meas => {
+      if (meas.metric !== metricKey) return;
+      const v = parseFloat(meas.value) || 0;
+      if (!v) return;
+      const src = meas.source || 'manual';
+      const cur = perSrc[src];
+      if (cur === undefined || (inv ? v < cur : v > cur)) perSrc[src] = v;
+    });
+    Object.entries(perSrc).forEach(([src, v]) => {
+      if (!s.session_date) return;
+      bySource[src] = bySource[src] || [];
+      bySource[src].push({ date: s.session_date, value: v });
+    });
+  });
+
+  // Pick the source the dashboard's resolver shows for this athlete (FD first).
+  let currentSource = null;
+  if (bySource['FD']) {
+    currentSource = 'FD';
+  } else {
+    let bestVal = inv ? Infinity : -Infinity;
+    Object.entries(bySource).forEach(([src, arr]) => {
+      const srcBest = arr.reduce((b, x) => (inv ? Math.min(b, x.value) : Math.max(b, x.value)),
+                                  inv ? Infinity : -Infinity);
+      if (inv ? srcBest < bestVal : srcBest > bestVal) { bestVal = srcBest; currentSource = src; }
+    });
+  }
+  if (!currentSource) return { isPR: false, prDate: null };
+
+  const arr = [...bySource[currentSource]].sort((x, y) => x.date.localeCompare(y.date));
+  if (arr.length === 0) return { isPR: false, prDate: null };
+
+  // Find all-time best in this source — and the prior best that was beaten by it.
+  let bestVal = inv ? Infinity : -Infinity;
+  let bestDate = null;
+  let priorBest = null;
+  arr.forEach(({ date, value }) => {
+    const better = inv ? value < bestVal : value > bestVal;
+    if (better) {
+      priorBest = bestDate ? bestVal : null;  // record prior before overwriting
+      bestVal = value;
+      bestDate = date;
+    }
+  });
+
+  // PR: best is the latest session for this source AND improvement > threshold.
+  const latestDate = arr[arr.length - 1].date;
+  const setAtLatest = bestDate === latestDate;
+  let improvementPct = null;
+  if (priorBest != null && priorBest > 0) {
+    improvementPct = inv
+      ? ((priorBest - bestVal) / priorBest) * 100
+      : ((bestVal - priorBest) / priorBest) * 100;
+  }
+  // Window check — only badge if the PR is within prWindowDays from today.
+  let withinWindow = true;
+  if (prWindowDays != null && bestDate) {
+    const prMs = Date.parse(bestDate + 'T00:00:00');
+    const ageDays = (Date.now() - prMs) / (1000 * 60 * 60 * 24);
+    withinWindow = ageDays <= prWindowDays;
+  }
+  const isPR = setAtLatest && improvementPct != null && improvementPct > prThresholdPct && withinWindow;
+  return { isPR, prDate: bestDate, source: currentSource, improvementPct, withinWindow };
+}
+
+function _fmtPRShortDate(iso) {
+  if (!iso) return '';
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  const [y, m, d] = parts;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthName = months[parseInt(m, 10) - 1] || m;
+  const dayNum = parseInt(d, 10);
+  const thisYear = new Date().getFullYear();
+  return parseInt(y, 10) === thisYear ? `${monthName} ${dayNum}` : `${monthName} ${dayNum} '${String(y).slice(2)}`;
+}
+
 function _renderProfileCard(a, m, n) {
   const decimals = m.step < 0.1 ? 2 : 1;
   const measuredFlag = !!(a.measured && a.measured[m.key]);
@@ -2581,6 +2694,15 @@ function _renderProfileCard(a, m, n) {
   const tier = getTier(pct);
   const isCmjNonFD = m.key === 'cmj' && !a.cmjFD;
 
+  // PR badge + "best <date>" subtext (per-source, >2% improvement gate).
+  const pr = computePRForMetric(a, m.key);
+  const prPill = pr.isPR
+    ? `<span class="pmc-pr-pill" title="New PR — ${pr.improvementPct.toFixed(1)}% better than prior best (${pr.source})">🏆 PR +${pr.improvementPct.toFixed(1)}%</span>`
+    : '';
+  const prLine = pr.prDate
+    ? `<div class="pmc-pr-line${pr.isPR ? ' is-pr' : ''}">best · ${_fmtPRShortDate(pr.prDate)}${pr.source && pr.source !== 'FD' ? ' · ' + pr.source : ''}</div>`
+    : '';
+
   // Optional secondary line: Top speed mph for sprintFly. Brighter, centered,
   // anchored at the bottom of the card so the value pops at a glance.
   let secondary = '';
@@ -2598,6 +2720,7 @@ function _renderProfileCard(a, m, n) {
     <div class="pmc-value-row">
       <span class="pmc-value" style="color:${tier.color};">${val.toFixed(decimals)}</span>
       <span class="pmc-unit">${m.unit}</span>
+      ${prPill}
     </div>
     <div class="pmc-bar">
       <div class="pmc-bar-fill" style="width:${pct}%;background:${tier.color};"></div>
@@ -2607,6 +2730,7 @@ function _renderProfileCard(a, m, n) {
       <span class="pmc-pct" style="color:${tier.color};">${pct}th</span>
       <span class="tier-badge" style="background:${tier.bg};color:${tier.color};">${tier.label}</span>
     </div>
+    ${prLine}
     ${secondary}
   </div>`;
 }
@@ -2732,7 +2856,8 @@ function _dataCell(a, c) {
   if (typeof v !== 'number' || v <= 0 || !measured) {
     return `<td style="${tdBase}color:var(--text3);opacity:0.5;" title="Test required">—</td>`;
   }
-  const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' || c.key === 'eccBrakingRFD' ? 1 : 2);
+  const oneDecimal = new Set(['cmj','broad','rfd','eccBrakingRFD','slhopL','slhopR','sjump','rcmj']);
+  const decimals = c.key === 'rsi' ? 2 : (oneDecimal.has(c.key) ? 1 : 2);
   return `<td style="${tdBase}color:var(--text);font-weight:600;">${v.toFixed(decimals)}</td>`;
 }
 
@@ -2764,7 +2889,8 @@ function exportRosterCsv() {
       ...cols.map(c => {
         const v = a[c.key];
         if (typeof v !== 'number') return '';
-        const decimals = c.key === 'rsi' ? 2 : (c.key === 'cmj' || c.key === 'broad' || c.key === 'rfd' ? 1 : 2);
+        const oneDecimal = new Set(['cmj','broad','rfd','eccBrakingRFD','slhopL','slhopR','sjump','rcmj']);
+        const decimals = c.key === 'rsi' ? 2 : (oneDecimal.has(c.key) ? 1 : 2);
         return v.toFixed(decimals);
       }),
       untested.join(';'),
@@ -3332,6 +3458,8 @@ function buildStateObj() {
     coreMeasuredKeys: [...coreMeasuredKeys],
     tierThresholds,
     matrixThreshold,
+    prThresholdPct,
+    prWindowDays,
     selectedChartMode,
     testActiveGroup,
     testSex,
@@ -3405,6 +3533,8 @@ function loadState() {
     if (Array.isArray(s.coreMeasuredKeys)) coreMeasuredKeys  = new Set(s.coreMeasuredKeys);
     if (Array.isArray(s.tierThresholds) && s.tierThresholds.length === 4) tierThresholds = s.tierThresholds;
     if (typeof s.matrixThreshold === 'number') matrixThreshold = s.matrixThreshold;
+    if (typeof s.prThresholdPct === 'number')  prThresholdPct  = s.prThresholdPct;
+    if (s.prWindowDays === null || typeof s.prWindowDays === 'number') prWindowDays = s.prWindowDays;
     if (s.selectedChartMode) selectedChartMode = s.selectedChartMode;
     if (s.testActiveGroup)   testActiveGroup   = s.testActiveGroup;
     if (s.testSex)           testSex           = s.testSex;
@@ -3474,6 +3604,26 @@ function updateMatrixThreshold(val) {
   renderAll(false);
 }
 
+function updatePRThreshold(val) {
+  const v = parseFloat(val);
+  if (isNaN(v) || v < 0 || v > 50) return;
+  prThresholdPct = v;
+  const el = document.getElementById('pr-thr-display');
+  if (el) el.textContent = v.toFixed(1) + '%';
+  const pp = document.getElementById('pane-profile');
+  if (pp && pp.style.display !== 'none') renderProfileTab();
+  saveState();
+}
+
+function updatePRWindow(days) {
+  // Accept null (string 'null') for "all time" or a positive number of days.
+  prWindowDays = (days === null || days === 'null') ? null : parseInt(days, 10);
+  renderSettings();
+  const pp = document.getElementById('pane-profile');
+  if (pp && pp.style.display !== 'none') renderProfileTab();
+  saveState();
+}
+
 function toggleCompactRoster() {
   compactRoster = !compactRoster;
   document.body.classList.toggle('compact', compactRoster);
@@ -3498,11 +3648,57 @@ function resetSettings() {
   coreMeasuredKeys  = new Set(CORE_MEASURED_DEFAULTS);
   tierThresholds    = [...DEFAULT_TIER_THRESHOLDS];
   matrixThreshold   = DEFAULT_MATRIX_THRESHOLD;
+  prThresholdPct    = DEFAULT_PR_THRESHOLD_PCT;
+  prWindowDays      = DEFAULT_PR_WINDOW_DAYS;
   compactRoster     = false;
   historySmoothing  = false;
   renderSettings();
   renderRosterTable();
   renderAll(false);
+  saveState();
+}
+
+function _renderPRSettingsCard() {
+  const accent = 'var(--gold)';
+  const windowOpts = [
+    { val: 'null', label: 'All time' },
+    { val: '7',    label: '7d' },
+    { val: '30',   label: '30d' },
+    { val: '90',   label: '90d' },
+    { val: '180',  label: '180d' },
+  ];
+  const curWin = prWindowDays == null ? 'null' : String(prWindowDays);
+  const winPills = windowOpts.map(o => {
+    const on = o.val === curWin;
+    const bg = on ? 'rgba(240,192,64,0.15)' : 'var(--bg3)';
+    const bd = on ? 'rgba(240,192,64,0.5)'  : 'var(--border2)';
+    const col = on ? accent : 'var(--text3)';
+    return '<button onclick="updatePRWindow(' + (o.val === 'null' ? 'null' : o.val) + ')" '
+      + 'style="padding:6px 12px;border-radius:6px;border:1px solid ' + bd + ';background:' + bg + ';'
+      + 'color:' + col + ';font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;cursor:pointer;transition:all .15s;">'
+      + o.label + '</button>';
+  }).join('');
+
+  const winLabel = prWindowDays == null
+    ? 'any time in the athlete\'s history'
+    : 'the last ' + prWindowDays + ' days';
+
+  return '<div class="card">'
+    + '<div class="card-label">Personal Records</div>'
+    + '<div style="font-size:11px;color:var(--text2);line-height:1.55;margin-bottom:14px;">Rules for the gold &#127942; <b>PR</b> pill on profile cards. PRs are per-source (FD bests never compete with manual bests).</div>'
+
+    // Threshold row
+    + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">'
+    + '<input type="range" min="0" max="20" step="0.5" value="' + prThresholdPct + '" oninput="updatePRThreshold(this.value)" style="flex:1;accent-color:var(--gold);height:4px;" />'
+    + '<span id="pr-thr-display" style="font-size:20px;font-weight:800;font-family:\'DM Mono\',monospace;color:' + accent + ';min-width:62px;text-align:right;">' + prThresholdPct.toFixed(1) + '%</span>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;margin-bottom:14px;">Minimum % improvement over prior best (same source) to qualify as a PR. Set 0% to badge every new best.</div>'
+
+    // Window row
+    + '<div style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">PR window</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">' + winPills + '</div>'
+    + '<div style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">Pill shows only when the PR was set in ' + winLabel + '. Older PRs still show the date subtext, just without the gold badge.</div>'
+    + '</div>';
 }
 
 function renderSettings() {
@@ -3615,6 +3811,8 @@ function renderSettings() {
     + '<div id="matrix-thr-desc" style="margin-top:10px;font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">Force score &ge; ' + matrixThreshold + ' = high &nbsp;&middot;&nbsp; Reactive score &ge; ' + matrixThreshold + ' = high</div>'
     + '</div>'
 
+    + _renderPRSettingsCard()
+
     + '<div class="card">'
     + '<div class="card-label">Display</div>'
     + settingRow('Hide untested metrics', 'Exclude metrics with no measured value from all calculations, charts, and comparisons', 'toggleSuppressEstimated', suppressEstimated)
@@ -3637,15 +3835,35 @@ function renderSettings() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CSV UPLOAD — ForceDecks CMJ + Sprint/Manual → Supabase
+// CSV UPLOAD — ForceDecks (CMJ / SJ / CMRJ / DJ) + Sprint/Manual → Supabase
 // ═══════════════════════════════════════════════════════════════
 
-const CMJ_METRIC_COLS = {
-  cmj:           'Jump Height (Imp-Mom) in Inches [in]',
-  power:         'Peak Power / BM [W/kg]',
-  rfd:           'Concentric RFD / BM [N/s/kg]',
-  eccBrakingRFD: 'Eccentric Braking RFD / BM [N/s/kg]',
+// Per ForceDecks Test Type, map metric key → source column (and optional
+// unit conversion). All values stored as the metric's native dashboard unit
+// (jump heights in inches, RSI dimensionless). cm → in uses 0.3937 in/cm.
+const CM_TO_IN = 0.3937007874;
+const FD_TEST_TYPE_MAP = {
+  CMJ: {
+    cmj:           { col: 'Jump Height (Imp-Mom) in Inches [in]' },
+    power:         { col: 'Peak Power / BM [W/kg]' },
+    rfd:           { col: 'Concentric RFD / BM [N/s/kg]' },
+    eccBrakingRFD: { col: 'Eccentric Braking RFD / BM [N/s/kg]' },
+  },
+  SJ: {
+    sjump:         { col: 'Jump Height (Imp-Mom) in Inches [in]' },
+  },
+  CMRJ: {
+    rcmj:          { col: 'Rebound Jump Height (Imp-Mom) [cm]', conv: cm => cm * CM_TO_IN },
+  },
+  DJ: {
+    rsi:           { col: 'RSI (Flight Time/Contact Time)' },
+  },
 };
+
+// All column-name strings the FD format can supply — used by detectCSVFormat.
+const FD_ALL_COLS = Array.from(new Set(
+  Object.values(FD_TEST_TYPE_MAP).flatMap(m => Object.values(m).map(d => d.col))
+));
 
 // Manual / sprint format — friendly aliases for column headers.
 // All aliases are matched case-insensitively after collapsing whitespace
@@ -3656,6 +3874,10 @@ const MANUAL_METRIC_ALIASES = {
   sprintFly:  ['20-30','sprintfly','fly','fly10','fly 10','fly 10 (20-30y)','20-30y','fly10 (20-30y)'],
   broad:      ['broad','broad jump','standing broad','standing broad jump','bj','broad (in)'],
   shuttle:    ['shuttle','5-10-5','pro agility','pro agility (5-10-5)','shuttle (5-10-5)','agility'],
+  slhopL:     ['l slh','l-slh','lslh','slh l','slh-l','slhl','l hop','left slh','left single-leg hop','left single leg hop','single-leg hop l','single leg hop l','sl hop l','sl-hop-l'],
+  slhopR:     ['r slh','r-slh','rslh','slh r','slh-r','slhr','r hop','right slh','right single-leg hop','right single leg hop','single-leg hop r','single leg hop r','sl hop r','sl-hop-r'],
+  sjump:      ['sj','squat jump','squatjump','sjump','squat-jump'],
+  rcmj:       ['rcmj','r cmj','r-cmj','rebound cmj','rebound-cmj','rebound countermovement jump','repeat cmj'],
 };
 
 function normaliseHeader(h) {
@@ -3733,41 +3955,51 @@ function parseCMJCSV(text) {
     throw new Error('CSV missing required "Name" or "Date" column');
   }
 
-  const metricI = {};
-  let metricHits = 0;
-  Object.entries(CMJ_METRIC_COLS).forEach(([k, col]) => {
-    metricI[k] = headers.indexOf(col);
-    if (metricI[k] >= 0) metricHits++;
+  // Precompute, per test type, the available metric columns in this file.
+  // testTypeCols[testType] = [{key, idx, conv}]
+  const testTypeCols = {};
+  let totalMetricHits = 0;
+  Object.entries(FD_TEST_TYPE_MAP).forEach(([testType, metricsMap]) => {
+    const found = [];
+    Object.entries(metricsMap).forEach(([key, def]) => {
+      const idx = headers.indexOf(def.col);
+      if (idx >= 0) {
+        found.push({ key, idx, conv: def.conv });
+        totalMetricHits++;
+      }
+    });
+    testTypeCols[testType] = found;
   });
-  if (metricHits === 0) {
-    throw new Error('No ForceDecks metric columns found. Expected columns like "Jump Height (Imp-Mom) in Inches [in]".');
+  if (totalMetricHits === 0) {
+    throw new Error('No ForceDecks metric columns found. Expected columns like "Jump Height (Imp-Mom) in Inches [in]" (CMJ/SJ), "Rebound Jump Height (Imp-Mom) [cm]" (CMRJ), or "RSI (Flight Time/Contact Time)" (DJ).');
   }
 
   const grouped = {};
   let skippedTestType = 0, skippedDate = 0, dataRows = 0;
+  const testTypesSeen = new Set();
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
     const name = (row[nameI] || '').trim().replace(/\s+/g, ' ');
     if (!name) continue;
-    if (typeI >= 0) {
-      const t = (row[typeI] || '').trim();
-      if (t !== 'CMJ') { skippedTestType++; continue; }
-    }
+    const t = (typeI >= 0 ? (row[typeI] || '').trim() : 'CMJ');
+    const cols = testTypeCols[t];
+    if (!cols || cols.length === 0) { skippedTestType++; continue; }
     const d = parseCMJDate(row[dateI]);
     if (!d) { skippedDate++; continue; }
     dataRows++;
-    for (const [key, colIdx] of Object.entries(metricI)) {
-      if (colIdx < 0) continue;
-      const v = parseCMJValue(row[colIdx]);
-      if (v == null) continue;
+    testTypesSeen.add(t);
+    cols.forEach(({ key, idx, conv }) => {
+      let v = parseCMJValue(row[idx]);
+      if (v == null) return;
+      if (conv) v = conv(v);
       grouped[name] = grouped[name] || {};
       grouped[name][d] = grouped[name][d] || {};
       const cur = grouped[name][d][key];
       if (cur == null || v > cur) grouped[name][d][key] = v;
-    }
+    });
   }
-  return { grouped, skippedTestType, skippedDate, dataRows };
+  return { grouped, skippedTestType, skippedDate, dataRows, testTypesSeen: [...testTypesSeen] };
 }
 
 function parseManualCSV(text) {
@@ -3789,7 +4021,7 @@ function parseManualCSV(text) {
     if (metric) { colMetric[i] = metric; metricHits++; }
   });
   if (metricHits === 0) {
-    throw new Error('No recognised metric columns. Expected one or more of: 0-10, 10-20, 20-30, broad, shuttle.');
+    throw new Error('No recognised metric columns. Expected one or more of: 0-10, 10-20, 20-30, broad, shuttle, L SLH, R SLH, SJ, RCMJ.');
   }
 
   const grouped = {};
@@ -3821,19 +4053,93 @@ function detectCSVFormat(text) {
   const rows = parseCSVText(text);
   if (rows.length < 1) return 'unknown';
   const headers = rows[0].map(h => normaliseHeader(h));
-  // CMJ — Test Type column or any of the FD metric columns
+  // ForceDecks — Test Type column or any known FD metric column.
+  // Still labelled 'cmj' internally for stability; covers CMJ/SJ/CMRJ/DJ.
   if (headers.includes('test type')) return 'cmj';
-  for (const col of Object.values(CMJ_METRIC_COLS)) {
+  for (const col of FD_ALL_COLS) {
     if (headers.includes(normaliseHeader(col))) return 'cmj';
   }
-  // Manual — any recognised metric alias
+  // Long sprint — Exercise Name + Time(s) + a name column
+  const hasNameCol = headers.includes('full name') || headers.includes('first name') || headers.includes('last name') || headers.includes('name');
+  const hasDateCol = headers.includes('completed date') || headers.includes('date');
+  if (headers.includes('exercise name') && headers.some(h => h === 'time (s)' || h === 'time(s)' || h === 'time') && hasNameCol && hasDateCol) {
+    return 'longSprint';
+  }
+  // Manual wide — any recognised metric alias as a column header
   if (headers.some(h => MANUAL_HEADER_TO_METRIC[h])) return 'manual';
   return 'unknown';
+}
+
+function parseLongSprintCSV(text) {
+  const rows = parseCSVText(text);
+  if (rows.length < 2) throw new Error('CSV has no data rows');
+  const headersRaw = rows[0].map(h => (h || '').trim());
+  const headers = headersRaw.map(normaliseHeader);
+  const col = name => headers.indexOf(name);
+
+  const exerI = col('exercise name');
+  const fullI = col('full name');
+  const firstI = col('first name');
+  const lastI  = col('last name');
+  const dateI = col('completed date') >= 0 ? col('completed date') : col('date');
+  let timeI = col('time (s)'); if (timeI < 0) timeI = col('time(s)'); if (timeI < 0) timeI = col('time');
+  if (exerI < 0 || dateI < 0 || timeI < 0) {
+    throw new Error('Long-format CSV needs Exercise Name, Completed Date, and Time (s) columns');
+  }
+
+  const grouped = {};
+  let skippedDate = 0, skippedExercise = 0, skippedValue = 0, dataRows = 0;
+  const metricsSeen = new Set();
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+
+    let name = fullI >= 0 ? (row[fullI] || '').trim() : '';
+    if (!name) {
+      const first = firstI >= 0 ? (row[firstI] || '').trim() : '';
+      const last  = lastI  >= 0 ? (row[lastI]  || '').trim() : '';
+      name = (first + ' ' + last).trim();
+    }
+    name = name.replace(/\s+/g, ' ');
+    if (!name) continue;
+
+    const exerciseRaw = (row[exerI] || '').trim();
+    const metric = MANUAL_HEADER_TO_METRIC[normaliseHeader(exerciseRaw)];
+    if (!metric) { skippedExercise++; continue; }
+    // Inches-based metrics don't belong in a time-based long-format flow.
+    if (metric === 'broad' || metric === 'slhopL' || metric === 'slhopR' || metric === 'sjump' || metric === 'rcmj') {
+      skippedExercise++; continue;
+    }
+
+    const d = parseCMJDate(row[dateI]);
+    if (!d) { skippedDate++; continue; }
+
+    const v = parseCMJValue(row[timeI]);
+    if (v == null) { skippedValue++; continue; }
+
+    dataRows++;
+    metricsSeen.add(metric);
+    grouped[name] = grouped[name] || {};
+    grouped[name][d] = grouped[name][d] || {};
+    const cur = grouped[name][d][metric];
+    const inv = INVERSE_METRICS.has(metric);
+    if (cur == null || (inv ? v < cur : v > cur)) {
+      grouped[name][d][metric] = v;
+    }
+  }
+  return { grouped, skippedDate, skippedExercise, skippedValue, dataRows, metricsDetected: [...metricsSeen] };
 }
 
 function handleCSVFile(input) {
   const file = input.files && input.files[0];
   if (!file) return;
+  csvUploadState = { _file: file, fileName: file.name, status: 'selected' };
+  renderSettings();
+}
+
+function confirmCSVUpload() {
+  if (!csvUploadState || !csvUploadState._file || csvUploadState.status !== 'selected') return;
+  const file = csvUploadState._file;
   const reader = new FileReader();
   reader.onload = ev => {
     try {
@@ -3843,13 +4149,26 @@ function handleCSVFile(input) {
       if (format === 'cmj') {
         parsed = parseCMJCSV(text);
         source = 'FD';
-        formatLabel = 'ForceDecks CMJ';
+        const seen = (parsed.testTypesSeen || []).filter(Boolean);
+        formatLabel = seen.length ? 'ForceDecks (' + seen.join(', ') + ')' : 'ForceDecks';
+      } else if (format === 'longSprint') {
+        parsed = parseLongSprintCSV(text);
+        source = 'manual';
+        formatLabel = 'Sprint timing (long)';
       } else if (format === 'manual') {
         parsed = parseManualCSV(text);
         source = 'manual';
         formatLabel = 'Sprint / Manual';
       } else {
-        throw new Error('Could not detect format. Expected ForceDecks CMJ headers or columns like 0-10, 10-20, 20-30, broad, shuttle.');
+        const headerRow = parseCSVText(text)[0] || [];
+        const seen = headerRow.map(h => (h || '').trim()).filter(Boolean).join(', ');
+        throw new Error(
+          'Could not detect format. Headers seen: [' + (seen || '(none)') + ']. '
+          + 'Expected CMJ headers like "Test Type" / "Jump Height (Imp-Mom) in Inches [in]", '
+          + 'or manual columns named one of: 0-10, 10-20, 20-30, broad, shuttle, L SLH, R SLH, SJ, RCMJ '
+          + '(aliases: sprint10/sprint1020/sprintFly, 10y, fly, 5-10-5, pro agility, left/right single-leg hop, squat jump, rebound cmj, etc.). '
+          + 'Required: a "Name" column and a "Date" column.'
+        );
       }
 
       const athleteCount = Object.keys(parsed.grouped).length;
@@ -3895,6 +4214,8 @@ function handleCSVFile(input) {
         duplicateSessions,
         skippedTestType: parsed.skippedTestType || 0,
         skippedDate: parsed.skippedDate || 0,
+        skippedExercise: parsed.skippedExercise || 0,
+        skippedValue: parsed.skippedValue || 0,
         dataRows: parsed.dataRows,
         metricsDetected: parsed.metricsDetected,
         status: 'parsed',
@@ -3902,10 +4223,14 @@ function handleCSVFile(input) {
       renderSettings();
     } catch (e) {
       console.error('CSV parse error:', e);
-      showToast('CSV error: ' + e.message);
+      if (csvUploadState) csvUploadState._error = e.message;
+      renderSettings();
     }
   };
-  reader.onerror = () => showToast('Could not read file');
+  reader.onerror = () => {
+    if (csvUploadState) csvUploadState._error = 'Could not read file';
+    renderSettings();
+  };
   reader.readAsText(file);
 }
 
@@ -4036,7 +4361,7 @@ function renderCSVUploadCard() {
   const accent = 'var(--gold)';
   const headerBar = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
     + '<div class="card-label" style="margin-bottom:0;">Data Import</div>'
-    + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">ForceDecks CMJ &middot; Sprint / Manual &middot; CSV</span>'
+    + '<span style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;">ForceDecks (CMJ / SJ / CMRJ / DJ) &middot; Sprint / Manual &middot; CSV</span>'
     + '</div>';
 
   const codeStyle = 'font-family:\'DM Mono\',monospace;color:var(--text);';
@@ -4049,8 +4374,9 @@ function renderCSVUploadCard() {
       + '<div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px;">'
       + 'Two formats auto-detected from headers:'
       + '<ul style="margin:6px 0 0 18px;padding:0;list-style:disc;">'
-      + '<li><b>ForceDecks CMJ</b> — drop in the raw FD export (e.g. <code style="' + codeStyle + '">force_deck_cmj.csv</code>). Rows with <code style="' + codeStyle + '">Test Type = CMJ</code> import as <code style="' + codeStyle + '">source = FD</code>. ' + tplLink('Download template', 'downloadCMJTemplate()') + '</li>'
-      + '<li><b>Sprint / Manual</b> — wide layout with columns <code style="' + codeStyle + '">Name</code>, <code style="' + codeStyle + '">Date</code>, and any of <code style="' + codeStyle + '">0-10</code>, <code style="' + codeStyle + '">10-20</code>, <code style="' + codeStyle + '">20-30</code>, <code style="' + codeStyle + '">broad</code>, <code style="' + codeStyle + '">shuttle</code>. Imports as <code style="' + codeStyle + '">source = manual</code>. ' + tplLink('Download template', 'downloadManualTemplate()') + '</li>'
+      + '<li><b>ForceDecks</b> — drop in the raw FD export. Detected by <code style="' + codeStyle + '">Test Type</code>: <code style="' + codeStyle + '">CMJ</code> &rarr; cmj/power/rfd/eccBrk, <code style="' + codeStyle + '">SJ</code> &rarr; squat jump, <code style="' + codeStyle + '">CMRJ</code> &rarr; rebound CMJ (cm &rarr; in), <code style="' + codeStyle + '">DJ</code> &rarr; RSI. All import as <code style="' + codeStyle + '">source = FD</code>. ' + tplLink('Download template', 'downloadCMJTemplate()') + '</li>'
+      + '<li><b>Sprint / Manual (wide)</b> — columns <code style="' + codeStyle + '">Name</code>, <code style="' + codeStyle + '">Date</code>, and any of <code style="' + codeStyle + '">0-10</code>, <code style="' + codeStyle + '">10-20</code>, <code style="' + codeStyle + '">20-30</code>, <code style="' + codeStyle + '">broad</code>, <code style="' + codeStyle + '">shuttle</code>, <code style="' + codeStyle + '">L SLH</code>, <code style="' + codeStyle + '">R SLH</code>, <code style="' + codeStyle + '">SJ</code>, <code style="' + codeStyle + '">RCMJ</code>. ' + tplLink('Download template', 'downloadManualTemplate()') + '</li>'
+      + '<li><b>Sprint timing (long)</b> — one row per attempt with columns <code style="' + codeStyle + '">Exercise Name</code>, <code style="' + codeStyle + '">Full Name</code> (or First/Last), <code style="' + codeStyle + '">Completed Date</code>, <code style="' + codeStyle + '">Time (s)</code>. Exercise values like <code style="' + codeStyle + '">0-10</code>, <code style="' + codeStyle + '">10-20</code>, <code style="' + codeStyle + '">20-30</code>, <code style="' + codeStyle + '">5-10-5</code> are mapped to metrics. Best (fastest) time per athlete-day-metric wins. ' + tplLink('Download template', 'downloadLongSprintTemplate()') + '</li>'
       + '</ul>'
       + '<div style="margin-top:8px;color:var(--text3);">Per (athlete, day): best value per metric wins (max, or min for inverse sprint/shuttle).</div>'
       + '</div>'
@@ -4064,6 +4390,38 @@ function renderCSVUploadCard() {
   const st = csvUploadState;
   const importing = st.status === 'importing';
 
+  if (st.status === 'selected') {
+    const file = st._file;
+    const sizeKB = file ? (file.size / 1024).toFixed(1) + ' KB' : '';
+    const errorBlock = st._error
+      ? '<div style="padding:12px 14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.35);border-radius:var(--radius-md);margin-bottom:14px;">'
+        + '<div style="font-size:11px;font-weight:700;font-family:\'DM Mono\',monospace;color:rgba(248,113,113,0.95);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Parse error</div>'
+        + '<div style="font-size:12px;color:var(--text);line-height:1.55;">' + escapeHTML(st._error) + '</div>'
+        + '</div>'
+      : '';
+    return '<div class="card">'
+      + headerBar
+      + '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:14px;">'
+      + '<div style="display:flex;align-items:center;gap:12px;min-width:0;">'
+      + '<div style="font-size:20px;flex-shrink:0;">📄</div>'
+      + '<div style="min-width:0;">'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHTML(st.fileName) + '</div>'
+      + '<div style="font-size:10px;color:var(--text3);font-family:\'DM Mono\',monospace;margin-top:2px;">' + sizeKB + ' · format will be auto-detected on confirm</div>'
+      + '</div>'
+      + '</div>'
+      + '<label style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:12px;flex-shrink:0;">'
+      + 'Choose different file'
+      + '<input type="file" accept=".csv,text/csv" onchange="handleCSVFile(this)" style="display:none;" />'
+      + '</label>'
+      + '</div>'
+      + errorBlock
+      + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
+      + '<button onclick="cancelCSVUpload()" style="padding:8px 18px;border-radius:var(--radius-md);border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:pointer;">Cancel</button>'
+      + '<button onclick="confirmCSVUpload()" style="padding:8px 22px;border-radius:var(--radius-md);border:1px solid rgba(240,192,64,0.5);background:rgba(240,192,64,0.15);color:' + accent + ';font-size:12px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer;">' + (st._error ? 'Try again' : 'Confirm upload') + '</button>'
+      + '</div>'
+      + '</div>';
+  }
+
   const summary = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px;">'
     + statTile('Format', st.formatLabel + ' · ' + st.source, accent)
     + statTile('File', st.fileName, 'var(--text)')
@@ -4075,6 +4433,9 @@ function renderCSVUploadCard() {
         : '')
     + (st.skippedTestType > 0
         ? statTile('Skipped non-CMJ', String(st.skippedTestType), 'var(--text3)')
+        : '')
+    + (st.skippedExercise > 0
+        ? statTile('Skipped unmapped exercises', String(st.skippedExercise), 'var(--text3)')
         : '')
     + '</div>';
 
@@ -4161,14 +4522,30 @@ function downloadCMJTemplate() {
 }
 
 function downloadManualTemplate() {
-  const headers = ['Name','Date','0-10','10-20','20-30','broad','shuttle'];
+  const headers = ['Name','Date','0-10','10-20','20-30','broad','shuttle','L SLH','R SLH','SJ','RCMJ'];
   const sample = [
-    'Jane Sample,5/1/2026,1.85,1.05,1.12,95,4.82',
-    'Jane Sample,5/8/2026,1.82,1.03,1.10,97,4.78',
-    'John Sample,5/1/2026,1.78,1.01,1.08,98,4.75',
+    'Jane Sample,5/1/2026,1.85,1.05,1.12,95,4.82,72,74,14.2,12.8',
+    'Jane Sample,5/8/2026,1.82,1.03,1.10,97,4.78,74,75,14.6,13.1',
+    'John Sample,5/1/2026,1.78,1.01,1.08,98,4.75,78,79,15.4,13.6',
   ];
   downloadCSV('sprint_manual_template.csv',
     headers.join(',') + '\n' + sample.join('\n') + '\n');
+}
+
+function downloadLongSprintTemplate() {
+  const headers = [
+    'Exercise Name','Exercise Category','Last Name','First Name','Full Name',
+    'Completed Date','Note','Input Type','Set','Time (s)','MPH (mph)',
+  ];
+  const sample = [
+    '"0-10","Sprint","Sample","Jane","Jane Sample","5/1/2026","","Timing Gate","1","1.85","11.04"',
+    '"0-10","Sprint","Sample","Jane","Jane Sample","5/1/2026","","Timing Gate","2","1.82","11.23"',
+    '"10-20","Sprint","Sample","Jane","Jane Sample","5/1/2026","","Timing Gate","1","1.05","19.48"',
+    '"20-30","Sprint","Sample","Jane","Jane Sample","5/1/2026","","Timing Gate","1","1.12","18.27"',
+    '"5-10-5","Agility","Sample","John","John Sample","5/1/2026","","Timing Gate","1","4.75",""',
+  ];
+  downloadCSV('sprint_long_template.csv',
+    headers.map(h => '"' + h + '"').join(',') + '\n' + sample.join('\n') + '\n');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -4225,7 +4602,7 @@ function buildAthleteFromSupabase(row) {
     bestSource[key] = bestSrc;
   });
 
-  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj'];
 
   const measured = {};
   ALL_KEYS.forEach(k => {
@@ -4686,6 +5063,10 @@ const HISTORY_METRICS = [
   { key:'sprint1020', label:'10-20'  },
   { key:'broad',      label:'Broad'  },
   { key:'shuttle',    label:'Shuttle'},
+  { key:'slhopL',     label:'L Hop'  },
+  { key:'slhopR',     label:'R Hop'  },
+  { key:'sjump',      label:'SJ'     },
+  { key:'rcmj',       label:'RCMJ'   },
 ];
 function openHistoryModal() {
   const a = currentAthlete;
@@ -4780,7 +5161,7 @@ async function deleteSession(sessId) {
   currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
 
   // Recompute best values across remaining sessions
-  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj'];
   const bestValues = {}, bestSource = {};
   (currentAthlete._sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {

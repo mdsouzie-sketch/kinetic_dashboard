@@ -343,6 +343,34 @@
 }
 .profile-metric-card.untested .pmc-value { color: var(--text3); font-size: 22px; }
 
+/* PR badge: gold pill shown next to the value when the latest session
+   in this metric/source set a new best of >2% improvement. */
+.profile-metric-card .pmc-pr-pill {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  background: rgba(240,192,64,0.16);
+  border: 1px solid rgba(240,192,64,0.5);
+  white-space: nowrap;
+}
+/* Small "best <date>" subtext under the footer — always shown when there
+   is a recorded best date. PR cards also style this slightly stronger. */
+.profile-metric-card .pmc-pr-line {
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.02em;
+}
+.profile-metric-card .pmc-pr-line.is-pr {
+  color: var(--gold);
+}
+
 /* Top-speed callout for sprintFly cards — bright, centered, sits at the
    bottom of the card via margin-top:auto + the card's flex column. */
 .profile-metric-card .pmc-mph {

@@ -4,8 +4,8 @@ from collections import defaultdict
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 EXCEL_PATH = r'C:\Users\mattd\Downloads\Athletic_Performance_Master_2.xlsx'
-SUPABASE_URL = 'https://pournuabsdndozpouuke.supabase.co'
-SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw'
+SUPABASE_URL = 'https://gpjewqbhyfysiquadvid.supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwamV3cWJoeWZ5c2lxdWFkdmlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDg2NDgsImV4cCI6MjExMDU4NDY0OH0.JM4GfUngepPtIbPdOOv-xVYRckYVCiH5KtbTA-fNm0Y'
 HDRS = {'apikey': SUPABASE_KEY, 'Authorization': f'Bearer {SUPABASE_KEY}', 'Content-Type': 'application/json'}
 
 def sb_get(path):

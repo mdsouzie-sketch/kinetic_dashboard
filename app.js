@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
 // ATHLETE DATA — from ForceDecks master sheet
 // ═══════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://pournuabsdndozpouuke.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw';
+const SUPABASE_URL = 'https://gpjewqbhyfysiquadvid.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwamV3cWJoeWZ5c2lxdWFkdmlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDg2NDgsImV4cCI6MjExMDU4NDY0OH0.JM4GfUngepPtIbPdOOv-xVYRckYVCiH5KtbTA-fNm0Y';
 const SUPABASE_HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
 let ATHLETE_DB = [];
 
@@ -56,6 +56,7 @@ const METRICS = [
   { key:'slhopR',        label:'R SL hop',         testName:'Right single-leg hop',    inv:false, unit:'in',     step:0.1  },
   { key:'sjump',         label:'Squat jump',       testName:'Squat jump',              inv:false, unit:'in',     step:0.1  },
   { key:'rcmj',          label:'Rebound CMJ',      testName:'Rebound CMJ',             inv:false, unit:'in',     step:0.1  },
+  { key:'hopRsi',        label:'Hop RSI',          testName:'Hop test RSI',            inv:false, unit:'m/s',    step:0.01 },
 ];
 
 const INVERSE_METRICS = new Set(METRICS.filter(m => m.inv).map(m => m.key));
@@ -70,9 +71,9 @@ const TEST_GROUPS = [
     defaultNorm: sex => `Roster — ${sex==='M'?'Male':'Female'} (Measured)`,
     hasData: a => (a.sprint10||0) > 0 },
   { key:'jump', label:'Jump & Reactive', shortLabel:'Jump',
-    metrics:['cmj','broad','rsi'],
+    metrics:['cmj','broad','rsi','hopRsi'],
     defaultNorm: sex => `Roster — ${sex==='M'?'Male':'Female'} (Measured)`,
-    hasData: a => (a.cmj||0) > 0 || (a.broad||0) > 0 || (a.rsi||0) > 0 },
+    hasData: a => (a.cmj||0) > 0 || (a.broad||0) > 0 || (a.rsi||0) > 0 || (a.hopRsi||0) > 0 },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -143,7 +144,7 @@ let measuredOnlyMode = true;
 let selectedChartKeys = new Set(METRICS.map(m => m.key)); // refined in init()
 let rosterSortKey = 'name';
 let rosterSortDir = 1; // 1 = asc (A→Z / low→high), -1 = desc (Z→A / high→low)
-let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj']);
+let rosterVisibleCols = new Set(['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj','hopRsi']);
 let collapsedCards = new Set();
 let suppressEstimated = true;
 let selectedChartMode = 'measured'; // 'all' | 'measured' | 'none' | 'custom'
@@ -264,6 +265,7 @@ const METRIC_EXPLAINER = {
   slhopR:        'Single-leg horizontal hop distance off the right leg — a measure of unilateral power.',
   sjump:         'Vertical jump height from a paused squat — concentric power without the elastic rebound.',
   rcmj:          'Vertical jump height during continuous rebound jumps — reactive power across repeated cycles.',
+  hopRsi:        'Reactive strength in repeated hops — jump height relative to ground contact time (m/s). Higher means stiffer, faster ground contacts.',
 };
 
 function getTier(p) {
@@ -1913,6 +1915,7 @@ const HIST_METRICS = [
   { key:'slhopR',    label:'R Hop',   unit:'in',     inv:false },
   { key:'sjump',     label:'SJ',      unit:'in',     inv:false },
   { key:'rcmj',      label:'RCMJ',    unit:'in',     inv:false },
+  { key:'hopRsi',    label:'Hop RSI', unit:'m/s',    inv:false },
 ];
 
 function renderHistoryTab() {
@@ -3858,6 +3861,9 @@ const FD_TEST_TYPE_MAP = {
   DJ: {
     rsi:           { col: 'RSI (Flight Time/Contact Time)' },
   },
+  HJ: {
+    hopRsi:        { col: 'Mean RSI (Jump Height/Contact Time) [m/s]' },
+  },
 };
 
 // All column-name strings the FD format can supply — used by detectCSVFormat.
@@ -4602,7 +4608,7 @@ function buildAthleteFromSupabase(row) {
     bestSource[key] = bestSrc;
   });
 
-  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj','hopRsi'];
 
   const measured = {};
   ALL_KEYS.forEach(k => {
@@ -5067,6 +5073,7 @@ const HISTORY_METRICS = [
   { key:'slhopR',     label:'R Hop'  },
   { key:'sjump',      label:'SJ'     },
   { key:'rcmj',       label:'RCMJ'   },
+  { key:'hopRsi',     label:'Hop RSI'},
 ];
 function openHistoryModal() {
   const a = currentAthlete;
@@ -5161,7 +5168,7 @@ async function deleteSession(sessId) {
   currentAthlete._sessions = (currentAthlete._sessions || []).filter(s => s.id !== sessId);
 
   // Recompute best values across remaining sessions
-  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj'];
+  const ALL_KEYS = ['cmj','power','rfd','eccBrakingRFD','rsi','sprint10','sprintFly','sprint1020','broad','shuttle','slhopL','slhopR','sjump','rcmj','hopRsi'];
   const bestValues = {}, bestSource = {};
   (currentAthlete._sessions || []).forEach(session => {
     (session.measurements || []).forEach(m => {

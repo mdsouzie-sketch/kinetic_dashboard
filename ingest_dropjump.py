@@ -15,8 +15,8 @@ import csv, json, re, sys, urllib.request, urllib.error
 from collections import defaultdict
 from datetime import datetime
 
-SUPABASE_URL = "https://pournuabsdndozpouuke.supabase.co"
-ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw"
+SUPABASE_URL = "https://gpjewqbhyfysiquadvid.supabase.co"
+ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwamV3cWJoeWZ5c2lxdWFkdmlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDg2NDgsImV4cCI6MjExMDU4NDY0OH0.JM4GfUngepPtIbPdOOv-xVYRckYVCiH5KtbTA-fNm0Y"
 HEADERS = {
     "apikey": ANON_KEY,
     "Authorization": f"Bearer {ANON_KEY}",

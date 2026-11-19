@@ -6,6 +6,7 @@ Routes per Test Type column:
   SJ   -> sjump
   CMRJ -> rcmj  (cm -> in auto-converted)
   DJ   -> rsi
+  HJ   -> hopRsi  (hop test mean RSI, m/s; separate from drop-jump rsi)
 
 Matches incoming athlete names against existing roster (case- and
 whitespace-insensitive). Only inserts truly new athletes; reuses existing IDs.
@@ -22,8 +23,8 @@ import csv, json, re, sys, urllib.request, urllib.error
 from collections import defaultdict
 from datetime import datetime
 
-SUPABASE_URL = "https://pournuabsdndozpouuke.supabase.co"
-ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw"
+SUPABASE_URL = "https://gpjewqbhyfysiquadvid.supabase.co"
+ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwamV3cWJoeWZ5c2lxdWFkdmlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDg2NDgsImV4cCI6MjExMDU4NDY0OH0.JM4GfUngepPtIbPdOOv-xVYRckYVCiH5KtbTA-fNm0Y"
 
 HEADERS = {
     "apikey": ANON_KEY,
@@ -54,6 +55,9 @@ FD_TEST_TYPE_MAP = {
     },
     "DJ": {
         "rsi":           {"col": "RSI (Flight Time/Contact Time)"},
+    },
+    "HJ": {
+        "hopRsi":        {"col": "Mean RSI (Jump Height/Contact Time) [m/s]"},
     },
 }
 
@@ -269,14 +273,24 @@ def main():
         for r in inserted or []:
             name_to_id[r["name"]] = r["id"]
 
+    # Reuse existing sessions for the same (athlete, day) so a test added
+    # later (e.g. hop RSI after CMJ) lands on the same testing-day session.
+    _, existing_sess = http("GET", "sessions?select=id,athlete_id,session_date")
+    existing_sess_by_key = {(r["athlete_id"], r["session_date"]): r["id"] for r in (existing_sess or [])}
+
     # Build session payload
     session_idx = []
     session_payload = []
+    sess_id_for = {}
     for name in sorted(grouped.keys()):
         if name not in name_to_id:
             print(f"  ! no athlete_id for {name}; skipping", file=sys.stderr)
             continue
         for day in sorted(grouped[name].keys()):
+            reuse = existing_sess_by_key.get((name_to_id[name], day))
+            if reuse:
+                sess_id_for[(name, day)] = reuse
+                continue
             session_payload.append({
                 "athlete_id": name_to_id[name],
                 "session_date": day,
@@ -284,8 +298,7 @@ def main():
             })
             session_idx.append((name, day))
 
-    print(f"Sessions to insert: {len(session_payload)}")
-    sess_id_for = {}
+    print(f"Sessions to insert: {len(session_payload)} (reusing {len(sess_id_for)} existing)")
     CHUNK = 500
     for i in range(0, len(session_payload), CHUNK):
         chunk = session_payload[i:i + CHUNK]

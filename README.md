@@ -50,7 +50,7 @@ from that constant on next reload.
 ## Supabase setup
 
 The dashboard talks to a Supabase project at
-`https://pournuabsdndozpouuke.supabase.co` via the anon key embedded in
+`https://gpjewqbhyfysiquadvid.supabase.co` via the anon key embedded in
 `index.html`.
 
 To bootstrap a fresh project:

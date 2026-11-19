@@ -11,8 +11,8 @@ import csv, json, re, sys, urllib.request, urllib.error
 from collections import defaultdict
 from datetime import datetime
 
-SUPABASE_URL = "https://pournuabsdndozpouuke.supabase.co"
-ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvdXJudWFic2RuZG96cG91dWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3Njg3MTgsImV4cCI6MjA5MzM0NDcxOH0.IfvzHQzetK53iKcCXDVASMka6ZzCeEmUQP9K7Rwpdzw"
+SUPABASE_URL = "https://gpjewqbhyfysiquadvid.supabase.co"
+ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwamV3cWJoeWZ5c2lxdWFkdmlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDg2NDgsImV4cCI6MjExMDU4NDY0OH0.JM4GfUngepPtIbPdOOv-xVYRckYVCiH5KtbTA-fNm0Y"
 
 HEADERS = {
     "apikey": ANON_KEY,
@@ -38,9 +38,13 @@ MALE_NAMES = {
     "buck", "landon", "travis",
     # confirmed third round
     "kai",
+    # forcedecks-test-export-11_18_2026.csv
+    "paxton", "connor", "jaxon", "hudson", "caden", "cole", "justus",
 }
 AMBIGUOUS = {
     "tatum", "kaimana", "vai", "alexis", "riley", "alexia",
+    "drew", "cameron", "dylan", "talynn", "skylar", "teagan", "rypken",
+    "addison",
 }
 
 METRIC_COLS = {
@@ -106,17 +110,28 @@ def http(method, path, body=None):
 
 
 def main():
-    csv_path = "force_deck_cmj.csv"
+    # usage: python ingest_cmj.py [--dry-run] [--force] [file.csv ...]
+    # Multiple files are merged (best value per athlete/day/metric), so a
+    # newer export missing a column (e.g. eccentric braking RFD) can be
+    # combined with an older one that has it.
+    args = sys.argv[1:]
+    dry_run = "--dry-run" in args
+    force = "--force" in args
+    csv_paths = [a for a in args if not a.startswith("--")] or ["force_deck_cmj.csv"]
     # athlete name -> day -> {metric: best_value}
     grouped = defaultdict(lambda: defaultdict(dict))
     skipped_test_type = 0
     skipped_excluded = 0
 
-    with open(csv_path, encoding="utf-8-sig") as fh:
-        reader = csv.DictReader(fh)
-        for row in reader:
+    rows_iter = []
+    for csv_path in csv_paths:
+        with open(csv_path, encoding="utf-8-sig") as fh:
+            # FD exports pad some headers with a trailing space
+            rows_iter.extend({(k or '').strip(): v for k, v in r.items()} for r in csv.DictReader(fh))
+    if True:
+        for row in rows_iter:
             name = normalize_name(row["Name"])
-            if not name:
+            if not name or "DUPLICATE" in name:
                 continue
             test_type = (row.get("Test Type") or "").strip()
             if test_type not in ALLOWED_TEST_TYPES:
@@ -150,6 +165,18 @@ def main():
 
     print(f"Athletes to insert: {len(athlete_payload)}")
     print(f"Ambiguous sex (defaulted to F): {ambiguous_names}")
+    print("Male:", [a["name"] for a in athlete_payload if a["sex"] == "M"])
+
+    if dry_run:
+        n_sess = sum(len(d) for d in grouped.values())
+        n_meas = sum(len(m) for d in grouped.values() for m in d.values())
+        print(f"DRY RUN: {n_sess} sessions, {n_meas} measurements. Nothing written.")
+        return
+
+    status, existing = http("GET", "athletes?select=id&limit=1")
+    if existing and not force:
+        print("athletes table is not empty; re-running would duplicate athletes. Use --force to override.")
+        return
 
     # Insert athletes
     status, ath_rows = http("POST", "athletes", athlete_payload)

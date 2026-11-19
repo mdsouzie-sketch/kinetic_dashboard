@@ -6,6 +6,7 @@ Routes per Test Type column:
   SJ   -> sjump
   CMRJ -> rcmj  (cm -> in auto-converted)
   DJ   -> rsi
+  SLJ  -> sljL, sljR  (single-leg vertical jump height, in; values > 15 in dropped as bad trials)
   HJ   -> hopRsi  (hop test mean RSI, m/s; separate from drop-jump rsi)
 
 Matches incoming athlete names against existing roster (case- and
@@ -55,6 +56,10 @@ FD_TEST_TYPE_MAP = {
     },
     "DJ": {
         "rsi":           {"col": "RSI (Flight Time/Contact Time)"},
+    },
+    "SLJ": {
+        "sljL":          {"col": "Jump Height (Imp-Mom) in Inches [in] (L)", "max": 15},
+        "sljR":          {"col": "Jump Height (Imp-Mom) in Inches [in] (R)", "max": 15},
     },
     "HJ": {
         "hopRsi":        {"col": "Mean RSI (Jump Height/Contact Time) [m/s]"},
@@ -152,7 +157,7 @@ def parse_fd_csv(path, grouped):
                     idx = headers.index(defn["col"])
                 except ValueError:
                     continue
-                found.append((key, idx, defn.get("conv")))
+                found.append((key, idx, defn.get("conv"), defn.get("max")))
             type_to_cols[test_type] = found
 
         try:
@@ -169,6 +174,8 @@ def parse_fd_csv(path, grouped):
             name = normalize_name(row[name_idx] if name_idx < len(row) else "")
             if not name:
                 continue
+            if "DUPLICATE" in name:
+                continue
             if name in EXCLUDE_ATHLETES:
                 counts["skip_excluded"] += 1
                 continue
@@ -183,13 +190,16 @@ def parse_fd_csv(path, grouped):
                 continue
             counts["rows_kept"] += 1
             counts["test_types"].add(test_type)
-            for key, idx, conv in cols:
+            for key, idx, conv, vmax in cols:
                 cell = row[idx] if idx < len(row) else ""
                 v = parse_value(cell)
                 if v is None:
                     continue
                 if conv:
                     v = conv(v)
+                if vmax and v > vmax:
+                    counts["skip_outlier"] = counts.get("skip_outlier", 0) + 1
+                    continue
                 cur = grouped[name][day].get(key)
                 if cur is None or v > cur:
                     grouped[name][day][key] = v
